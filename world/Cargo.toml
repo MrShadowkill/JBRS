@@ -1,0 +1,9 @@
+[package]
+name = "world"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+engine_core = {path="../engine_core"}
+terrain={path="../terrain"}
+roads={path="../roads"}
+buildings={path="../buildings"}

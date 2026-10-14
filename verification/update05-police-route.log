@@ -1,0 +1,10 @@
+   Compiling world v0.1.0 (/home/kiril/Documents/Codex/2026-10-13/files-pasted-by-the-user-project-2/outputs/jailbreak-rs/world)
+   Compiling jailbreak-rs v0.5.0 (/home/kiril/Documents/Codex/2026-10-13/files-pasted-by-the-user-project-2/outputs/jailbreak-rs/game)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.99s
+     Running unittests src/main.rs (target/debug/deps/jailbreak_rs-adbfed634bbc3147)
+
+running 1 test
+test game::tests::dispatched_police_enter_factory_and_apartment ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 32 filtered out; finished in 1.03s
+

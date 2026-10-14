@@ -1,0 +1,70 @@
+{
+  "version": "0.6.0",
+  "tests_passed": 74,
+  "graphics_scenes": 12,
+  "binary_sha256": "d92bee83cd1f57426209ae5ef2ef00bfffb3188086828537dc5b850ad0a0ba11",
+  "profiles": [
+    {
+      "scene": "museum-new",
+      "profile": "PROFILE scene=museum-new frames=180 mean_ms=40.80 p95_ms=63.54 max_ms=618.75 rss_mb=546.3 gpu_mb=5.1 active_chunks=44 visible_chunks=20 effective_distance=289",
+      "screenshot_sha256": "d5e9d5a1fa5fd9f6d1e8e31b8691016f663aca5314d3711afcbd3cb8f9633e23"
+    },
+    {
+      "scene": "power-new",
+      "profile": "PROFILE scene=power-new frames=180 mean_ms=44.91 p95_ms=55.86 max_ms=568.94 rss_mb=482.7 gpu_mb=2.5 active_chunks=38 visible_chunks=17 effective_distance=283",
+      "screenshot_sha256": "f4089e0fb68bfe2bf494cca7f06276bc712f057dfe11be7829b028fe7d660f69"
+    },
+    {
+      "scene": "gas-new",
+      "profile": "PROFILE scene=gas-new frames=180 mean_ms=87.09 p95_ms=137.90 max_ms=623.28 rss_mb=319.2 gpu_mb=11.4 active_chunks=42 visible_chunks=20 effective_distance=282",
+      "screenshot_sha256": "d2075c5b26fba1cfa6adf5f9c3e9de07621046663a06f80ba404d2a5ae8cb397"
+    },
+    {
+      "scene": "jewelry-new",
+      "profile": "PROFILE scene=jewelry-new frames=180 mean_ms=50.12 p95_ms=67.28 max_ms=541.73 rss_mb=365.2 gpu_mb=9.8 active_chunks=45 visible_chunks=20 effective_distance=283",
+      "screenshot_sha256": "a44e50c3e5f9c6e88970b1a72376b339396eeab33d1fa95a38b47261d9d1c574"
+    },
+    {
+      "scene": "casino-new",
+      "profile": "PROFILE scene=casino-new frames=180 mean_ms=48.60 p95_ms=61.97 max_ms=589.09 rss_mb=425.7 gpu_mb=8.2 active_chunks=46 visible_chunks=16 effective_distance=283",
+      "screenshot_sha256": "aa26047a83774e8b2ebd23a47792709ac559963cf605487b49e1ddf3c14e5dd1"
+    },
+    {
+      "scene": "flats-new",
+      "profile": "PROFILE scene=flats-new frames=180 mean_ms=66.42 p95_ms=88.95 max_ms=642.64 rss_mb=499.0 gpu_mb=8.3 active_chunks=40 visible_chunks=17 effective_distance=283",
+      "screenshot_sha256": "e06a81670dd49baf4c171f7be3516d880b176defbf64cb17a632b61db1c52c3c"
+    },
+    {
+      "scene": "quiz-new",
+      "profile": "PROFILE scene=quiz-new frames=180 mean_ms=35.82 p95_ms=53.22 max_ms=502.14 rss_mb=203.7 gpu_mb=4.3 active_chunks=40 visible_chunks=19 effective_distance=283",
+      "screenshot_sha256": "f37e68558e225b2e2a0c1ff63f9576c23755263d0becc9c3d40fef51e4a4d29f"
+    },
+    {
+      "scene": "cuffs-new",
+      "profile": "PROFILE scene=cuffs-new frames=180 mean_ms=36.94 p95_ms=57.65 max_ms=516.09 rss_mb=236.4 gpu_mb=4.2 active_chunks=41 visible_chunks=20 effective_distance=283",
+      "screenshot_sha256": "4ee8921ce7f2fcb1c899ecb899cdeb6204b24881718f52f5335608c4cb9a2e06"
+    },
+    {
+      "scene": "customs-new",
+      "profile": "PROFILE scene=customs-new frames=180 mean_ms=35.61 p95_ms=50.52 max_ms=513.78 rss_mb=203.4 gpu_mb=4.3 active_chunks=40 visible_chunks=19 effective_distance=283",
+      "screenshot_sha256": "f7eaaa76f0766b4f81074ca1edcfccb4e067b0ae560db4b5ed0a880140b9e669"
+    },
+    {
+      "scene": "train-new",
+      "profile": "PROFILE scene=train-new frames=180 mean_ms=25.52 p95_ms=30.35 max_ms=531.38 rss_mb=230.8 gpu_mb=1.9 active_chunks=30 visible_chunks=12 effective_distance=314",
+      "screenshot_sha256": "1bc6e76d3ea8b143460772b74af398ddcf3743b9bbce4bc7cc869b4d83091e19"
+    },
+    {
+      "scene": "driving",
+      "profile": "PROFILE scene=driving frames=180 mean_ms=36.23 p95_ms=51.55 max_ms=507.26 rss_mb=240.6 gpu_mb=4.1 active_chunks=41 visible_chunks=17 effective_distance=284",
+      "screenshot_sha256": "ee58829571e93c21c9bf60b9f2a8b6e9c5416756872ab74c058a20c7ca0f8f93"
+    },
+    {
+      "scene": "sewer",
+      "profile": "PROFILE scene=sewer frames=180 mean_ms=55.30 p95_ms=72.25 max_ms=519.77 rss_mb=274.2 gpu_mb=3.7 active_chunks=37 visible_chunks=16 effective_distance=283",
+      "screenshot_sha256": "22861374bddf42730127de875031184c96f2ba9b3dfa99a14d8f8a93227cec28"
+    }
+  ],
+  "graphics_backend": "Mesa llvmpipe, OpenGL 2.1; not an Intel benchmark",
+  "limits": "UPDATE_0_6.md"
+}

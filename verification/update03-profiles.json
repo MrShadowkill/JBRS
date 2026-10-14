@@ -1,0 +1,13 @@
+{
+  "update03-alarm-q1": "scene=alarm frames=180 mean_ms=39.78 p95_ms=54.25 max_ms=978.55 rss_mb=351.5 gpu_mb=4.8 active_chunks=42 visible_chunks=16 effective_distance=291",
+  "update03-car-q0": "scene=car frames=180 mean_ms=34.25 p95_ms=46.15 max_ms=511.10 rss_mb=272.9 gpu_mb=1.0 active_chunks=19 visible_chunks=10 effective_distance=163",
+  "update03-car-q3": "scene=car frames=180 mean_ms=91.10 p95_ms=148.13 max_ms=602.51 rss_mb=202.2 gpu_mb=5.9 active_chunks=67 visible_chunks=29 effective_distance=469",
+  "update03-dispatch-q1": "scene=dispatch frames=180 mean_ms=47.24 p95_ms=141.98 max_ms=504.85 rss_mb=277.5 gpu_mb=4.8 active_chunks=42 visible_chunks=16 effective_distance=284",
+  "update03-donut-q2": "scene=donut frames=180 mean_ms=49.09 p95_ms=72.07 max_ms=509.31 rss_mb=282.8 gpu_mb=8.8 active_chunks=64 visible_chunks=25 effective_distance=397",
+  "update03-graphics-q1": "scene=graphics frames=180 mean_ms=32.33 p95_ms=45.33 max_ms=504.23 rss_mb=233.2 gpu_mb=2.0 active_chunks=38 visible_chunks=19 effective_distance=307",
+  "update03-grocery-q1": "scene=grocery frames=180 mean_ms=42.03 p95_ms=67.53 max_ms=864.58 rss_mb=353.6 gpu_mb=6.2 active_chunks=46 visible_chunks=18 effective_distance=291",
+  "update03-hills-q2": "scene=hills frames=180 mean_ms=31.17 p95_ms=43.31 max_ms=593.47 rss_mb=269.7 gpu_mb=4.4 active_chunks=64 visible_chunks=23 effective_distance=423",
+  "update03-prison-q1": "scene=prison frames=180 mean_ms=43.43 p95_ms=72.18 max_ms=528.81 rss_mb=265.1 gpu_mb=2.0 active_chunks=38 visible_chunks=19 effective_distance=286",
+  "update03-sewer-q0": "scene=sewer frames=180 mean_ms=33.28 p95_ms=43.54 max_ms=1425.84 rss_mb=320.5 gpu_mb=1.0 active_chunks=16 visible_chunks=10 effective_distance=171",
+  "update03-weapon-q2": "scene=weapon frames=180 mean_ms=46.07 p95_ms=65.36 max_ms=437.61 rss_mb=281.2 gpu_mb=7.8 active_chunks=65 visible_chunks=27 effective_distance=399"
+}

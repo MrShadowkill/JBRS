@@ -1,0 +1,112 @@
+{
+  "renderer": "llvmpipe LLVM 20.1.2",
+  "OpenGL": "2.1 Mesa 25.2.8",
+  "resolution": "1024x576",
+  "includes_cold_frames": true,
+  "profiles": [
+    {
+      "name": "city",
+      "scene": "city",
+      "frames": "240",
+      "mean_ms": "43.16",
+      "p95_ms": "72.14",
+      "max_ms": "559.68",
+      "rss_mb": "206.6",
+      "gpu_mb": "8.0",
+      "active_chunks": "65",
+      "visible_chunks": "27",
+      "effective_distance": "388"
+    },
+    {
+      "name": "prison",
+      "scene": "prison",
+      "frames": "240",
+      "mean_ms": "16.92",
+      "p95_ms": "22.87",
+      "max_ms": "277.20",
+      "rss_mb": "197.4",
+      "gpu_mb": "3.3",
+      "active_chunks": "64",
+      "visible_chunks": "28",
+      "effective_distance": "450"
+    },
+    {
+      "name": "bank-interior",
+      "scene": "interior",
+      "frames": "240",
+      "mean_ms": "49.32",
+      "p95_ms": "83.45",
+      "max_ms": "283.23",
+      "rss_mb": "208.5",
+      "gpu_mb": "9.5",
+      "active_chunks": "66",
+      "visible_chunks": "22",
+      "effective_distance": "389"
+    },
+    {
+      "name": "airport",
+      "scene": "airport",
+      "frames": "240",
+      "mean_ms": "17.62",
+      "p95_ms": "22.41",
+      "max_ms": "285.74",
+      "rss_mb": "198.9",
+      "gpu_mb": "2.7",
+      "active_chunks": "47",
+      "visible_chunks": "16",
+      "effective_distance": "450"
+    },
+    {
+      "name": "mountains",
+      "scene": "mountains",
+      "frames": "240",
+      "mean_ms": "13.84",
+      "p95_ms": "20.27",
+      "max_ms": "282.27",
+      "rss_mb": "234.0",
+      "gpu_mb": "2.0",
+      "active_chunks": "64",
+      "visible_chunks": "22",
+      "effective_distance": "450"
+    },
+    {
+      "name": "harbor",
+      "scene": "harbor",
+      "frames": "240",
+      "mean_ms": "13.80",
+      "p95_ms": "18.82",
+      "max_ms": "284.82",
+      "rss_mb": "199.3",
+      "gpu_mb": "3.2",
+      "active_chunks": "49",
+      "visible_chunks": "10",
+      "effective_distance": "450"
+    },
+    {
+      "name": "city-night",
+      "scene": "city",
+      "frames": "240",
+      "mean_ms": "41.58",
+      "p95_ms": "72.38",
+      "max_ms": "279.15",
+      "rss_mb": "206.2",
+      "gpu_mb": "8.0",
+      "active_chunks": "65",
+      "visible_chunks": "27",
+      "effective_distance": "389"
+    },
+    {
+      "name": "streaming-tour",
+      "scene": "tour",
+      "frames": "600",
+      "mean_ms": "25.75",
+      "p95_ms": "53.77",
+      "max_ms": "290.18",
+      "rss_mb": "247.7",
+      "gpu_mb": "3.3",
+      "active_chunks": "64",
+      "visible_chunks": "8",
+      "effective_distance": "427"
+    }
+  ]
+}

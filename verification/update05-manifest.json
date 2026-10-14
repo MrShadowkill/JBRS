@@ -1,0 +1,63 @@
+{
+  "version": "0.5.0",
+  "tests": 65,
+  "gl_scenes": {
+    "update05-armory": {
+      "profile": "scene=armory frames=180 mean_ms=60.02 p95_ms=102.03 max_ms=1470.06 rss_mb=529.9 gpu_mb=6.1 active_chunks=44 visible_chunks=20 effective_distance=282",
+      "screenshot_sha256": "52cd37e483ea3bb52be309b8e1fae60cd0592b1e494906c10b9336656fa5a38a"
+    },
+    "update05-crawl": {
+      "profile": "scene=crawl frames=180 mean_ms=38.93 p95_ms=87.14 max_ms=493.22 rss_mb=239.9 gpu_mb=2.7 active_chunks=38 visible_chunks=17 effective_distance=290",
+      "screenshot_sha256": "4427f2b0b74398bf28c20ba0c4c012f5e16514ddb647e090de9f76737ee9d4d7"
+    },
+    "update05-crouch": {
+      "profile": "scene=crouch frames=180 mean_ms=45.16 p95_ms=87.20 max_ms=650.24 rss_mb=239.6 gpu_mb=2.7 active_chunks=38 visible_chunks=17 effective_distance=283",
+      "screenshot_sha256": "cfab5dc39e5e67a5ed33273ea230d8734a6f9487f1045dfa31e7924788788c92"
+    },
+    "update05-driving": {
+      "profile": "scene=driving frames=180 mean_ms=41.65 p95_ms=62.69 max_ms=615.11 rss_mb=272.9 gpu_mb=3.0 active_chunks=41 visible_chunks=17 effective_distance=283",
+      "screenshot_sha256": "44db951577681b5bc0cafa285098415a2320907741f5cb421767210b5bf34646"
+    },
+    "update05-factory-bag": {
+      "profile": "scene=factory-bag frames=180 mean_ms=48.80 p95_ms=63.36 max_ms=1957.33 rss_mb=441.0 gpu_mb=2.9 active_chunks=39 visible_chunks=18 effective_distance=289",
+      "screenshot_sha256": "a9645c1b81938042ff3c6c71e2faf047beeb988ff5d2718534601a03749f2ee0"
+    },
+    "update05-graphics": {
+      "profile": "scene=graphics frames=180 mean_ms=40.16 p95_ms=47.90 max_ms=773.45 rss_mb=342.1 gpu_mb=2.7 active_chunks=38 visible_chunks=19 effective_distance=282",
+      "screenshot_sha256": "e808f86a94968e922813f7e37a56f92cf4b98319c1dcc9442665b42ab8d6fb34"
+    },
+    "update05-grocery": {
+      "profile": "scene=grocery frames=180 mean_ms=70.47 p95_ms=95.42 max_ms=886.75 rss_mb=360.2 gpu_mb=13.1 active_chunks=46 visible_chunks=18 effective_distance=282",
+      "screenshot_sha256": "00004e99159355cfef35c022cbebccdca7e78fb82a1aa54f1b7d2f1fc4c47022"
+    },
+    "update05-housing": {
+      "profile": "scene=housing frames=180 mean_ms=33.94 p95_ms=39.96 max_ms=722.94 rss_mb=460.9 gpu_mb=3.9 active_chunks=43 visible_chunks=18 effective_distance=311",
+      "screenshot_sha256": "a1527f8851302e1d58a1d3752295b705fa2cc54db0cc8aecff2d3e3436451620"
+    },
+    "update05-map": {
+      "profile": "scene=map frames=180 mean_ms=76.91 p95_ms=114.66 max_ms=561.24 rss_mb=436.3 gpu_mb=12.9 active_chunks=46 visible_chunks=18 effective_distance=282",
+      "screenshot_sha256": "e2e4c47e67634bc3fa52fae39434a875089934f8123d10bc6a98ead4705c1414"
+    },
+    "update05-menu": {
+      "profile": "scene=menu frames=180 mean_ms=46.68 p95_ms=81.75 max_ms=488.62 rss_mb=308.7 gpu_mb=3.2 active_chunks=40 visible_chunks=19 effective_distance=284",
+      "screenshot_sha256": "c476ad6162eb36e0fb2def3642f7c706913289602511fbcbd8de6cf7f7a3a9d6"
+    },
+    "update05-penthouse": {
+      "profile": "scene=penthouse frames=180 mean_ms=85.92 p95_ms=127.03 max_ms=628.87 rss_mb=352.0 gpu_mb=6.5 active_chunks=44 visible_chunks=18 effective_distance=283",
+      "screenshot_sha256": "c368939bc423ef0540935cbd3653b0a0aa6644e6f0927746d899fbd02bc4c7ff"
+    },
+    "update05-service": {
+      "profile": "scene=service frames=180 mean_ms=34.89 p95_ms=50.81 max_ms=709.20 rss_mb=305.9 gpu_mb=4.6 active_chunks=45 visible_chunks=18 effective_distance=296",
+      "screenshot_sha256": "b9f40f404acc6f139b8b6ae95be5b47597103d0e9b7852146e549489cb5e5838"
+    },
+    "update05-training": {
+      "profile": "scene=training frames=180 mean_ms=31.91 p95_ms=50.05 max_ms=525.84 rss_mb=236.5 gpu_mb=2.7 active_chunks=38 visible_chunks=19 effective_distance=289",
+      "screenshot_sha256": "c5501aedc097537f592a74a8c5034230133fa083ff3f1c592eddadb8c0bad34e"
+    },
+    "update05-weapon": {
+      "profile": "scene=weapon frames=180 mean_ms=49.91 p95_ms=70.45 max_ms=962.42 rss_mb=384.5 gpu_mb=6.1 active_chunks=44 visible_chunks=20 effective_distance=287",
+      "screenshot_sha256": "b6d4636866b6d653824faf8e9da9211dbefffd51a7480265ec6931a2688bd6cd"
+    }
+  },
+  "binary_sha256": "357c38e245707e42421faea03cb38fb1efb8480e0e34c56487fff7159a851b27"
+}

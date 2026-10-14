@@ -1,0 +1,6 @@
+{
+  "prison": "scene=prison frames=240 mean_ms=27.39 p95_ms=42.10 max_ms=454.52 rss_mb=235.5 gpu_mb=3.7 active_chunks=65 visible_chunks=28 effective_distance=439",
+  "cells": "scene=cells frames=240 mean_ms=53.34 p95_ms=76.76 max_ms=552.50 rss_mb=315.5 gpu_mb=3.8 active_chunks=65 visible_chunks=28 effective_distance=388",
+  "prison-police": "scene=prison-police frames=240 mean_ms=42.05 p95_ms=59.33 max_ms=496.18 rss_mb=353.8 gpu_mb=3.8 active_chunks=63 visible_chunks=27 effective_distance=388",
+  "sewer": "scene=sewer frames=240 mean_ms=38.68 p95_ms=54.57 max_ms=527.90 rss_mb=277.8 gpu_mb=3.8 active_chunks=64 visible_chunks=26 effective_distance=388"
+}

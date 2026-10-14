@@ -1,0 +1,3 @@
+OpenGL 2.1 Mesa 25.2.8-0ubuntu0.24.04.2 renderer: llvmpipe (LLVM 20.1.2, 128 bits)
+PROFILE scene=grocery frames=180 mean_ms=52.06 p95_ms=70.58 max_ms=549.74 rss_mb=248.5 gpu_mb=13.0 active_chunks=46 visible_chunks=18 effective_distance=283
+Rendered 180 frames; observed 20.0 FPS (host only)

@@ -1,0 +1,67 @@
+{
+  "version": "0.4.0",
+  "tests": 53,
+  "gl_scenes": {
+    "update04-alarm-t2-s1": {
+      "profile": "scene=alarm frames=180 mean_ms=38.04 p95_ms=48.70 max_ms=704.81 rss_mb=281.9 gpu_mb=5.6 active_chunks=42 visible_chunks=16 effective_distance=291",
+      "screenshot_sha256": "6de5adcc266220502aa3b0efcc04345d18f60bd04ff5528f80a6fd7f03affdd9"
+    },
+    "update04-cells-t1-s1": {
+      "profile": "scene=cells frames=180 mean_ms=47.01 p95_ms=59.77 max_ms=371.48 rss_mb=247.2 gpu_mb=3.1 active_chunks=39 visible_chunks=19 effective_distance=284",
+      "screenshot_sha256": "ade87b0c2a4ae2fb1717140d7639b01064d0bf02c9ce9222d351ad3393ee7cd8"
+    },
+    "update04-donut-t2-s0": {
+      "profile": "scene=donut frames=180 mean_ms=42.05 p95_ms=55.50 max_ms=376.00 rss_mb=250.4 gpu_mb=9.4 active_chunks=64 visible_chunks=25 effective_distance=399",
+      "screenshot_sha256": "daaa485c08971d4f78f3951e5cdebd78f0d9deae63b7287e3cfd7451c1e44889"
+    },
+    "update04-driving-t1-s1": {
+      "profile": "scene=driving frames=180 mean_ms=29.42 p95_ms=42.92 max_ms=364.81 rss_mb=199.9 gpu_mb=3.0 active_chunks=41 visible_chunks=18 effective_distance=307",
+      "screenshot_sha256": "4d0c1402fe007f2b5321969bccba2b487df92162bb21a96b1206c3bbb7ddcba6"
+    },
+    "update04-factory-t1-s1": {
+      "profile": "scene=factory frames=180 mean_ms=25.08 p95_ms=35.31 max_ms=364.29 rss_mb=203.3 gpu_mb=5.6 active_chunks=46 visible_chunks=18 effective_distance=313",
+      "screenshot_sha256": "fce312ddf137d9e863442a46f7bbe844ab1e1ef75ca509d076057c5894898cc5"
+    },
+    "update04-graphics-t3-s0": {
+      "profile": "scene=graphics frames=180 mean_ms=28.66 p95_ms=41.18 max_ms=492.63 rss_mb=212.0 gpu_mb=2.6 active_chunks=38 visible_chunks=19 effective_distance=314",
+      "screenshot_sha256": "4b6dd93235b538588cf8992c369719424d0c6098abba3c1be35b98e498b29cc4"
+    },
+    "update04-grocery-t0-s1": {
+      "profile": "scene=grocery frames=180 mean_ms=52.06 p95_ms=70.58 max_ms=549.74 rss_mb=248.5 gpu_mb=13.0 active_chunks=46 visible_chunks=18 effective_distance=283",
+      "screenshot_sha256": "32ebe0e363c175fa4ee92b5178a9922ab1a7eb514e67c1daf25bb709f7d70159"
+    },
+    "update04-grocery-t3-s1": {
+      "profile": "scene=grocery frames=180 mean_ms=55.32 p95_ms=73.63 max_ms=484.82 rss_mb=271.2 gpu_mb=16.5 active_chunks=67 visible_chunks=26 effective_distance=398",
+      "screenshot_sha256": "6113de1eef15f2c8eb5f864ff022927474485986e5ca5d2a950793be69fd5caa"
+    },
+    "update04-gym-t1-s1": {
+      "profile": "scene=gym frames=180 mean_ms=33.07 p95_ms=32.50 max_ms=1627.76 rss_mb=381.6 gpu_mb=4.5 active_chunks=46 visible_chunks=18 effective_distance=301",
+      "screenshot_sha256": "bdd852406447008fa4d1142e004707e01edb64f8c4b9f95283a2705e706f34ff"
+    },
+    "update04-interior-t2-s1": {
+      "profile": "scene=interior frames=180 mean_ms=46.73 p95_ms=59.50 max_ms=372.47 rss_mb=247.2 gpu_mb=7.2 active_chunks=45 visible_chunks=17 effective_distance=284",
+      "screenshot_sha256": "f71041dd2f162d01914dfbcd4772ead211c55292817fc349b3f870d8b70c31a1"
+    },
+    "update04-map-t0-s0": {
+      "profile": "scene=map frames=180 mean_ms=52.13 p95_ms=69.10 max_ms=444.85 rss_mb=240.8 gpu_mb=10.0 active_chunks=27 visible_chunks=10 effective_distance=159",
+      "screenshot_sha256": "e5dec710982c3144bf7d27e354d629701c98e9e5f561c15083953d881fd531d1"
+    },
+    "update04-prison-t1-s1": {
+      "profile": "scene=prison frames=180 mean_ms=25.66 p95_ms=36.53 max_ms=362.27 rss_mb=196.1 gpu_mb=2.6 active_chunks=38 visible_chunks=19 effective_distance=314",
+      "screenshot_sha256": "fde4f488d6578b7f5996e2b0aa4501bf3b088e6728dc2f554d2118220b83a452"
+    },
+    "update04-safehouse-t1-s1": {
+      "profile": "scene=safehouse frames=180 mean_ms=33.17 p95_ms=31.31 max_ms=1984.36 rss_mb=412.1 gpu_mb=4.4 active_chunks=46 visible_chunks=17 effective_distance=298",
+      "screenshot_sha256": "489fed364bf998c3e0b7b407e4dbce6558c7447e4252f8f8353a2b03de6ec43a"
+    },
+    "update04-service-t1-s1": {
+      "profile": "scene=service frames=180 mean_ms=20.86 p95_ms=30.15 max_ms=391.53 rss_mb=199.6 gpu_mb=4.5 active_chunks=45 visible_chunks=18 effective_distance=312",
+      "screenshot_sha256": "cf242d26a3291cf31129583ee2c33f8d513b126ed6bde89339b2e41661a8c660"
+    },
+    "update04-training-t1-s1": {
+      "profile": "scene=training frames=180 mean_ms=26.99 p95_ms=39.11 max_ms=420.81 rss_mb=196.5 gpu_mb=2.6 active_chunks=38 visible_chunks=19 effective_distance=314",
+      "screenshot_sha256": "0d955c3fc000116ab05d0ff67fcb02b52fcfda25e128718185a8aa34230d7786"
+    }
+  },
+  "binary_sha256": "51806b2665482e1540e88c40f312808ca8cf680fb9dc131cf89bc945a56526a2"
+}

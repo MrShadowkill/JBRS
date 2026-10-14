@@ -1,0 +1,23 @@
+   Compiling world v0.1.0 (/home/kiril/Documents/Codex/2026-10-13/files-pasted-by-the-user-project-2/outputs/jailbreak-rs/world)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.87s
+     Running unittests src/lib.rs (outputs/jailbreak-rs/target/debug/deps/world-5130c5e159522500)
+
+running 9 tests
+test streaming::tests::closing_a_full_job_queue_does_not_deadlock ... ok
+test tests::bridge_and_tunnel_surface ... ok
+test tests::elevated_factory_mesh_collision_and_surface_use_same_base ... ok
+test tests::every_cell_has_clear_doorway ... ok
+test tests::map_audit ... ok
+test tests::deterministic_rebuild ... ok
+test tests::road_clearance ... ok
+test tests::prison_perimeter_has_no_free_gate_exit ... ok
+test tests::navigation_exits_cell_block_without_crossing_walls ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.56s
+
+   Doc-tests world
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
