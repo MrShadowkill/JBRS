@@ -1,6 +1,10 @@
 [package]
-name = "gui"
-version = "0.1.0"
-edition = "2021"
+name="gui"
+version="0.1.0"
+edition="2021"
 [dependencies]
-renderer_gl21 = {path="../renderer_gl21"}
+renderer_gles2={path="../renderer_gles2"}
+[features]
+gles=[]
+[target.'cfg(not(target_os="android"))'.dependencies]
+renderer_gl21={path="../renderer_gl21"}

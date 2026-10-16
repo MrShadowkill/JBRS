@@ -1,3 +1,4 @@
+pub mod railway;
 use engine_core::Mesh;
 pub const LIMIT: f32 = 1024.;
 pub const CHUNK: f32 = 128.;
@@ -10,6 +11,9 @@ pub fn industrial_height(x: f32, z: f32) -> f32 {
         * (1. - smooth(780., 980., x))
         * smooth(-260., -60., z)
         * (1. - smooth(300., 500., z))
+}
+pub fn river_center(z: f32) -> f32 {
+    -440. + 18. * (z * 0.006).sin() + 8. * (z * 0.017).sin()
 }
 pub fn height(x: f32, z: f32) -> f32 {
     let coast = (x / 1000.).powi(4) + (z / 1040.).powi(4);
@@ -34,9 +38,9 @@ pub fn height(x: f32, z: f32) -> f32 {
         return -3. * (1. - pond).min(0.9);
     }
     // Broad river along x=-440; every east/west arterial crosses on a bridge.
-    let river = (x + 440.).abs();
+    let river = (x - river_center(z)).abs();
     let river_depth = if (-500. ..700.).contains(&z) {
-        -4. * (1. - smooth(10., 24., river))
+        -4. * (1. - smooth(12., 32., river))
     } else {
         0.
     };
@@ -69,7 +73,7 @@ pub fn height(x: f32, z: f32) -> f32 {
 }
 pub fn material(x: f32, z: f32, h: f32) -> (u8, [f32; 3]) {
     if h < -0.2 {
-        (8, [0.25, 0.47, 0.56])
+        (5, [0.38, 0.32, 0.24])
     } else if x > 500. && z < -250. {
         (5, [0.85, 0.72, 0.46])
     } else if h > 25. {
@@ -83,10 +87,18 @@ pub fn material(x: f32, z: f32, h: f32) -> (u8, [f32; 3]) {
 pub fn mesh(key: (i32, i32), lod: u8) -> Mesh {
     mesh_reusing(key, lod, Vec::new())
 }
-pub fn mesh_reusing(key: (i32, i32), lod: u8, mut vertices: Vec<engine_core::Vertex>) -> Mesh {
+pub fn mesh_reusing(key: (i32, i32), lod: u8, vertices: Vec<engine_core::Vertex>) -> Mesh {
+    mesh_sampled(key, lod, vertices, height)
+}
+pub fn mesh_sampled(
+    key: (i32, i32),
+    lod: u8,
+    mut vertices: Vec<engine_core::Vertex>,
+    sample: impl Fn(f32, f32) -> f32,
+) -> Mesh {
     vertices.clear();
     let mut m = Mesh { vertices };
-    let step = if lod == 0 { 8. } else { 16. };
+    let step = if lod == 0 { 4. } else { 8. };
     let n = (CHUNK / step) as i32;
     let x0 = key.0 as f32 * CHUNK;
     let z0 = key.1 as f32 * CHUNK;
@@ -95,12 +107,12 @@ pub fn mesh_reusing(key: (i32, i32), lod: u8, mut vertices: Vec<engine_core::Ver
             let x = x0 + ix as f32 * step;
             let z = z0 + iz as f32 * step;
             let p = [
-                [x, height(x, z), z],
-                [x + step, height(x + step, z), z],
-                [x + step, height(x + step, z + step), z + step],
-                [x, height(x, z + step), z + step],
+                [x, sample(x, z), z],
+                [x + step, sample(x + step, z), z],
+                [x + step, sample(x + step, z + step), z + step],
+                [x, sample(x, z + step), z + step],
             ];
-            let (mat, c) = material(x, z, height(x, z));
+            let (mat, c) = material(x, z, sample(x, z));
             m.quad(p, c, mat, 0.);
             // Clip water to each terrain triangle: the shoreline follows slopes instead of square tiles.
             for indices in [[0, 1, 2], [0, 2, 3]] {

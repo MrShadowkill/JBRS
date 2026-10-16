@@ -37,6 +37,7 @@ impl Default for Stats {
     }
 }
 
+#[cfg(not(windows))]
 pub fn rss_mb() -> f32 {
     std::fs::read_to_string("/proc/self/status")
         .ok()
@@ -48,4 +49,45 @@ pub fn rss_mb() -> f32 {
         })
         .unwrap_or(0.)
         / 1024.
+}
+
+#[cfg(windows)]
+pub fn rss_mb() -> f32 {
+    use std::ffi::c_void;
+    #[repr(C)]
+    struct ProcessMemoryCounters {
+        cb: u32,
+        faults: u32,
+        peak_working_set: usize,
+        working_set: usize,
+        peak_paged: usize,
+        paged: usize,
+        peak_nonpaged: usize,
+        nonpaged: usize,
+        pagefile: usize,
+        peak_pagefile: usize,
+    }
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GetCurrentProcess() -> *mut c_void;
+        fn K32GetProcessMemoryInfo(
+            process: *mut c_void,
+            counters: *mut ProcessMemoryCounters,
+            size: u32,
+        ) -> i32;
+    }
+    let mut counters: ProcessMemoryCounters = unsafe { std::mem::zeroed() };
+    counters.cb = std::mem::size_of::<ProcessMemoryCounters>() as u32;
+    if unsafe {
+        K32GetProcessMemoryInfo(
+            GetCurrentProcess(),
+            &mut counters,
+            std::mem::size_of::<ProcessMemoryCounters>() as u32,
+        )
+    } == 0
+    {
+        0.
+    } else {
+        counters.working_set as f32 / (1024. * 1024.)
+    }
 }

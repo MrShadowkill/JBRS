@@ -1,14 +1,12 @@
 fn main() {
-    #[cfg(target_os = "linux")]
-    {
-        println!("cargo:rustc-link-arg=-l:libSDL2-2.0.so.0");
-        println!("cargo:rustc-link-arg=-l:libGL.so.1");
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        // MinGW/MSYS2 / Windows build: SDL2 + OpenGL are provided by the Windows toolchain.
-        println!("cargo:rustc-link-lib=sdl2");
-        println!("cargo:rustc-link-lib=opengl32");
+    println!("cargo:rerun-if-env-changed=SDL2_LIB_DIR");
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+        let dir = std::env::var_os("SDL2_LIB_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| {
+                std::path::PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap_or_default())
+                    .join("../vendor/SDL2/lib")
+            });
+        println!("cargo:rustc-link-search=native={}", dir.display());
     }
 }

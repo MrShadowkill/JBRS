@@ -1,8 +1,8 @@
 @echo off
 setlocal
 pushd "%~dp0"
-if not exist "jailbreak-rs.exe" (
-    echo jailbreak-rs.exe is missing. Extract the entire Windows archive.
+if not exist "jbrs.exe" (
+    echo jbrs.exe is missing. Extract the entire Windows archive.
     popd
     pause
     exit /b 1
@@ -13,7 +13,7 @@ if not exist "SDL2.dll" (
     pause
     exit /b 1
 )
-"%~dp0jailbreak-rs.exe" %*
+"%~dp0jbrs.exe" %*
 set "GAME_RESULT=%ERRORLEVEL%"
 popd
 if not "%GAME_RESULT%"=="0" (

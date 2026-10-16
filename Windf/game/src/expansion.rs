@@ -196,9 +196,14 @@ impl Game {
             self.player.vy = 0.;
         }
         let Some(id) = self.heists.site else {
+            self.heist_call=None;
             return;
         };
         let spec = crate::heists::SITES[id];
+        if self.heist_call!=Some(id){
+            let target=if id==5{self.player.pos}else{Vec3::new(spec.x,self.world.surface(spec.x,spec.z),spec.z)};
+            self.dispatch_to(target);self.heist_call=Some(id);
+        }
         let deadline = if id == 3 {
             300. - self.wanted.min(5) as f32 * 40.
         } else {
@@ -206,20 +211,9 @@ impl Game {
         };
         if self.heists.elapsed >= deadline && !self.heists.dispatched {
             self.heists.dispatched = true;
-            let p = self.player.pos;
-            let center = self
-                .world
-                .interior(p)
-                .map(|i| self.world.buildings[i].entrance())
-                .unwrap_or(p);
-            for j in 0..6 {
-                let q = Vec3::new(center.x - 6. + j as f32 * 2.4, center.y, center.z - 4.);
-                let mut n = Npc::new(if j > 3 { Role::Swat } else { Role::Police }, q.x, q.z);
-                n.pos.y = self.world.walking_surface(q) + 1.;
-                n.home = n.pos;
-                self.npcs.push(n);
-            }
-            self.notify("POLICE PERIMETER - EXITS BLOCKED");
+            let target=Vec3::new(spec.x,self.world.surface(spec.x,spec.z),spec.z);
+            self.dispatch_to(if id==5{self.player.pos}else{target});
+            self.notify("NEAREST POLICE PATROLS RESPONDING");
         }
         let p = self.player.pos;
         let near = if id == 5 {
@@ -390,8 +384,7 @@ impl Game {
                 r.cube([p.x, p.y + 3., p.z], [1.5, 0.3, 2.], [0.95, 0.75, 0.18], a);
             }
         }
-        let (p, a) = crate::heists::Heists::train(self.clock, 0);
-        let q = Vec3::new(p.x + a.sin() * 10., p.y, p.z + a.cos() * 10.);
+        let (q, a) = terrain::railway::locomotive(self.clock);
         if q.distance(self.player.pos) < quality.distance && visible(q) {
             thread_local! {
                 static LOCOMOTIVES: [engine_core::Mesh; 2] = [vehicles::rail::locomotive(false), vehicles::rail::locomotive(true)];

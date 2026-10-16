@@ -27,10 +27,10 @@ try {
     & cargo build --locked --release --target $Target --target-dir "$PSScriptRoot/target"
     if ($LASTEXITCODE -ne 0) { throw 'Game build failed.' }
     New-Item -ItemType Directory -Force 'dist' | Out-Null
-    Copy-Item "target/$Target/release/jailbreak-rs.exe" 'dist/jailbreak-rs.exe' -Force
+    Copy-Item "target/$Target/release/jbrs.exe" 'dist/jbrs.exe' -Force
     Copy-Item 'vendor/SDL2/bin/SDL2.dll' 'dist/SDL2.dll' -Force
     Copy-Item 'portable-run.cmd' 'dist/Start.cmd' -Force
-    Copy-Item 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'README_WINDOWS.md' 'dist/' -Force
+    Copy-Item 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'README_WINDOWS.md', 'TRANSPORT_UPDATE.md' 'dist/' -Force
     Copy-Item 'vendor/SDL2/LICENSE.txt' 'dist/SDL2-LICENSE.txt' -Force
     Copy-Item 'vehicles/assets/ATTRIBUTION.md' 'dist/VEHICLE_ATTRIBUTION.md' -Force
     Compress-Archive -Path 'dist/*' -DestinationPath 'JBRS-Windows11-x64.zip' -Force

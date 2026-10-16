@@ -21,6 +21,10 @@ pub struct Npc {
     pub plan: f32,
     pub health: f32,
     pub disabled: f32,
+    pub last_seen: Option<Vec3>,
+    pub memory: f32,
+    pub aboard: bool,
+    pub returning: bool,
 }
 impl Npc {
     pub fn new(role: Role, x: f32, z: f32) -> Self {
@@ -37,6 +41,10 @@ impl Npc {
             plan: ((x * 0.137 + z * 0.071).abs() % 1.5) + 0.1,
             health: 100.,
             disabled: 0.,
+            last_seen: None,
+            memory: 0.,
+            aboard: false,
+            returning: false,
         }
     }
     pub fn color(&self) -> [f32; 3] {
@@ -71,8 +79,8 @@ impl Npc {
         }
         self.plan -= dt;
         if self.plan <= 0. {
-            self.waypoint = goal;
-            self.plan = 1.5;
+            self.waypoint = world.next_step(self.pos, goal, 5.);
+            self.plan = (self.pos.distance(self.waypoint) / speed.max(0.1)).clamp(0.15, 0.6);
         }
         let dx = self.waypoint.x - self.pos.x;
         let dz = self.waypoint.z - self.pos.z;

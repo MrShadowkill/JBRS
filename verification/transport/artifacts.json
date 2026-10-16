@@ -1,0 +1,22 @@
+{
+  "bin/jbrs": {
+    "bytes": 6406184,
+    "sha256": "1497189ed4b3dfb231d0b62f1df5a27a5d4d8f0a18dde057f8142323b2525198"
+  },
+  "JBRS-Linux-x64.zip": {
+    "bytes": 1135255,
+    "sha256": "2e7ac23265a81da0e069091c2b53e8216d1bcabe27ea574feff3878de8b3e42f"
+  },
+  "Windf/dist/jbrs.exe": {
+    "bytes": 7333315,
+    "sha256": "930a8bdc43205d612cfea784bbeae245bc74d3ee3964f77904dd1c3e3a0cda61"
+  },
+  "Windf/JBRS-Windows11-x64.zip": {
+    "bytes": 2058481,
+    "sha256": "1bf67fb2cbbe910637bfab1ae7e16b08ae3bbc430e1421872d83b81d4b2dc3e9"
+  },
+  "Android/dist/JBRS-Android10-arm64.apk": {
+    "bytes": 3130354,
+    "sha256": "1cffb34c27d765bcca78af84fdf48a264f00d25f6059d87d4e5de66e431dda46"
+  }
+}

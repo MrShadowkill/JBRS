@@ -1,3 +1,5 @@
+Поточний APK: `0.6.2-transport-preview2`, versionCode 2. Оновлення трафіку, поліції, річок і фізики спільне з PC: [опис](../TRANSPORT_UPDATE.md).
+
 # JBRS Mobile — Android 10 ARM64 (preview)
 
 Тестова Android-версія поточної гри: місто, квартири, транспорт та J-STORE. Ціль — **Android 10 / API 29**, **arm64-v8a**, **OpenGL ES 2.0**, горизонтальний екран. 32-бітний Android не підтримується цим APK.
@@ -63,11 +65,11 @@ python3 Android/build_android.py
 Потрібні SDL2, GLES2 runtime та Xvfb; на Debian/Ubuntu — пакети `libsdl2-2.0-0 libgles2 xvfb xauth`.
 
 ```sh
-cargo build --release -p jailbreak-rs --bin jailbreak-rs --features gles
-MESA_GLES_VERSION_OVERRIDE=2.0 LIBGL_ALWAYS_SOFTWARE=1 JAILBREAK_TOUCH=1 JAILBREAK_FRAMES=90 JAILBREAK_QUALITY=0 JAILBREAK_SCENE=jstore-lasers-new xvfb-run -a target/release/jailbreak-rs --smoke-test
+cargo build --release -p jbrs --bin jbrs --features gles
+MESA_GLES_VERSION_OVERRIDE=2.0 LIBGL_ALWAYS_SOFTWARE=1 JBRS_TOUCH=1 JBRS_FRAMES=90 JBRS_QUALITY=0 JBRS_SCENE=jstore-lasers-new xvfb-run -a target/release/jbrs --smoke-test
 ```
 
-Це тест настільного запуску GLES2 з мобільним інтерфейсом, а не Android-емулятор. `JAILBREAK_TOUCH=1` показує кнопки; реальні жести перевіряються тестами SDL-подій у `touch_game.rs` і модулі `mobile_controls`.
+Це тест настільного запуску GLES2 з мобільним інтерфейсом, а не Android-емулятор. `JBRS_TOUCH=1` показує кнопки; реальні жести перевіряються тестами SDL-подій у `touch_game.rs` і модулі `mobile_controls`.
 
 ## Діагностика на телефоні
 

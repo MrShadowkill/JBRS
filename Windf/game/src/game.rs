@@ -19,6 +19,7 @@ struct Game {
     capture_at: f32,
     player: Player,
     cars: Vec<Car>,
+    traffic: crate::traffic::Traffic,
     car_models: &'static [[vehicles::body::Model; 2]],
     driving: Option<usize>,
     save: save_system::Save,
@@ -41,6 +42,7 @@ struct Game {
     drops: Vec<(Vec3, bool)>,
     parachute: bool,
     heists: crate::heists::Heists,
+    heist_call: Option<usize>,
     yaw: f32,
     pitch: f32,
     menu: bool,
@@ -65,6 +67,7 @@ struct Game {
     stance: u8,
     prone: bool,
     crouched: bool,
+    mobile_stick: [f32; 2],
 
     message: String,
     message_time: f32,
@@ -118,6 +121,7 @@ impl Game {
             car.pos.y = world.surface(car.pos.x, car.pos.z) + 0.65;
             configure_car(car, &save);
         }
+        let traffic = crate::traffic::Traffic::new(&world, &mut cars);
         let mut heists = crate::heists::Heists::new(
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -151,6 +155,7 @@ impl Game {
             capture_at: 3.,
             player,
             cars,
+            traffic,
             car_models: vehicles::body::catalog()?,
             driving: None,
             save,
@@ -175,6 +180,7 @@ impl Game {
             drops: Vec::new(),
             parachute: false,
             heists,
+            heist_call: None,
             yaw: std::f32::consts::PI,
             pitch: 0.32,
             menu: true,
@@ -199,6 +205,7 @@ impl Game {
             stance: 0,
             prone: false,
             crouched: false,
+            mobile_stick: [0.; 2],
 
             message: "PRISON LOCKED - SEWER MAZE OR C4; P PARACHUTE".into(),
             message_time: 12.,
@@ -536,6 +543,9 @@ impl Game {
             .position(|&(x, z)| p.distance(Vec3::new(x, 0., z)) < 14.)
     }
     fn player_blocked(&self, p: Vec3, r: f32) -> bool {
+        if self.heists.riding.is_none() && terrain::railway::occupied(p, r, self.clock) {
+            return true;
+        }
         if self.stance == 0 {
             self.blocked(p, r)
         } else {
@@ -550,6 +560,7 @@ impl Game {
         }
     }
     fn steal(&mut self, id: usize) {
+        self.traffic.release(id);
         if self.response.as_ref().is_some_and(|(_, car)| *car == id) {
             self.response = None;
         }
@@ -736,46 +747,125 @@ impl Game {
         }
     }
     fn prepare_response(&mut self, site: usize) {
-        let target = SITES[site].center;
-        let road = self
-            .world
-            .roads
-            .iter()
-            .min_by(|a, b| a.distance(target).0.total_cmp(&b.distance(target).0))
-            .unwrap();
-        let end = road
-            .points
-            .iter()
-            .enumerate()
-            .min_by(|(_, a), (_, b)| a.distance(target).total_cmp(&b.distance(target)))
-            .unwrap()
-            .0;
-        let (start, end) = if end >= 12 {
-            (end - 12, end)
-        } else {
-            (end, (end + 12).min(road.points.len() - 1))
-        };
-        let mut route = road.points[start..=end].to_vec();
-        if route.last().unwrap().distance(target) > route[0].distance(target) {
-            route.reverse();
-        }
-        let b = self
-            .world
-            .buildings
-            .iter()
-            .min_by(|a, b| a.p.distance(target).total_cmp(&b.p.distance(target)))
-            .unwrap();
-        let mut curb = b.entrance();
-        curb.z -= 4.;
-        curb.y = self.world.surface(curb.x, curb.z);
-        route.push(curb);
-        let mut car = Car::new(2, route[0]);
-        configure_car(&mut car, &self.save);
-        car.pos.y += 0.65;
-        let id = self.cars.len();
-        self.cars.push(car);
-        self.response = Some((route, id));
+        self.dispatch_to(SITES[site].center);
     }
+    fn dispatch_to(&mut self, target: Vec3) {
+        let sent = self.traffic.dispatch(
+            &self.cars,
+            target,
+            if self.wanted >= 4 { 2 } else { 1 },
+            self.driving,
+        );
+        if let Some(primary) = sent.into_iter().next() {
+            self.response = Some(primary);
+        }
+    }
+    fn tick_traffic(&mut self) {
+        let world = &self.world;
+        let doors = &self.doors;
+        let breached = self.breached;
+        let arrived = self.traffic.tick(
+            world,
+            &mut self.cars,
+            self.driving,
+            self.clock,
+            STEP,
+            |p, r| {
+                world.blocked(p, r)
+                    || world::prison::barrier(p, r, breached)
+                    || doors
+                        .iter()
+                        .zip(&world.buildings)
+                        .any(|(d, b)| d.blocked(b, p, r))
+            },
+        );
+        // Officers walk back to their parked vehicle when the incident has ended.
+        let resolved = self.wanted == 0 && self.alarm.site.is_none() && self.heists.site.is_none();
+        for d in &mut self.traffic.drivers {
+            d.crew.retain(|&id| id < self.npcs.len());
+            if d.crew.is_empty() {
+                continue;
+            }
+            let car = &self.cars[d.car];
+            for &id in &d.crew {
+                let n = &mut self.npcs[id];
+                if n.aboard {
+                    n.pos = car.pos;
+                }
+                if resolved && d.parked {
+                    n.returning = true;
+                    n.step(world, car.pos, 4., STEP);
+                    if n.pos.distance(car.pos) < 3.5 {
+                        n.aboard = true;
+                        n.returning = false;
+                    }
+                }
+            }
+            if resolved && d.crew.iter().all(|&i| self.npcs[i].aboard) {
+                d.incident = false;
+                d.parked = false;
+            }
+        }
+        for id in arrived {
+            let c = &self.cars[id];
+            let Some(driver) = self.traffic.drivers.iter_mut().find(|d| d.car == id) else {
+                continue;
+            };
+            if !driver.crew.is_empty() {
+                for &id in &driver.crew {
+                    let n = &mut self.npcs[id];
+                    if n.aboard {
+                        let p = Vec3::new(
+                            c.pos.x + c.angle.cos() * 3.,
+                            c.pos.y,
+                            c.pos.z - c.angle.sin() * 3.,
+                        );
+                        if !world.blocked(p, 0.5) {
+                            n.pos = Vec3::new(p.x, world.walking_surface(p) + 1., p.z);
+                            n.aboard = false;
+                            n.returning = false;
+                            n.home = n.pos;
+                        }
+                    }
+                }
+                continue;
+            }
+            for side in [-1., 1.] {
+                let mut exit = None;
+                for distance in [2.8, 3.8, 5., 6.] {
+                    let mut p = Vec3::new(
+                        c.pos.x + c.angle.cos() * side * distance,
+                        c.pos.y,
+                        c.pos.z - c.angle.sin() * side * distance,
+                    );
+                    p.y = world.walking_surface(p) + 1.;
+                    if !world.blocked(p, 0.5)
+                        && !world::prison::barrier(p, 0.5, breached)
+                        && !terrain::railway::occupied(p, 0.5, self.clock)
+                    {
+                        exit = Some(p);
+                        break;
+                    }
+                }
+                if let Some(p) = exit {
+                    let mut n = Npc::new(
+                        if side > 0. && self.wanted >= 3 {
+                            Role::Swat
+                        } else {
+                            Role::Police
+                        },
+                        p.x,
+                        p.z,
+                    );
+                    n.pos = p;
+                    n.home = p;
+                    driver.crew.push(self.npcs.len());
+                    self.npcs.push(n);
+                }
+            }
+        }
+    }
+
     fn punch(&mut self) {
         if self.punch_time > 0.
             || self.stun > 0.
@@ -824,11 +914,9 @@ impl Game {
                 return;
             }
         }
-        if let Some(id) = self
-            .npcs
-            .iter()
-            .position(|n| n.disabled <= 0. && n.pos.distance(p) < 2. && self.clear(p, n.pos))
-        {
+        if let Some(id) = self.npcs.iter().position(|n| {
+            !n.aboard && n.disabled <= 0. && n.pos.distance(p) < 2. && self.clear(p, n.pos)
+        }) {
             self.npcs[id].health -= 15.;
             self.drop_c4(id);
             self.player.team = Team::Criminal;
@@ -1015,7 +1103,7 @@ impl Game {
             .npcs
             .iter()
             .enumerate()
-            .filter(|(_, n)| n.disabled <= 0. && self.clear(p, n.pos))
+            .filter(|(_, n)| !n.aboard && n.disabled <= 0. && self.clear(p, n.pos))
             .filter_map(|(id, n)| {
                 weapons::ray_distance_range(
                     p,
@@ -1034,9 +1122,17 @@ impl Game {
         }
     }
     fn update(&mut self, r: &Renderer) {
-        let forward = r.key(26) as i32 as f32 - r.key(22) as i32 as f32;
-        let side = r.key(7) as i32 as f32 - r.key(4) as i32 as f32;
-        self.holding = r.key(8);
+        self.update_mobile(r, None);
+    }
+    fn update_mobile(&mut self, r: &Renderer, touch: Option<&mobile_controls::TouchControls>) {
+        self.mobile_stick = touch.map_or([0.; 2], |t| t.movement);
+        let forward = (r.key(26) as i32 as f32 - r.key(22) as i32 as f32
+            + touch.map_or(0., |t| t.movement[1]))
+        .clamp(-1., 1.);
+        let side = (r.key(7) as i32 as f32 - r.key(4) as i32 as f32
+            + touch.map_or(0., |t| t.movement[0]))
+        .clamp(-1., 1.);
+        self.holding = r.key(8) || touch.is_some_and(|t| t.held(mobile_controls::Action::Interact));
         self.stance = if self.prone {
             2
         } else if self.crouched || r.key(224) {
@@ -1044,7 +1140,20 @@ impl Game {
         } else {
             0
         };
-        self.simulate(forward, side, r.key(225), r.key(224), r.key(44));
+        self.simulate(
+            forward,
+            side,
+            r.key(225) || touch.is_some_and(|t| t.held(mobile_controls::Action::Sprint)),
+            r.key(224),
+            r.key(44)
+                || touch.is_some_and(|t| t.take_jump() || t.held(mobile_controls::Action::Jump)),
+        );
+        if touch.is_some_and(|t| t.held(mobile_controls::Action::Fire))
+            && !self.modal()
+            && !matches!(self.slot, 3 | 4)
+        {
+            self.fire();
+        }
     }
     fn simulate(&mut self, forward: f32, side: f32, sprint: bool, crouch: bool, jump: bool) {
         if self.modal() {
@@ -1137,42 +1246,25 @@ impl Game {
             let breached = self.breached;
             let (before, rest) = self.cars.split_at_mut(i);
             let (c, after) = rest.split_first_mut().unwrap();
-            let mut next = vehicle_physics::step(c, forward, -side, jump || self.stun > 0., STEP);
-            let ground = self.world.surface(next.x, next.z);
-            next.y = ground + 0.65;
-            let hit = (1..=4).any(|j| {
-                let t = j as f32 / 4.;
-                let p = Vec3::new(
-                    c.pos.x + (next.x - c.pos.x) * t,
-                    next.y,
-                    c.pos.z + (next.z - c.pos.z) * t,
-                );
-                [-1.5, 0., 1.5].iter().any(|offset| {
-                    let q = Vec3::new(
-                        p.x + c.angle.sin() * offset,
-                        p.y,
-                        p.z + c.angle.cos() * offset,
-                    );
-                    world.blocked(q, 1.05)
-                        || world::prison::barrier(q, 1.05, breached)
+            vehicle_physics::drive(
+                c,
+                (forward, -side, jump || self.stun > 0.),
+                STEP,
+                |x, z| world.surface(x, z),
+                |q, r| {
+                    world.blocked(q, r)
+                        || world::prison::barrier(q, r, breached)
+                        || terrain::railway::occupied(q, r, self.clock)
                         || doors
                             .iter()
                             .zip(&world.buildings)
-                            .any(|(d, b)| d.blocked(b, q, 1.05))
-                })
-            });
-            let other_car = before
-                .iter()
-                .chain(after.iter())
-                .any(|other| next.distance(other.pos) < 3.4 && (next.y - other.pos.y).abs() < 2.);
-            if hit || other_car || ground < -0.3 || (next.y - c.pos.y).abs() > 0.6 {
-                if c.speed.abs() > 3. {
-                    c.damage = (c.damage + c.speed.abs() * 0.12).min(100.);
-                }
-                c.speed = 0.;
-            } else {
-                c.pos = next;
-            }
+                            .any(|(d, b)| d.blocked(b, q, r))
+                        || before
+                            .iter()
+                            .chain(after.iter())
+                            .any(|o| q.distance(o.pos) < r + 1.7 && (q.y - o.pos.y).abs() < 2.)
+                },
+            );
             self.player.pos = c.pos;
             self.player.heading = c.angle;
             let delta = (std::f32::consts::PI - c.angle - self.yaw)
@@ -1264,56 +1356,17 @@ impl Game {
                 self.response = None;
                 self.notify(&format!("ESCAPED WITH ${cash}"));
             }
-            Outcome::Dispatch(site) => {
-                let curb = self
-                    .response
-                    .as_ref()
-                    .map(|(route, _)| *route.last().unwrap())
-                    .unwrap_or_else(|| {
-                        self.world
-                            .roads
-                            .iter()
-                            .flat_map(|r| r.points.iter())
-                            .min_by(|a, b| {
-                                a.distance(SITES[site].center)
-                                    .total_cmp(&b.distance(SITES[site].center))
-                            })
-                            .copied()
-                            .unwrap_or(SITES[site].center)
-                    });
-                if self.npcs.len() > crate::npcs::population().len() {
-                    self.npcs.truncate(crate::npcs::population().len());
-                }
-                for (j, role) in [Role::Police, Role::Police, Role::Swat].iter().enumerate() {
-                    let mut p = Vec3::new(curb.x + j as f32 * 2., 1., curb.z);
-                    if self.world.blocked(p, 0.45) {
-                        p = curb;
+            Outcome::Dispatch(_) => {
+                if self.response.is_none() {
+                    if let Some(id) = self.alarm.site {
+                        self.prepare_response(id);
                     }
-                    let mut npc = Npc::new(*role, p.x, p.z);
-                    npc.pos.y = self.world.walking_surface(npc.pos) + 1.;
-                    npc.home.y = npc.pos.y;
-                    self.npcs.push(npc);
                 }
-                self.response = None;
-                self.notify("POLICE AND SWAT ARRIVED - TASERS AND WEAPONS");
+                self.notify("NEAREST POLICE PATROL RESPONDING");
             }
             Outcome::None => {}
         }
-        if let (Some(site), Some((route, id))) = (self.alarm.site, &self.response) {
-            let t = (1. - self.alarm.remaining / 30.).clamp(0., 1.) * (route.len() - 1) as f32;
-            let i = (t.floor() as usize).min(route.len() - 2);
-            let a = route[i];
-            let b = route[i + 1];
-            let f = (t - i as f32).clamp(0., 1.);
-            let car = &mut self.cars[*id];
-            car.pos = Vec3::new(
-                a.x + (b.x - a.x) * f,
-                a.y + (b.y - a.y) * f + 0.65,
-                a.z + (b.z - a.z) * f,
-            );
-            car.angle = (b.x - a.x).atan2(b.z - a.z);
-            let _ = site;
-        }
+        self.tick_traffic();
         if self
             .world
             .interior(self.player.pos)
@@ -1368,6 +1421,9 @@ impl Game {
         let doors = &self.doors;
         let breached = self.breached;
         for (i, n) in self.npcs.iter_mut().enumerate() {
+            if n.aboard || n.returning {
+                continue;
+            }
             if n.pos.distance(target) > 220. {
                 continue;
             }
@@ -1389,10 +1445,12 @@ impl Game {
                             .zip(&world.buildings)
                             .any(|(d, b)| d.blocked(b, q, 0.1))
                 });
-            let chasing = n.officer()
-                && pursuit
-                && ((self.wanted >= 3 && dispatched) || visible_suspect)
-                && n.pos.distance(target) < 140.;
+            n.memory = (n.memory - STEP).max(0.);
+            if visible_suspect {
+                n.last_seen = Some(target);
+                n.memory = 10.;
+            }
+            let chasing = n.officer() && pursuit && n.memory > 0. && n.pos.distance(target) < 140.;
             let report = self
                 .alarm
                 .site
@@ -1424,7 +1482,9 @@ impl Game {
             };
             let goal = if n.role == Role::Vendor {
                 n.home
-            } else if chasing || hostile {
+            } else if chasing {
+                n.last_seen.unwrap_or(target)
+            } else if hostile {
                 target
             } else if investigating {
                 report.unwrap()
@@ -1488,7 +1548,8 @@ impl Game {
                     .any(|(d, b)| d.blocked(b, n.pos, 0.45))
             {
                 n.pos = old;
-                n.plan = 0.5;
+                n.plan = 0.2;
+                n.waypoint = n.pos;
             }
             if n.disabled > 0. {
                 continue;
@@ -1906,7 +1967,8 @@ impl Game {
         }
         let npc_start = r.triangles;
         for n in &self.npcs {
-            if n.disabled <= 0.
+            if !n.aboard
+                && n.disabled <= 0.
                 && p.distance(n.pos) < quality.distance
                 && crate::world_view::sphere_visible(
                     [n.pos.x, n.pos.y, n.pos.z],
@@ -2087,7 +2149,10 @@ impl Game {
                 WHITE,
             );
         }
-        if let Ok(path) = std::env::var("JAILBREAK_CAPTURE") {
+        if crate::mobile::enabled() {
+            self.draw_touch(r);
+        }
+        if let Ok(path) = std::env::var("JBRS_CAPTURE") {
             if !self.captured && self.clock >= self.capture_at && self.capture_frame >= 30 {
                 self.captured = true;
                 if let Err(e) = r.capture_ppm(&path) {
@@ -2331,8 +2396,8 @@ fn draw_weapon(r: &mut Renderer, p: Vec3, a: f32, swat: bool) {
 fn draw_car(r: &mut Renderer, c: &Car, model: &vehicles::body::Model, lod: usize) {
     let p = [c.pos.x, c.pos.y, c.pos.z];
     let key = c.kind * 4 + lod * 2;
-    r.cached_solid_model(key, &model.paint, p, c.angle, c.color);
-    r.cached_solid_model(key + 1, &model.trim, p, c.angle, [1.; 3]);
+    r.cached_solid_model_tilted(key, &model.paint, p, c.angle, c.color, c.tilt);
+    r.cached_solid_model_tilted(key + 1, &model.trim, p, c.angle, [1.; 3], c.tilt);
 }
 pub fn run() -> Result<(), String> {
     if std::env::args().any(|a| a == "--credits") {
@@ -2357,13 +2422,13 @@ pub fn run() -> Result<(), String> {
     } else {
         Game::new()?
     };
-    if let Ok(value) = std::env::var("JAILBREAK_QUALITY") {
+    if let Ok(value) = std::env::var("JBRS_QUALITY") {
         g.save.quality = value.parse::<usize>().unwrap_or(1).min(3);
     }
-    if let Ok(v) = std::env::var("JAILBREAK_TEXTURE_LEVEL") {
+    if let Ok(v) = std::env::var("JBRS_TEXTURE_LEVEL") {
         g.save.texture_level = v.parse::<usize>().unwrap_or(0).min(3);
     }
-    if let Ok(v) = std::env::var("JAILBREAK_SHADOWS") {
+    if let Ok(v) = std::env::var("JBRS_SHADOWS") {
         g.save.object_shadows = v != "0";
     }
     let mut r = Renderer::new()?;
@@ -2376,7 +2441,7 @@ pub fn run() -> Result<(), String> {
         crate::quality::PRESETS[g.save.quality].distance,
     ));
     let smoke = std::env::args().any(|x| x == "--smoke-test");
-    if let Ok(scene) = std::env::var("JAILBREAK_SCENE") {
+    if let Ok(scene) = std::env::var("JBRS_SCENE") {
         let (x, z, yaw) = match scene.as_str() {
             "museum-new" => (-200., -640., std::f32::consts::PI),
             "power-new" => (720., -179., std::f32::consts::PI),
@@ -2462,7 +2527,7 @@ pub fn run() -> Result<(), String> {
                 "vehicle-new" | "vehicle-paint-new" | "vehicle-lod-new"
             )
         {
-            let kind = std::env::var("JAILBREAK_VEHICLE")
+            let kind = std::env::var("JBRS_VEHICLE")
                 .ok()
                 .and_then(|v| v.parse::<usize>().ok())
                 .unwrap_or(0)
@@ -2540,11 +2605,27 @@ pub fn run() -> Result<(), String> {
             g.yaw = std::f32::consts::PI;
             g.pitch = 0.08;
         }
-        if smoke && scene == "locomotive-new" {
-            let (p, a) = crate::heists::Heists::train(g.clock, 0);
-            g.player.pos = Vec3::new(p.x + a.sin() * 10., p.y, p.z + a.cos() * 10.);
-            g.yaw = -0.65;
-            g.pitch = 0.2;
+        if smoke && matches!(scene.as_str(), "locomotive-new" | "train-new") {
+            let (p, a) = if scene == "locomotive-new" {
+                terrain::railway::locomotive(g.clock)
+            } else {
+                crate::heists::Heists::train(g.clock, 8)
+            };
+            g.player.pos = Vec3::new(p.x + a.cos() * 14., p.y + 3., p.z - a.sin() * 14.);
+            let dx = p.x - g.player.pos.x;
+            let dz = p.z - g.player.pos.z;
+            g.yaw = dx.atan2(-dz);
+            g.pitch = 0.15;
+        }
+        if smoke && scene == "river-new" {
+            g.player.pos = Vec3::new(-395., 12., 410.);
+            g.yaw = -2.4;
+            g.pitch = 0.35;
+        }
+        if smoke && scene == "traffic-new" {
+            g.player.pos = Vec3::new(20., 10., -25.);
+            g.yaw = 2.5;
+            g.pitch = 0.25;
         }
         if scene == "apartment-new" {
             g.player.pos.x += 5.;
@@ -2635,27 +2716,28 @@ pub fn run() -> Result<(), String> {
     }
 
     if smoke {
-        g.menu = std::env::var("JAILBREAK_SCENE").as_deref() == Ok("menu");
-        g.debug = std::env::var("JAILBREAK_DEBUG").as_deref() != Ok("0");
+        g.menu = std::env::var("JBRS_SCENE").as_deref() == Ok("menu");
+        g.debug = std::env::var("JBRS_DEBUG").as_deref() != Ok("0");
     }
     let mut last = std::time::Instant::now();
     let mut accumulator = 0.;
-    if std::env::var("JAILBREAK_TIME").as_deref() == Ok("night") {
+    if std::env::var("JBRS_TIME").as_deref() == Ok("night") {
         g.clock = std::f32::consts::PI * 120.;
     }
-    g.capture_at =
-        if g.modal() || std::env::var("JAILBREAK_SCENE").is_ok_and(|s| s.ends_with("-new")) {
-            g.clock
-        } else {
-            g.clock + 3.
-        };
-    let frame_limit = std::env::var("JAILBREAK_FRAMES")
+    g.capture_at = if g.modal() || std::env::var("JBRS_SCENE").is_ok_and(|s| s.ends_with("-new")) {
+        g.clock
+    } else {
+        g.clock + 3.
+    };
+    let frame_limit = std::env::var("JBRS_FRAMES")
         .ok()
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(480)
         .clamp(60, 2000);
+    let mut touch = mobile_controls::TouchControls::default();
+    let mut backgrounded = false;
     let mut timings = Vec::with_capacity(if smoke { frame_limit } else { 0 });
-    let tour = smoke && std::env::var("JAILBREAK_SCENE").as_deref() == Ok("tour");
+    let tour = smoke && std::env::var("JBRS_SCENE").as_deref() == Ok("tour");
     let mut frames = 0;
     let mut running = true;
     while running {
@@ -2668,7 +2750,24 @@ pub fn run() -> Result<(), String> {
         }
 
         while let Some(e) = r.poll() {
+            if crate::mobile::enabled() && g.touch_event(&e, &mut touch) {
+                continue;
+            }
             match e.kind() {
+                0x101 => {
+                    g.save();
+                    running = false;
+                }
+                0x103 | 0x104 => {
+                    touch.clear();
+                    g.save();
+                    backgrounded = true;
+                }
+                0x105 | 0x106 => {
+                    backgrounded = false;
+                    last = std::time::Instant::now();
+                    accumulator = 0.;
+                }
                 0x100 => running = false,
                 0x400 => {
                     if !g.modal() && !g.cursor {
@@ -2696,17 +2795,33 @@ pub fn run() -> Result<(), String> {
                 _ => {}
             }
         }
+        if backgrounded {
+            std::thread::sleep(std::time::Duration::from_millis(20));
+            continue;
+        }
+        if crate::mobile::enabled() {
+            g.touch_actions(&mut touch);
+            let look = touch.take_look();
+            if !g.modal() && !g.cursor {
+                g.yaw += look[0] * g.save.sensitivity;
+                g.pitch = (g.pitch + look[1] * g.save.sensitivity).clamp(-0.1, 0.9);
+            }
+        }
         let now = std::time::Instant::now();
         accumulator += (now - last).as_secs_f32().min(0.1);
         last = now;
         let update_start = std::time::Instant::now();
         while accumulator >= STEP {
-            g.update(&r);
+            if crate::mobile::enabled() {
+                g.update_mobile(&r, Some(&touch));
+            } else {
+                g.update(&r);
+            }
             accumulator -= STEP;
         }
         g.stats.update_ms = update_start.elapsed().as_secs_f32() * 1000.;
         let render_start = std::time::Instant::now();
-        if smoke && std::env::var("JAILBREAK_SCENE").as_deref() == Ok("skyline-new") {
+        if smoke && std::env::var("JBRS_SCENE").as_deref() == Ok("skyline-new") {
             g.player.pos = Vec3::new(260., 36., -90.);
             g.player.vy = 0.;
         }
@@ -2737,7 +2852,7 @@ pub fn run() -> Result<(), String> {
                 "GEOMETRY scene_triangles={} world_triangles={} interior_triangles={} quality={} vehicles={} actors_and_effects={}",
                 g.scene_triangles, v.submitted_triangles, v.interior_triangles, g.save.quality, g.vehicle_triangles, g.npc_triangles
             );
-            println!("PROFILE scene={} frames={} mean_ms={:.2} p95_ms={:.2} max_ms={:.2} rss_mb={:.1} gpu_mb={:.1} active_chunks={} visible_chunks={} effective_distance={:.0}",std::env::var("JAILBREAK_SCENE").unwrap_or_else(|_|"prison".into()),frames,mean,p95,maximum,profiling::rss_mb(),v.bytes as f32/1048576.,v.active(),v.visible,v.effective_distance);
+            println!("PROFILE scene={} frames={} mean_ms={:.2} p95_ms={:.2} max_ms={:.2} rss_mb={:.1} gpu_mb={:.1} active_chunks={} visible_chunks={} effective_distance={:.0}",std::env::var("JBRS_SCENE").unwrap_or_else(|_|"prison".into()),frames,mean,p95,maximum,profiling::rss_mb(),v.bytes as f32/1048576.,v.active(),v.visible,v.effective_distance);
         }
     }
     g.view.take();
@@ -3512,3 +3627,5 @@ mod residential_regressions {
         assert!(g.npcs[0].waypoint.distance(g.player.pos) > 4.);
     }
 }
+
+include!("touch_game.rs");

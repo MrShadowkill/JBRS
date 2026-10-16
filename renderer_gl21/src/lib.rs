@@ -58,9 +58,16 @@ impl Event {
         )
     }
 }
-#[link(name = "libSDL2-2.0.so.0", kind = "dylib", modifiers = "+verbatim")]
+#[cfg_attr(
+    target_os = "linux",
+    link(name = "libSDL2-2.0.so.0", kind = "dylib", modifiers = "+verbatim")
+)]
+#[cfg_attr(target_os = "windows", link(name = "SDL2"))]
 extern "C" {
     fn SDL_Init(flags: u32) -> i32;
+    fn SDL_SetMainReady();
+    #[cfg(windows)]
+    fn SDL_GL_GetProcAddress(name: *const c_char) -> *mut c_void;
     fn SDL_Quit();
     fn SDL_GetError() -> *const c_char;
     fn SDL_GL_SetAttribute(a: i32, v: i32) -> i32;
@@ -82,6 +89,7 @@ extern "C" {
     fn SDL_SetRelativeMouseMode(v: i32) -> i32;
     fn SDL_GetWindowSize(w: *mut c_void, x: *mut i32, y: *mut i32);
 }
+#[cfg(not(windows))]
 #[link(name = "libGL.so.1", kind = "dylib", modifiers = "+verbatim")]
 extern "C" {
     fn glColor4f(r: f32, g: f32, b: f32, a: f32);
@@ -153,6 +161,10 @@ extern "C" {
     fn glReadPixels(x: i32, y: i32, w: i32, h: i32, format: u32, kind: u32, data: *mut c_void);
     fn glPixelStorei(p: u32, v: i32);
 }
+#[cfg(windows)]
+mod windows_gl;
+#[cfg(windows)]
+use windows_gl::*;
 #[derive(Clone, Copy)]
 pub struct GpuMesh {
     pub id: u32,
@@ -188,6 +200,7 @@ pub struct Renderer {
 impl Renderer {
     pub fn new() -> Result<Self, String> {
         unsafe {
+            SDL_SetMainReady();
             if SDL_Init(0x20) != 0 {
                 return Err(error());
             }
@@ -195,7 +208,7 @@ impl Renderer {
             SDL_GL_SetAttribute(18, 1);
             SDL_GL_SetAttribute(5, 1);
             SDL_GL_SetAttribute(6, 24);
-            let title = CString::new("JAILBREAK RS | Original open-world prototype").unwrap();
+            let title = CString::new("JBRS | Original open-world prototype").unwrap();
             let w = SDL_CreateWindow(title.as_ptr(), 0x2fff0000, 0x2fff0000, 1024, 576, 2 | 32);
             if w.is_null() {
                 return Err(error());
@@ -204,6 +217,13 @@ impl Renderer {
             if c.is_null() {
                 SDL_DestroyWindow(w);
                 return Err(error());
+            }
+            #[cfg(windows)]
+            if let Err(e) = windows_gl::load() {
+                SDL_GL_DeleteContext(c);
+                SDL_DestroyWindow(w);
+                SDL_Quit();
+                return Err(e);
             }
             SDL_GL_SetSwapInterval(1);
             let raw = glGetString(0x1f01);
@@ -466,6 +486,17 @@ impl Renderer {
         angle: f32,
         tint: [f32; 3],
     ) {
+        self.cached_solid_model_tilted(key, cpu_mesh, p, angle, tint, [0.; 2]);
+    }
+    pub fn cached_solid_model_tilted(
+        &mut self,
+        key: usize,
+        cpu_mesh: &engine_core::Mesh,
+        p: [f32; 3],
+        angle: f32,
+        tint: [f32; 3],
+        tilt: [f32; 2],
+    ) {
         if cpu_mesh.vertices.is_empty() {
             return;
         }
@@ -480,6 +511,8 @@ impl Renderer {
             glPushMatrix();
             glTranslatef(p[0], p[1], p[2]);
             glRotatef(angle.to_degrees(), 0., 1., 0.);
+            glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
+            glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
         }
         self.draw_buffer(mesh, 2);

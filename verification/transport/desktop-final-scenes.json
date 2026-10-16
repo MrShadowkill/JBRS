@@ -1,0 +1,12 @@
+[
+  {
+    "scene": "traffic-new",
+    "exit": 0,
+    "frames": 60
+  },
+  {
+    "scene": "train-new",
+    "exit": 0,
+    "frames": 60
+  }
+]

@@ -5,7 +5,7 @@ The deliverable is `dist/JBRS-Android10-arm64.apk`, a locally signed preview tar
 | Check | Result |
 |---|---|
 | Stable Rust formatting and strict workspace Clippy | Passed |
-| Android ARM64 strict Clippy (`-p jailbreak-rs --lib --target aarch64-linux-android`) | Passed |
+| Android ARM64 strict Clippy (`-p jbrs --lib --target aarch64-linux-android`) | Passed |
 | `cargo test --workspace` | **115 passed, 1 existing failure** |
 | Game tests using the GLES backend | Passed; includes touch-to-game action tests |
 | Android native build | Passed; Rust cdylib + SDL2 2.30.11, NDK 27.2.12479018, API 29 |

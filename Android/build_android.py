@@ -80,7 +80,7 @@ def main():
     if ' ' in str(sdl_build):
         raise RuntimeError('Use a --build-dir path without spaces for native linker search flags.')
     target_dir = build / 'cargo'
-    run(['cargo', 'build', '--locked', '--release', '-p', 'jailbreak-rs', '--lib',
+    run(['cargo', 'build', '--locked', '--release', '-p', 'jbrs', '--lib',
          '--target', 'aarch64-linux-android', '--target-dir', target_dir], cwd=ROOT, env=env)
     classes, dex = build / 'classes', build / 'dex'
     if classes.exists():

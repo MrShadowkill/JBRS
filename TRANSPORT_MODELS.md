@@ -9,7 +9,7 @@
 [Атрибуція, джерело й опис перетворень](vehicles/assets/ATTRIBUTION.md).
 Оригінальний GLB збережено в `vehicles/assets/source/akari-r7.glb`.
 Гра використовує вбудовані похідні ресурси й не завантажує GLB під час гри.
-Команда `jailbreak-rs --credits` показує атрибуцію також із виконуваного файла.
+Команда `jbrs --credits` показує атрибуцію також із виконуваного файла.
 
 Решта сім моделей — оригінальна геометрія в близькій стилістиці:
 округлені низькополігональні кузови, справжні отвори колісних арок,
@@ -87,14 +87,14 @@ cargo test --workspace --locked --no-fail-fast
 cargo build --release --locked
 ```
 
-Для огляду моделі задайте `JAILBREAK_VEHICLE` від 0 до 7:
+Для огляду моделі задайте `JBRS_VEHICLE` від 0 до 7:
 
 ```bash
 LIBGL_ALWAYS_SOFTWARE=1 MESA_GL_VERSION_OVERRIDE=2.1 \
-MESA_GLSL_VERSION_OVERRIDE=120 JAILBREAK_SCENE=vehicle-new \
-JAILBREAK_VEHICLE=7 JAILBREAK_FRAMES=60 JAILBREAK_DEBUG=0 \
-JAILBREAK_CAPTURE=/tmp/akari.ppm \
-xvfb-run -a "$CARGO_TARGET_DIR/release/jailbreak-rs" --smoke-test
+MESA_GLSL_VERSION_OVERRIDE=120 JBRS_SCENE=vehicle-new \
+JBRS_VEHICLE=7 JBRS_FRAMES=60 JBRS_DEBUG=0 \
+JBRS_CAPTURE=/tmp/akari.ppm \
+xvfb-run -a "$CARGO_TARGET_DIR/release/jbrs" --smoke-test
 ```
 
 Сцени `vehicle-paint-new` та `vehicle-lod-new` перевіряють відповідно

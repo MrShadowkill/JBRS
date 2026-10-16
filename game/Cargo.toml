@@ -1,8 +1,9 @@
 [package]
-name="jailbreak-rs"
+name="jbrs"
 version="0.6.2"
 edition="2021"
 [dependencies]
+roads={path="../roads"}
 vehicle_physics={path="../vehicle_physics"}
 world={path="../world"}
 police={path="../police"}

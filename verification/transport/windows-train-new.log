@@ -1,0 +1,5 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+VEHICLE_CACHE parts=0 bytes=0
+GEOMETRY scene_triangles=41916 world_triangles=27398 interior_triangles=0 quality=1 vehicles=0 actors_and_effects=13916
+PROFILE scene=train-new frames=60 mean_ms=17.03 p95_ms=20.04 max_ms=34.77 rss_mb=134.9 gpu_mb=3.2 active_chunks=25 visible_chunks=20 effective_distance=320
+Rendered 60 frames; observed 46.7 FPS (host only)

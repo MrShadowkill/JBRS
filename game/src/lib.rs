@@ -7,11 +7,12 @@ mod heists;
 mod mobile;
 mod npcs;
 mod quality;
+mod traffic;
 mod world_view;
 #[allow(dead_code)]
 pub fn desktop_main() {
     if let Err(e) = game::run() {
-        eprintln!("JAILBREAK RS: {e}");
+        eprintln!("JBRS: {e}");
         std::process::exit(1);
     }
 }

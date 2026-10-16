@@ -1,0 +1,42 @@
+[
+  {
+    "scene": "menu",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "traffic-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "river-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "train-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "locomotive-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "museum-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "jstore-front-new",
+    "exit": 0,
+    "capture": true
+  },
+  {
+    "scene": "dispatch",
+    "exit": 0,
+    "capture": false
+  }
+]

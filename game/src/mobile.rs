@@ -1,5 +1,5 @@
 pub fn enabled() -> bool {
-    cfg!(target_os = "android") || std::env::var("JAILBREAK_TOUCH").as_deref() == Ok("1")
+    cfg!(target_os = "android") || std::env::var("JBRS_TOUCH").as_deref() == Ok("1")
 }
 #[cfg(target_os = "android")]
 pub fn configure_android() -> Result<(), String> {
@@ -17,7 +17,7 @@ pub fn configure_android() -> Result<(), String> {
         if !p.is_null() {
             let path = std::path::PathBuf::from(CStr::from_ptr(p).to_string_lossy().as_ref())
                 .join("save.json");
-            std::env::set_var("JAILBREAK_SAVE", path);
+            std::env::set_var("JBRS_SAVE", path);
         }
         SDL_SetHint(c"SDL_ANDROID_TRAP_BACK_BUTTON".as_ptr(), c"1".as_ptr());
         SDL_SetHint(c"SDL_TOUCH_MOUSE_EVENTS".as_ptr(), c"0".as_ptr());
@@ -25,9 +25,9 @@ pub fn configure_android() -> Result<(), String> {
     }
     // Mobile defaults are applied only on the first launch. Saved settings remain editable.
     if !save_system::path().exists() {
-        std::env::set_var("JAILBREAK_QUALITY", "0");
-        std::env::set_var("JAILBREAK_TEXTURE_LEVEL", "0");
-        std::env::set_var("JAILBREAK_SHADOWS", "0");
+        std::env::set_var("JBRS_QUALITY", "0");
+        std::env::set_var("JBRS_TEXTURE_LEVEL", "0");
+        std::env::set_var("JBRS_SHADOWS", "0");
     }
     Ok(())
 }

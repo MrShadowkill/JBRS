@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.jbrs.mobile" android:versionCode="1" android:versionName="0.6.2-mobile-preview1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.jbrs.mobile" android:versionCode="2" android:versionName="0.6.2-transport-preview2">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="true" />

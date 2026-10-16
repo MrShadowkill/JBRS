@@ -110,7 +110,7 @@ impl Default for Save {
     }
 }
 pub fn path() -> PathBuf {
-    if let Some(p) = std::env::var_os("JAILBREAK_SAVE") {
+    if let Some(p) = std::env::var_os("JBRS_SAVE") {
         return p.into();
     }
     #[cfg(windows)]
@@ -130,12 +130,22 @@ pub fn path() -> PathBuf {
             .unwrap_or_else(|| {
                 PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".local/share")
             });
-        p.push("jailbreak-rs/save.json");
+        p.push("jbrs/save.json");
         p
     }
 }
 pub fn load() -> Result<Save, String> {
-    load_from(&path())
+    let current = path();
+    if !cfg!(windows) && !current.exists() && std::env::var_os("JBRS_SAVE").is_none() {
+        // Read the previous on-disk identifier once; subsequent saves use JBRS.
+        if let Some(base) = current.parent().and_then(|p| p.parent()) {
+            let legacy = base.join("jailbreak-rs/save.json");
+            if legacy.is_file() {
+                return load_from(&legacy);
+            }
+        }
+    }
+    load_from(&current)
 }
 fn load_from(p: &std::path::Path) -> Result<Save, String> {
     if !p.exists() {
@@ -452,7 +462,7 @@ mod tests {
     #[test]
     fn disk_roundtrip_and_version_rejection() {
         let filename = std::env::temp_dir().join(format!(
-            "jailbreak-test-{}-{}.json",
+            "JBRS-test-{}-{}.json",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

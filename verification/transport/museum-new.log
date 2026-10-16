@@ -1,0 +1,5 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+VEHICLE_CACHE parts=4 bytes=273456
+GEOMETRY scene_triangles=38677 world_triangles=35545 interior_triangles=6476 quality=1 vehicles=2532 actors_and_effects=0
+PROFILE scene=museum-new frames=90 mean_ms=14.96 p95_ms=16.60 max_ms=37.55 rss_mb=111.0 gpu_mb=7.0 active_chunks=44 visible_chunks=20 effective_distance=305
+Rendered 90 frames; observed 63.8 FPS (host only)

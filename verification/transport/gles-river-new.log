@@ -1,0 +1,6 @@
+MOBILE_TARGET 640x360; UI 1024x576
+OpenGL OpenGL ES 2.0 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+VEHICLE_CACHE parts=0 bytes=0
+GEOMETRY scene_triangles=10217 world_triangles=9939 interior_triangles=0 quality=0 vehicles=0 actors_and_effects=0
+PROFILE scene=river-new frames=60 mean_ms=26.96 p95_ms=41.48 max_ms=242.83 rss_mb=96.2 gpu_mb=2.1 active_chunks=21 visible_chunks=11 effective_distance=175
+Rendered 60 frames; observed 36.3 FPS (host only)

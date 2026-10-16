@@ -1,0 +1,28 @@
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling renderer_gl21 v0.1.0 (/workspace/JBRS/Windf/renderer_gl21)
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.154
+    Checking memchr v2.8.3
+    Checking itoa v1.0.18
+    Checking minimap v0.1.0 (/workspace/JBRS/Windf/minimap)
+    Checking economy v0.1.0 (/workspace/JBRS/Windf/economy)
+    Checking mobile_controls v0.1.0 (/workspace/JBRS/Windf/mobile_controls)
+    Checking profiling v0.1.0 (/workspace/JBRS/Windf/profiling)
+    Checking engine_core v0.1.0 (/workspace/JBRS/Windf/engine_core)
+    Checking terrain v0.2.0 (/workspace/JBRS/Windf/terrain)
+    Checking renderer_gles2 v0.1.0 (/workspace/JBRS/Windf/renderer_gles2)
+    Checking roads v0.2.0 (/workspace/JBRS/Windf/roads)
+    Checking buildings v0.2.0 (/workspace/JBRS/Windf/buildings)
+    Checking vehicles v0.1.0 (/workspace/JBRS/Windf/vehicles)
+    Checking save_system v0.1.0 (/workspace/JBRS/Windf/save_system)
+    Checking gui v0.1.0 (/workspace/JBRS/Windf/gui)
+    Checking vehicle_physics v0.1.0 (/workspace/JBRS/Windf/vehicle_physics)
+    Checking robberies v0.1.0 (/workspace/JBRS/Windf/robberies)
+    Checking weapons v0.1.0 (/workspace/JBRS/Windf/weapons)
+    Checking police v0.1.0 (/workspace/JBRS/Windf/police)
+    Checking criminals v0.1.0 (/workspace/JBRS/Windf/criminals)
+    Checking player v0.1.0 (/workspace/JBRS/Windf/player)
+    Checking world v0.1.0 (/workspace/JBRS/Windf/world)
+    Checking jbrs v0.6.2 (/workspace/JBRS/Windf/game)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.12s

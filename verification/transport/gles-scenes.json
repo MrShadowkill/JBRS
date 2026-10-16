@@ -1,0 +1,18 @@
+[
+  {
+    "scene": "traffic-new",
+    "exit": 0
+  },
+  {
+    "scene": "river-new",
+    "exit": 0
+  },
+  {
+    "scene": "train-new",
+    "exit": 0
+  },
+  {
+    "scene": "jstore-showroom-new",
+    "exit": 0
+  }
+]

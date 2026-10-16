@@ -1,4 +1,6 @@
-# Jailbreak RS — 0.6.2
+# JBRS — 0.6.2
+
+Оновлення транспорту й поліції: [що змінено та як перевірено](TRANSPORT_UPDATE.md).
 
 Однокористувацька гра на Rust / OpenGL 2.1. Початок у закритій тюрмі,
 без грошей, зброї та власного автомобіля. Моделі й матеріали створені в коді.
@@ -17,9 +19,9 @@ Android 10 ARM64 із сенсорним керуванням (preview): [інс
 
 ## Запуск
 
-Розпакуйте архів та виконайте `./run.sh` у папці `jailbreak-rs`.
+Linux: [готовий архів](JBRS-Linux-x64.zip). Розпакуйте його та виконайте `./run.sh` у папці `jbrs`.
 З вихідного коду: `cargo run --release`. Потрібні Linux, SDL2 та OpenGL.
-Готовий виконуваний файл: `bin/jailbreak-rs`.
+Готовий виконуваний файл: `bin/jbrs`.
 
 ## Втеча й пограбування
 
@@ -163,7 +165,7 @@ Tab дає курсор для натискання кнопок. J працює
 Ціни на полицях декоративні; покупки води та їжі виконуються біля продавця.
 
 Перевірки: [UPDATE_0_5.md](UPDATE_0_5.md).
-Збереження: `$XDG_DATA_HOME/jailbreak-rs/save.json` або
-`~/.local/share/jailbreak-rs/save.json`; `JAILBREAK_SAVE` змінює шлях.
+Збереження: `$XDG_DATA_HOME/jbrs/save.json` або
+`~/.local/share/jbrs/save.json`; `JBRS_SAVE` змінює шлях.
 Старі збереження сумісні. Попередні UPDATE_0_3.md, WORLD_REBUILD.md та
 PRISON_UPDATE.md залишені як історія.

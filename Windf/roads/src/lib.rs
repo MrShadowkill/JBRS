@@ -1,3 +1,4 @@
+pub mod routing;
 use engine_core::{Mesh, Vec3};
 #[derive(Clone)]
 pub struct Road {
@@ -10,7 +11,7 @@ impl Road {
     pub fn normal(&self, i: usize) -> (f32, f32) {
         let a = self.points[i.saturating_sub(1)];
         let b = self.points[(i + 1).min(self.points.len() - 1)];
-        let len = a.distance(b).max(0.001);
+        let len = (b.x - a.x).hypot(b.z - a.z).max(0.001);
         (-(b.z - a.z) / len, (b.x - a.x) / len)
     }
     pub fn distance(&self, p: Vec3) -> (f32, f32) {
@@ -29,6 +30,25 @@ impl Road {
             }
         }
         best
+    }
+    /// Lowest deck inside the terrain cutting envelope, including sharp joints.
+    pub fn ground_cut(&self, p: Vec3) -> (f32, f32) {
+        let (distance, mut height) = self.distance(p);
+        if distance > self.width / 2. + 10. {
+            return (distance, height);
+        }
+        for s in self.points.windows(2) {
+            let a = s[0];
+            let b = s[1];
+            let (dx, dz) = (b.x - a.x, b.z - a.z);
+            let t = (((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz).max(0.001))
+                .clamp(0., 1.);
+            let d = (p.x - a.x - dx * t).hypot(p.z - a.z - dz * t);
+            if d < self.width / 2. + 3. {
+                height = height.min(a.y + (b.y - a.y) * t);
+            }
+        }
+        (distance, height)
     }
     pub fn mesh(&self, key: (i32, i32), lod: u8, m: &mut Mesh) {
         let x0 = key.0 as f32 * 128.;
@@ -148,8 +168,8 @@ fn spline(name: &'static str, control: &[(f32, f32)], width: f32, highway: bool)
     }
 }
 pub fn deck(x: f32, z: f32) -> f32 {
-    if (-490. ..-390.).contains(&x) && (-500. ..700.).contains(&z) {
-        let t = 1. - ((x + 440.).abs() / 50.).clamp(0., 1.);
+    if (x - terrain::river_center(z)).abs() < 60. && (-500. ..700.).contains(&z) {
+        let t = 1. - ((x - terrain::river_center(z)).abs() / 60.).clamp(0., 1.);
         2. * t * t * (3. - 2. * t)
     } else if x > 420. && (-260. ..500.).contains(&z) {
         terrain::industrial_height(x, z)

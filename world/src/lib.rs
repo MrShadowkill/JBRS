@@ -2,6 +2,7 @@ mod city_blocks;
 mod geography;
 pub mod prison;
 mod streaming;
+mod surfaces;
 use buildings::{Building, Collider, Library};
 use engine_core::{Mesh, Vec3};
 use roads::Road;
@@ -32,6 +33,7 @@ pub struct World {
     pub pois: Vec<Poi>,
     pub trees: Vec<Vec3>,
     cells: HashMap<(i32, i32), Vec<usize>>,
+    surface_roads: HashMap<(i32, i32), Vec<Road>>,
 }
 impl Default for World {
     fn default() -> Self {
@@ -50,6 +52,7 @@ impl World {
         pois: Vec<Poi>,
         trees: Vec<Vec3>,
     ) -> Self {
+        let surface_roads = surfaces::road_tiles(&roads);
         let mut world = Self {
             roads,
             buildings: library.buildings,
@@ -58,6 +61,7 @@ impl World {
             pois,
             trees,
             cells: HashMap::new(),
+            surface_roads,
         };
         for b in &world.buildings {
             world.colliders.extend(b.colliders());
@@ -70,6 +74,39 @@ impl World {
                 movable: false,
                 breakable: true,
             });
+        }
+        for p in terrain::railway::samples().iter().step_by(4) {
+            if world
+                .roads
+                .iter()
+                .any(|r| r.distance(*p).0 < r.width / 2. + 8.)
+                || world.buildings.iter().any(|b| {
+                    (p.x - b.p.x).abs() < b.size.x / 2. + 6.
+                        && (p.z - b.p.z).abs() < b.size.z / 2. + 6.
+                })
+            {
+                continue;
+            }
+            let ground = world.surface(p.x, p.z);
+            let height = p.y - 0.32 - ground;
+            if height > 1. {
+                let center = Vec3::new(p.x, ground + height / 2., p.z);
+                let size = Vec3::new(0.65, height, 0.65);
+                world.props.push(Prop {
+                    p: center,
+                    size,
+                    material: 1,
+                    color: [0.43, 0.45, 0.44],
+                    emission: 0.,
+                    roof: false,
+                });
+                world.colliders.push(Collider {
+                    p: center,
+                    size,
+                    movable: false,
+                    breakable: false,
+                });
+            }
         }
         for (i, c) in world.colliders.iter().enumerate() {
             let min = cell(c.p.x - c.size.x / 2. - 4., c.p.z - c.size.z / 2. - 4.);
@@ -126,6 +163,8 @@ impl World {
         }
     }
     pub fn next_step(&self, from: Vec3, target: Vec3, distance: f32) -> Vec3 {
+        let original_target = target;
+        let start_interior = self.interior(from);
         // Route through an actual entrance rather than getting stuck at the nearest wall.
         let target = if let Some(id) = self.interior(from) {
             let b = &self.buildings[id];
@@ -136,7 +175,7 @@ impl World {
             }
         } else if let Some(id) = self.interior(target) {
             let entry = self.buildings[id].entrance();
-            if from.distance(entry) > 4. {
+            if from.distance(entry) > 4. || (from.x - entry.x).abs() > 0.4 {
                 entry
             } else {
                 target
@@ -161,7 +200,12 @@ impl World {
                 let t = i as f32 / samples as f32;
                 let mut p = Vec3::new(a.x + (b.x - a.x) * t, a.y, a.z + (b.z - a.z) * t);
                 p.y = self.walking_surface(p) + 1.;
-                let clear = !self.blocked(p, 0.45) && (p.y - previous_height).abs() < 0.6;
+                let reenters = start_interior.is_none()
+                    && self
+                        .interior(p)
+                        .is_some_and(|id| !self.buildings[id].inside(original_target));
+                let clear =
+                    !reenters && !self.blocked(p, 0.45) && (p.y - previous_height).abs() < 0.6;
                 previous_height = p.y;
                 clear
             })
@@ -182,7 +226,7 @@ impl World {
         let mut expanded = 0;
         while let Some((_, node)) = frontier.pop() {
             expanded += 1;
-            if expanded > 100 {
+            if expanded > 768 {
                 break;
             }
             if heuristic(node) < heuristic(best) {
@@ -195,7 +239,7 @@ impl World {
             }
             for (dx, dz) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
                 let q = (node.0 + dx, node.1 + dz);
-                if (q.0 - origin.0).abs() > 24 || (q.1 - origin.1).abs() > 24 {
+                if (q.0 - origin.0).abs() > 32 || (q.1 - origin.1).abs() > 32 {
                     continue;
                 }
                 let b = Vec3::new(q.0 as f32, from.y, q.1 as f32);
@@ -211,11 +255,25 @@ impl World {
             }
         }
         let mut q = best;
+        let mut path = vec![q];
         while let Some(prev) = parent.get(&q) {
             if *prev == origin {
                 break;
             }
             q = *prev;
+            path.push(q);
+        }
+        // Reuse a visible stretch of the path for the next AI planning interval.
+        for node in path.iter().rev() {
+            let candidate = Vec3::new(node.0 as f32, from.y, node.1 as f32);
+            if from.distance(candidate) > distance + 0.5 {
+                break;
+            }
+            if clear(from, candidate) {
+                q = *node;
+            } else {
+                break;
+            }
         }
         let p = steer(Vec3::new(q.0 as f32, from.y, q.1 as f32));
         if clear(from, p) {
@@ -261,41 +319,25 @@ impl World {
         f32::MAX
     }
     pub fn surface(&self, x: f32, z: f32) -> f32 {
-        let p = Vec3::new(x, 0., z);
-        if let Some(id) = self.interior(p) {
-            return self.buildings[id].support(p);
-        }
-        // The central plain and its roads are at sea-level; avoid scanning every
-        // spline segment during local navigation on this known flat region.
-        if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && terrain::height(x, z) == 0.
-        {
+        let raw = terrain::height(x, z);
+        if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. {
             return 0.;
         }
-        if let Some(b) = self.buildings.iter().find(|b| {
-            b.name != "Penthouse"
-                && (x - b.p.x).abs() < b.size.x / 2. + 7.
-                && (z - b.p.z).abs() < b.size.z / 2. + 7.
-        }) {
-            let d = ((x - b.p.x).abs() - b.size.x / 2.).max((z - b.p.z).abs() - b.size.z / 2.);
-            let blend = ((d - 3.) / 4.).clamp(0., 1.);
-            return b.p.y * (1. - blend) + terrain::height(x, z) * blend;
-        }
-        let mut nearest = (f32::MAX, 0., 0.);
-        for road in &self.roads {
-            let (d, y) = road.distance(p);
-            if d < nearest.0 {
-                nearest = (d, y, road.width);
+        let p = Vec3::new(x, 0., z);
+        if let Some((distance, y, width)) = self
+            .local_roads(x, z)
+            .iter()
+            .map(|road| {
+                let (d, y) = road.distance(p);
+                (d, y, road.width)
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+        {
+            if distance < width / 2. + 2. {
+                return y;
             }
         }
-        if nearest.0 < nearest.2 / 2. + 1.5 {
-            return nearest.1;
-        }
-        if nearest.0 < nearest.2 / 2. + 10. && terrain::height(x, z) < 20. {
-            let blend = ((nearest.0 - nearest.2 / 2. - 5.) / 5.).clamp(0., 1.);
-            nearest.1 * (1. - blend) + terrain::height(x, z) * blend
-        } else {
-            terrain::height(x, z)
-        }
+        self.ground_height(x, z)
     }
     pub fn interior(&self, p: Vec3) -> Option<usize> {
         self.buildings.iter().position(|b| {
@@ -314,53 +356,26 @@ impl World {
         lod: u8,
         vertices: Vec<engine_core::Vertex>,
     ) -> Mesh {
-        let mut m = terrain::mesh_reusing(key, lod, vertices);
         let x0 = key.0 as f32 * CHUNK;
         let z0 = key.1 as f32 * CHUNK;
         let in_chunk = |p: Vec3| p.x >= x0 && p.x < x0 + CHUNK && p.z >= z0 && p.z < z0 + CHUNK;
-        // Smooth road embankments; preserve mountain cover above the tunnel.
-        let nearby: Vec<&Road> = self
-            .roads
+        let nearby = self.local_roads(x0, z0);
+        let pads: Vec<&Building> = self
+            .buildings
             .iter()
-            .filter(|r| {
-                r.points
-                    .iter()
-                    .any(|p| p.x > x0 - 32. && p.x < x0 + 160. && p.z > z0 - 32. && p.z < z0 + 160.)
+            .filter(|b| {
+                b.p.x + b.size.x / 2. + 8. > x0
+                    && b.p.x - b.size.x / 2. - 8. < x0 + CHUNK
+                    && b.p.z + b.size.z / 2. + 8. > z0
+                    && b.p.z - b.size.z / 2. - 8. < z0 + CHUNK
             })
             .collect();
-        for v in &mut m.vertices {
-            let p = Vec3::new(v.position[0], 0., v.position[2]);
-            if v.position[1] == -0.2 {
-                continue;
-            }
-            for r in &nearby {
-                let (d, y) = r.distance(p);
-                if d < r.width / 2. + 10. && v.position[1] < 20. {
-                    let blend = ((d - r.width / 2. - 5.) / 5.).clamp(0., 1.);
-                    v.position[1] = y * (1. - blend) + v.position[1] * blend;
-                }
-            }
-        }
+        let mut m = terrain::mesh_sampled(key, lod, vertices, |x, z| {
+            surfaces::ground_sample(x, z, nearby.iter(), pads.iter().copied())
+        });
         self.railway_mesh(key, &mut m);
         if key == (-1, -1) {
             prison::mesh(&mut m, lod);
-        }
-        for v in &mut m.vertices {
-            if v.position[1] < -0.25 || v.position[1] > 25. {
-                continue;
-            }
-            for b in &self.buildings {
-                if b.name == "Penthouse" {
-                    continue;
-                }
-                let dx = (v.position[0] - b.p.x).abs() - b.size.x / 2.;
-                let dz = (v.position[2] - b.p.z).abs() - b.size.z / 2.;
-                let d = dx.max(dz);
-                if d < 7. {
-                    let blend = ((d - 3.) / 4.).clamp(0., 1.);
-                    v.position[1] = b.p.y * (1. - blend) + v.position[1] * blend;
-                }
-            }
         }
         for road in &self.roads {
             road.mesh(key, lod, &mut m);
@@ -431,17 +446,6 @@ impl World {
                         6,
                         0.,
                     );
-                }
-            }
-        }
-        // Rail corridor shares the transport grid but is physically independent.
-        for i in 0..16 {
-            let x = x0 + i as f32 * 8.;
-            let z = 365.;
-            if in_chunk(Vec3::new(x, 0., z)) {
-                m.cuboid([x, 0.08, z], [1., 0.16, 3.5], [0.47, 0.32, 0.2], 10, 0.);
-                for zz in [z - 1., z + 1.] {
-                    m.cuboid([x, 0.2, zz], [8.1, 0.15, 0.12], [0.62, 0.64, 0.66], 4, 0.);
                 }
             }
         }
@@ -579,38 +583,60 @@ pub fn cell(x: f32, z: f32) -> (i32, i32) {
 
 impl World {
     fn railway_mesh(&self, key: (i32, i32), m: &mut Mesh) {
-        for i in 0..600 {
-            let a = i as f32 / 600. * std::f32::consts::TAU;
-            let b = (i + 1) as f32 / 600. * std::f32::consts::TAU;
-            let x = 800. * a.cos();
-            let z = 750. * a.sin();
-            if cell(x, z) != key {
+        for (i, segment) in terrain::railway::samples().windows(2).enumerate() {
+            let a = segment[0];
+            let b = segment[1];
+            if cell((a.x + b.x) / 2., (a.z + b.z) / 2.) != key {
                 continue;
             }
-            let qx = 800. * b.cos();
-            let qz = 750. * b.sin();
-            let y = terrain::height(x, z).max(0.) + 0.2;
-            let qy = terrain::height(qx, qz).max(0.) + 0.2;
-            let dx = qx - x;
-            let dz = qz - z;
-            let len = (dx * dx + dz * dz).sqrt();
-            let nx = -dz / len;
-            let nz = dx / len;
-            for side in [-1., 1.] {
-                let off = side * 1.1;
+            let len = (b.x - a.x).hypot(b.z - a.z).max(0.001);
+            let nx = -(b.z - a.z) / len;
+            let nz = (b.x - a.x) / len;
+            let strip = |offset: f32, width: f32, dy: f32| {
+                [
+                    [
+                        a.x + nx * (offset - width),
+                        a.y + dy,
+                        a.z + nz * (offset - width),
+                    ],
+                    [
+                        b.x + nx * (offset - width),
+                        b.y + dy,
+                        b.z + nz * (offset - width),
+                    ],
+                    [
+                        b.x + nx * (offset + width),
+                        b.y + dy,
+                        b.z + nz * (offset + width),
+                    ],
+                    [
+                        a.x + nx * (offset + width),
+                        a.y + dy,
+                        a.z + nz * (offset + width),
+                    ],
+                ]
+            };
+            m.quad(strip(0., 2.7, -0.32), [0.38, 0.38, 0.35], 1, 0.);
+            for off in [-1.1, 1.1] {
+                m.quad(strip(off, 0.065, 0.05), [0.62, 0.65, 0.67], 4, 0.);
+            }
+            for f in [0., 0.25, 0.5, 0.75] {
+                let x = a.x + (b.x - a.x) * f;
+                let y = a.y + (b.y - a.y) * f - 0.08;
+                let z = a.z + (b.z - a.z) * f;
                 m.quad(
                     [
-                        [x + nx * (off - 0.06), y, z + nz * (off - 0.06)],
-                        [qx + nx * (off - 0.06), qy, qz + nz * (off - 0.06)],
-                        [qx + nx * (off + 0.06), qy, qz + nz * (off + 0.06)],
-                        [x + nx * (off + 0.06), y, z + nz * (off + 0.06)],
+                        [x + nx * 2.35 - nz * 0.16, y, z + nz * 2.35 + nx * 0.16],
+                        [x + nx * 2.35 + nz * 0.16, y, z + nz * 2.35 - nx * 0.16],
+                        [x - nx * 2.35 + nz * 0.16, y, z - nz * 2.35 - nx * 0.16],
+                        [x - nx * 2.35 - nz * 0.16, y, z - nz * 2.35 + nx * 0.16],
                     ],
-                    [0.55, 0.56, 0.58],
-                    4,
+                    [0.34, 0.25, 0.16],
+                    2,
                     0.,
                 );
             }
-            m.cuboid([x, y - 0.15, z], [3., 0.25, 0.4], [0.35, 0.22, 0.12], 2, 0.);
+            let _ = i;
         }
     }
 }

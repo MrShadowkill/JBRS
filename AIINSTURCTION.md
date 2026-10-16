@@ -1,4 +1,4 @@
-# Jailbreak RS — AI Engineering Guidelines
+# JBRS — AI Engineering Guidelines
 ## Rust / Legacy OpenGL / Android / Physics Sandbox
 
 **Status:** Mandatory engineering specification  
@@ -179,7 +179,7 @@ Use a modular Cargo workspace.
 Suggested structure:
 
 ```text
-jailbreak-rs/
+jbrs/
 ├── AGENTS.md
 ├── Cargo.toml
 ├── crates/
@@ -335,7 +335,7 @@ Do not claim Android compatibility merely because Rust code compiles for ARM64.
 
 # 7. PHYSICS SANDBOX — GMOD-STYLE
 
-Jailbreak RS must support a modular physics construction system.
+JBRS must support a modular physics construction system.
 
 The goal is to let players disassemble, modify and rebuild vehicles and structures.
 
@@ -732,7 +732,7 @@ Priority 1:
 Stable Rust + SDL2 + OpenGL 2.1 desktop build.
 
 Priority 2:
-Playable Jailbreak core: prison, city, player, cars, police, robberies.
+Playable JBRS core: prison, city, player, cars, police, robberies.
 
 Priority 3:
 Physgun, Toolgun, modular vehicles, construction blueprints.
@@ -762,7 +762,7 @@ Every priority must preserve compatibility with the target hardware.
 - Never block rendering with expensive world generation.
 - Never invent successful test results.
 - Never discard working code without justification.
-- Never copy proprietary Roblox Jailbreak assets.
+- Never copy proprietary Roblox game assets.
 - Never sacrifice save data integrity.
 - Never silently disable gameplay features to increase FPS.
 - Always prefer measured optimization over assumptions.
@@ -771,7 +771,7 @@ Every priority must preserve compatibility with the target hardware.
 
 Build a modular Rust open-world engine capable of supporting:
 
-- Jailbreak-style crime gameplay.
+- JBRS-style crime gameplay.
 - Garry's Mod-style physics tools.
 - Besiege-style vehicle construction.
 - Large open-world exploration.

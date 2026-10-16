@@ -41,6 +41,16 @@ impl Event {
     pub fn repeat(&self) -> bool {
         self.data[13] != 0
     }
+    pub fn finger(&self) -> (i64, f32, f32) {
+        (
+            i64::from_ne_bytes(self.data[16..24].try_into().unwrap()),
+            f32::from_ne_bytes(self.data[24..28].try_into().unwrap()),
+            f32::from_ne_bytes(self.data[28..32].try_into().unwrap()),
+        )
+    }
+    pub fn touch_mouse(&self) -> bool {
+        u32::from_ne_bytes(self.data[12..16].try_into().unwrap()) == u32::MAX
+    }
     pub fn motion(&self) -> (i32, i32) {
         (
             i32::from_ne_bytes(self.data[28..32].try_into().unwrap()),
@@ -155,7 +165,6 @@ extern "C" {
 mod windows_gl;
 #[cfg(windows)]
 use windows_gl::*;
-
 #[derive(Clone, Copy)]
 pub struct GpuMesh {
     pub id: u32,
@@ -199,7 +208,7 @@ impl Renderer {
             SDL_GL_SetAttribute(18, 1);
             SDL_GL_SetAttribute(5, 1);
             SDL_GL_SetAttribute(6, 24);
-            let title = CString::new("JAILBREAK RS | Original open-world prototype").unwrap();
+            let title = CString::new("JBRS | Original open-world prototype").unwrap();
             let w = SDL_CreateWindow(title.as_ptr(), 0x2fff0000, 0x2fff0000, 1024, 576, 2 | 32);
             if w.is_null() {
                 return Err(error());
@@ -477,6 +486,17 @@ impl Renderer {
         angle: f32,
         tint: [f32; 3],
     ) {
+        self.cached_solid_model_tilted(key, cpu_mesh, p, angle, tint, [0.; 2]);
+    }
+    pub fn cached_solid_model_tilted(
+        &mut self,
+        key: usize,
+        cpu_mesh: &engine_core::Mesh,
+        p: [f32; 3],
+        angle: f32,
+        tint: [f32; 3],
+        tilt: [f32; 2],
+    ) {
         if cpu_mesh.vertices.is_empty() {
             return;
         }
@@ -491,6 +511,8 @@ impl Renderer {
             glPushMatrix();
             glTranslatef(p[0], p[1], p[2]);
             glRotatef(angle.to_degrees(), 0., 1., 0.);
+            glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
+            glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
         }
         self.draw_buffer(mesh, 2);

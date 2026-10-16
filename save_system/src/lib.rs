@@ -110,19 +110,42 @@ impl Default for Save {
     }
 }
 pub fn path() -> PathBuf {
-    if let Some(p) = std::env::var_os("JAILBREAK_SAVE") {
+    if let Some(p) = std::env::var_os("JBRS_SAVE") {
         return p.into();
     }
-    let mut p = std::env::var_os("XDG_DATA_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".local/share")
-        });
-    p.push("jailbreak-rs/save.json");
-    p
+    #[cfg(windows)]
+    {
+        let base = std::env::var_os("LOCALAPPDATA")
+            .map(PathBuf::from)
+            .or_else(|| {
+                std::env::var_os("USERPROFILE").map(|p| PathBuf::from(p).join("AppData/Local"))
+            })
+            .unwrap_or_else(std::env::temp_dir);
+        base.join("JBRS-Windf/save.json")
+    }
+    #[cfg(not(windows))]
+    {
+        let mut p = std::env::var_os("XDG_DATA_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| {
+                PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".local/share")
+            });
+        p.push("jbrs/save.json");
+        p
+    }
 }
 pub fn load() -> Result<Save, String> {
-    load_from(&path())
+    let current = path();
+    if !cfg!(windows) && !current.exists() && std::env::var_os("JBRS_SAVE").is_none() {
+        // Read the previous on-disk identifier once; subsequent saves use JBRS.
+        if let Some(base) = current.parent().and_then(|p| p.parent()) {
+            let legacy = base.join("jailbreak-rs/save.json");
+            if legacy.is_file() {
+                return load_from(&legacy);
+            }
+        }
+    }
+    load_from(&current)
 }
 fn load_from(p: &std::path::Path) -> Result<Save, String> {
     if !p.exists() {
@@ -185,7 +208,39 @@ fn store_at(p: &std::path::Path, s: &Save) -> io::Result<()> {
     }
     let tmp = p.with_extension("tmp");
     std::fs::write(&tmp, serde_json::to_vec_pretty(s)?)?;
-    std::fs::rename(tmp, p)
+    replace_save(&tmp, p)
+}
+
+#[cfg(not(windows))]
+fn replace_save(tmp: &std::path::Path, dest: &std::path::Path) -> io::Result<()> {
+    std::fs::rename(tmp, dest)
+}
+#[cfg(windows)]
+fn replace_save(tmp: &std::path::Path, dest: &std::path::Path) -> io::Result<()> {
+    use std::os::windows::ffi::OsStrExt;
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn MoveFileExW(source: *const u16, dest: *const u16, flags: u32) -> i32;
+    }
+    fn wide(path: &std::path::Path) -> io::Result<Vec<u16>> {
+        let mut value: Vec<u16> = path.as_os_str().encode_wide().collect();
+        if value.contains(&0) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Save path contains a null character",
+            ));
+        }
+        value.push(0);
+        Ok(value)
+    }
+    let source = wide(tmp)?;
+    let destination = wide(dest)?;
+    // Replace existing saves without deleting the previous file first.
+    if unsafe { MoveFileExW(source.as_ptr(), destination.as_ptr(), 1 | 8) } == 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
 }
 
 fn default_quality() -> usize {
@@ -407,7 +462,7 @@ mod tests {
     #[test]
     fn disk_roundtrip_and_version_rejection() {
         let filename = std::env::temp_dir().join(format!(
-            "jailbreak-test-{}-{}.json",
+            "JBRS-test-{}-{}.json",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

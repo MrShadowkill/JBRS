@@ -139,7 +139,7 @@ impl Renderer {
             SDL_GL_SetAttribute(21, 4);
             SDL_GL_SetAttribute(5, 1);
             SDL_GL_SetAttribute(6, 24);
-            let title = CString::new("JAILBREAK RS | Original open-world prototype").unwrap();
+            let title = CString::new("JBRS | Original open-world prototype").unwrap();
             let w = SDL_CreateWindow(title.as_ptr(), 0x2fff0000, 0x2fff0000, 1024, 576, 2 | 32);
             if w.is_null() {
                 return Err(error());
@@ -188,8 +188,7 @@ impl Renderer {
                 scene_active: false,
             };
             renderer.setup()?;
-            if cfg!(target_os = "android") || std::env::var("JAILBREAK_TOUCH").as_deref() == Ok("1")
-            {
+            if cfg!(target_os = "android") || std::env::var("JBRS_TOUCH").as_deref() == Ok("1") {
                 renderer.create_mobile_target()?;
             }
             Ok(renderer)
@@ -480,6 +479,17 @@ impl Renderer {
         angle: f32,
         tint: [f32; 3],
     ) {
+        self.cached_solid_model_tilted(key, cpu_mesh, p, angle, tint, [0.; 2]);
+    }
+    pub fn cached_solid_model_tilted(
+        &mut self,
+        key: usize,
+        cpu_mesh: &engine_core::Mesh,
+        p: [f32; 3],
+        angle: f32,
+        tint: [f32; 3],
+        tilt: [f32; 2],
+    ) {
         if cpu_mesh.vertices.is_empty() {
             return;
         }
@@ -494,6 +504,8 @@ impl Renderer {
             glPushMatrix();
             glTranslatef(p[0], p[1], p[2]);
             glRotatef(angle.to_degrees(), 0., 1., 0.);
+            glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
+            glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
         }
         self.draw_buffer(mesh, 2);

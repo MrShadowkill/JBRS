@@ -408,21 +408,31 @@ pub fn build() -> World {
         });
     }
     let mut trees = Vec::new();
-    for x in (-850..850).step_by(39) {
-        for z in (-850..850).step_by(41) {
-            let px = x as f32 + ((x * z) % 17) as f32;
-            let pz = z as f32;
-            let p = Vec3::new(px, 0., pz);
-            if terrain::height(px, pz) >= -0.2
-                && roadnet.iter().all(|r| r.distance(p).0 > r.width / 2. + 8.)
-                && lib
-                    .buildings
-                    .iter()
-                    .all(|b| p.distance(b.p) > b.size.x.max(b.size.z) / 2. + 12.)
-            {
-                trees.push(p);
-            }
+    let mut seed = 0x79ab_23d1_67f0_951bu64;
+    let mut random = || {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        (seed >> 32) as u32 as f32 / u32::MAX as f32
+    };
+    for _ in 0..3200 {
+        if trees.len() >= 900 {
+            break;
         }
+        let p = Vec3::new(-940. + random() * 1880., 0., -940. + random() * 1880.);
+        if terrain::height(p.x, p.z) < -0.2
+            || roadnet.iter().any(|r| r.distance(p).0 < r.width / 2. + 9.)
+            || lib.buildings.iter().any(|b| {
+                (p.x - b.p.x).abs() < b.size.x / 2. + 12.
+                    && (p.z - b.p.z).abs() < b.size.z / 2. + 12.
+            })
+            || trees
+                .iter()
+                .any(|t: &Vec3| (p.x - t.x).hypot(p.z - t.z) < 14.)
+        {
+            continue;
+        }
+        trees.push(p);
     }
     for p in [
         (-12., 45.),
@@ -437,7 +447,11 @@ pub fn build() -> World {
         (-200., 185.),
         (-320., 185.),
     ] {
-        trees.push(Vec3::new(p.0, 0., p.1));
+        trees.push(Vec3::new(
+            p.0 + (random() - 0.5) * 9.,
+            0.,
+            p.1 + (random() - 0.5) * 9.,
+        ));
     }
     for b in &mut lib.buildings {
         b.p.y =
@@ -465,7 +479,14 @@ pub fn build() -> World {
             color: [0.2, 0.8, 0.8],
         });
     }
-    let mut points = Vec::new();
+    let mut points = vec![Vec3::new(160., 0., -300.)];
+    for i in 1..=42 {
+        let t = i as f32 / 42.;
+        points.push(Vec3::new(160. - 60. * t, 0., -300. - 330. * t));
+    }
+    for i in 1..=11 {
+        points.push(Vec3::new(100. - 82. * i as f32 / 11., 0., -630.));
+    }
     for i in 0..=240 {
         let t = i as f32 / 240.;
         let angle = t * std::f32::consts::TAU * 2.;
@@ -480,6 +501,17 @@ pub fn build() -> World {
     entry.y = museum.p.y;
     points.push(Vec3::new(-162., museum.p.y, entry.z));
     points.push(entry);
+    // A continuous gentle ascent, including the final museum approach.
+    let distances: Vec<f32> = std::iter::once(0.)
+        .chain(points.windows(2).scan(0., |sum, p| {
+            *sum += p[0].distance(p[1]);
+            Some(*sum)
+        }))
+        .collect();
+    let total = distances.last().copied().unwrap_or(1.);
+    for (p, d) in points.iter_mut().zip(distances) {
+        p.y = museum.p.y * d / total;
+    }
     roadnet.push(Road {
         name: "Museum spiral",
         points,
@@ -488,7 +520,7 @@ pub fn build() -> World {
     });
     city_blocks::infill(&roadnet, &mut lib, &props);
     trees.retain(|t| {
-        if (((t.x / 800.).powi(2) + (t.z / 750.).powi(2)).sqrt() - 1.).abs() < 0.022 {
+        if terrain::railway::nearest(*t).0 < 9. {
             return false;
         }
         roadnet.iter().all(|r| r.distance(*t).0 > r.width / 2. + 8.)

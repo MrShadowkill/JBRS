@@ -4,7 +4,7 @@ const INK: [f32; 3] = [0.045, 0.055, 0.075];
 impl Game {
     fn draw_interface(&self, r: &mut Renderer) {
         r.panel([18., 14., 160., 58.], INK, 0.88, 24.);
-        text(r, 34., 27., 2.6, "JAILBREAK RS", WHITE);
+        text(r, 34., 27., 2.6, "JBRS", WHITE);
         r.panel([192., 14., 170., 58.], INK, 0.88, 22.);
         text(
             r,
@@ -14,7 +14,11 @@ impl Game {
             &format!("${}", self.save.balance),
             [0.4, 0.9, 0.28],
         );
-        for (x, label) in [(378., "MAP  M"), (482., "SET  G"), (586., "GAR  J")] {
+        for (x, label) in if crate::mobile::enabled() {
+            [(378., "MAP"), (482., "SET"), (586., "GAR")]
+        } else {
+            [(378., "MAP  M"), (482., "SET  G"), (586., "GAR  J")]
+        } {
             gui::button(r, [x, 14., 94., 58.], label, INK);
         }
         r.panel([18., 83., 245., 58.], INK, 0.83, 18.);
@@ -82,7 +86,18 @@ impl Game {
                     r.panel([x + 30., 518., 16., 12.], ORANGE, 1., 4.);
                 }
             }
-            text(r, 22., 550., 1.2, "TAB CURSOR   C CROUCH   Z CRAWL", WHITE);
+            text(
+                r,
+                22.,
+                550.,
+                1.2,
+                if crate::mobile::enabled() {
+                    "MOVE: LEFT   LOOK: RIGHT"
+                } else {
+                    "TAB CURSOR   C CROUCH   Z CRAWL"
+                },
+                WHITE,
+            );
             if let Some(id) = self.world.interior(self.player.pos) {
                 r.panel([335., 425., 355., 40.], INK, 0.84, 18.);
                 text(
@@ -90,7 +105,14 @@ impl Game {
                     351.,
                     436.,
                     1.7,
-                    &format!("{}   [E]", if self.world.buildings[id].name == "Office" { "APARTMENTS" } else { self.world.buildings[id].name }),
+                    &format!(
+                        "{}   [E]",
+                        if self.world.buildings[id].name == "Office" {
+                            "APARTMENTS"
+                        } else {
+                            self.world.buildings[id].name
+                        }
+                    ),
                     WHITE,
                 );
             }
@@ -185,7 +207,7 @@ impl Game {
         }
         if self.menu {
             r.panel([174., 125., 676., 363.], INK, 0.92, 28.);
-            text(r, 328., 150., 5.2, "JAILBREAK RS", WHITE);
+            text(r, 328., 150., 5.2, "JBRS", WHITE);
             text(r, 368., 202., 1.5, "CHOOSE YOUR SIDE", [0.65, 0.7, 0.78]);
             gui::button(r, [204., 242., 188., 127.], "POLICE  [2]", BLUE);
             text(r, 225., 329., 1.6, "PATROL THE CITY", WHITE);

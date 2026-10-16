@@ -22,8 +22,8 @@
 
 ## Запуск
 
-Из папки jailbreak-rs: `cargo run --release`.
-Готовый Linux исполняемый файл: `bin/jailbreak-rs`.
+Из папки jbrs: `cargo run --release`.
+Готовый Linux исполняемый файл: `bin/jbrs`.
 E — люки, выход/вход в машины, снабжение и лечение; WASD — движение.
 
 ## Проверки

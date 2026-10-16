@@ -67,7 +67,7 @@ cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked --no-fail-fast
 cargo build --release --locked
-"$CARGO_TARGET_DIR/release/jailbreak-rs" --audit-map
+"$CARGO_TARGET_DIR/release/jbrs" --audit-map
 ```
 
 Форматування, Clippy, release-збірка та аудит карти пройшли.
@@ -88,10 +88,10 @@ smoke-режимі. Приклад:
 
 ```bash
 LIBGL_ALWAYS_SOFTWARE=1 MESA_GL_VERSION_OVERRIDE=2.1 \
-MESA_GLSL_VERSION_OVERRIDE=120 JAILBREAK_SCENE=skyline-new \
-JAILBREAK_QUALITY=3 JAILBREAK_FRAMES=90 JAILBREAK_DEBUG=0 \
-JAILBREAK_CAPTURE=/tmp/city.ppm \
-xvfb-run -a "$CARGO_TARGET_DIR/release/jailbreak-rs" --smoke-test
+MESA_GLSL_VERSION_OVERRIDE=120 JBRS_SCENE=skyline-new \
+JBRS_QUALITY=3 JBRS_FRAMES=90 JBRS_DEBUG=0 \
+JBRS_CAPTURE=/tmp/city.ppm \
+xvfb-run -a "$CARGO_TARGET_DIR/release/jbrs" --smoke-test
 ```
 
 На Intel HD Ironlake запуску не було: результати програмного рендерера
