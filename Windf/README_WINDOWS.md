@@ -1,0 +1,62 @@
+# JBRS — Windows 11 x64
+
+Самостоятельная копия текущей игры: город с квартирами, восемь автомобилей и ограбление J-STORE. Исходная игра в родительском каталоге не заменяется. Дальнейшие изменения двух копий автоматически не синхронизируются.
+
+## Запуск готовой версии
+
+1. Распакуйте **весь** архив `JBRS-Windows11-x64.zip` в отдельную папку.
+2. Запустите `Start.cmd`. В исходном проекте можно запускать `Windf/run.cmd`.
+3. Не отделяйте `SDL2.dll` от `jailbreak-rs.exe`. Rust и инструменты сборки для игры не нужны.
+
+Требуются Windows 11 x64 и видеодрайвер с OpenGL **2.1 compatibility**, GLSL **1.20**. Игра не требует OpenGL 3, Vulkan или DirectX. Установите драйвер производителя GPU: стандартный Microsoft Basic Display Adapter может не предоставлять нужный OpenGL. Производительность на конкретном компьютере требует отдельной проверки.
+
+Сохранения: `%LOCALAPPDATA%\JBRS-Windf\save.json`. Переменная `JAILBREAK_SAVE` позволяет указать другой файл. Пути с кириллицей поддерживаются. Повторное сохранение заменяет прежний файл через Windows API, без предварительного удаления. Старое сохранение можно перенести вручную при закрытой игре.
+
+При ошибке `Start.cmd` оставляет сообщение в консоли. Для диагностического запуска из PowerShell:
+
+```powershell
+$env:JAILBREAK_DEBUG = '1'
+.\jailbreak-rs.exe
+```
+
+## Повторная сборка на Windows
+
+Установите стабильный Rust через https://rustup.rs/ и **Visual Studio 2022 Build Tools**, компонент **Desktop development with C++**, включая Windows SDK и x64 MSVC. После установки откройте новый терминал.
+
+Запустите `Windf/build.cmd`. Скрипт находит инструменты Visual Studio, проверяет SHA-256 включённых файлов SDL2, устанавливает Rust target `x86_64-pc-windows-msvc`, собирает release и создаёт:
+
+- `dist/jailbreak-rs.exe`, `dist/SDL2.dll`, `dist/Start.cmd` и лицензии;
+- `JBRS-Windows11-x64.zip` — переносимый комплект.
+
+Скрипт не меняет глобальный Rust toolchain. SDL2 2.30.11 x64 включён в `vendor/SDL2`: импортные библиотеки для MSVC и MinGW, DLL, лицензия и контрольные суммы официальных архивов.
+
+Альтернатива для установленного MSYS2 MinGW x64 (компилятор `x86_64-w64-mingw32-gcc` должен находиться в PATH):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Target x86_64-pc-windows-gnu
+```
+
+Для разработки команды выполняются именно из `Windf`:
+
+```powershell
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --target x86_64-pc-windows-msvc -- -D warnings
+cargo test --workspace --target x86_64-pc-windows-msvc
+```
+
+## Что адаптировано
+
+- Отдельный Cargo workspace с исходниками и ресурсами текущей игры.
+- SDL2 подключается по целевой ОС; build script учитывает target, а не ОС машины сборки.
+- Функции OpenGL загружаются через `SDL_GL_GetProcAddress` после создания контекста, с Windows calling convention. Отсутствующая функция даёт понятную ошибку.
+- Сохранения используют каталог Windows и замену файла через `MoveFileExW`.
+- Показатель оперативной памяти использует Windows API вместо `/proc`.
+- Портативный запуск и воспроизводимая сборка MSVC/MinGW.
+
+## Границы проверки
+
+Готовый `.exe` собран кросс-компилятором MinGW для Windows x64. Проверены PE64 и список DLL: дополнительных MinGW runtime DLL не требуется. Проверка компиляции MSVC выполняется отдельно; готовый комплект содержит GNU-сборку. Windows EXE дополнительно запущен через Wine 10.0: проверены OpenGL 2.1, меню, город, четыре сцены J-STORE, восемь автомобилей, запуск через `run.cmd`, сохранение в стандартный каталог Windows и повторное сохранение по пути с кириллицей. Windows-тесты: 100 прошли, 1 известная ошибка навигации. Полный запуск на настоящей Windows 11 в облачном Linux-окружении недоступен; Wine не заменяет такую проверку.
+
+В исходной игре уже есть падающий тест `world::tests::navigation_exits_cell_block_without_crossing_walls` (застревание `-144.30794, -204.92383`); он воспроизводится в копии. Это известная проблема навигации, не исправление Windows-порта. Подробности проверок — `WINDOWS_VERIFICATION.md` в исходниках.
+
+Лицензии: `LICENSE`, `THIRD_PARTY_NOTICES.md`, `SDL2-LICENSE.txt` и `VEHICLE_ATTRIBUTION.md` в переносимом комплекте. Для исходников SDL2 см. `vendor/SDL2/LICENSE.txt`, сведения о моделях — `vehicles/assets/ATTRIBUTION.md`.

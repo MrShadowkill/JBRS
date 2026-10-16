@@ -1,0 +1,14 @@
+
+running 9 tests
+test apartment_rooms::tests::fixtures_fit_apartments_and_never_obstruct_lift ... ok
+test apartment_rooms::tests::rental_fixtures_fit_ground_floor_without_covering_front_door ... ok
+test apartments::tests::each_apartment_has_one_stash_and_lobby_none ... ok
+test apartments::tests::only_active_floor_is_generated ... ok
+test jewelry::tests::beams_hit_their_visible_positions_and_allow_avoidance ... ok
+test jewelry::tests::ramp_surfaces_reach_each_floor_continuously ... ok
+test jewelry::tests::upper_surfaces_never_snap_to_displays_on_lower_floors ... ok
+test skyline::tests::city_lod_keeps_roof_and_reduces_facade_geometry ... ok
+test skyline::tests::decorative_roof_matches_collision_and_stays_in_footprint ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

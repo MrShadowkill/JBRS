@@ -1,0 +1,8 @@
+
+running 3 tests
+test tests::every_weapon_uses_its_magazine_cooldown_and_reload ... ok
+test tests::fire_and_reload ... ok
+test tests::targets_on_other_floor_are_not_hit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

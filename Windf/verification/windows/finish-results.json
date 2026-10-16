@@ -1,0 +1,17 @@
+[
+  {
+    "launch": "default-save",
+    "exit": 0,
+    "save_verified": true
+  },
+  {
+    "launch": "unicode-save-first",
+    "exit": 0,
+    "save_verified": true
+  },
+  {
+    "launch": "unicode-save-replace",
+    "exit": 0,
+    "save_verified": true
+  }
+]

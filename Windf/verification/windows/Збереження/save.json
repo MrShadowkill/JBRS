@@ -1,0 +1,153 @@
+{
+  "searched_furniture": [],
+  "heist_cooldown": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "robbery_cooldown": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "wanted": 0,
+  "bounty": 0,
+  "car_engine": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "car_engine_selected": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "car_brakes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "car_suspension": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "car_paint": [
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "weapon_owned": [
+    false,
+    false,
+    false
+  ],
+  "magazines": [
+    0,
+    0,
+    0
+  ],
+  "ammunition": [
+    0,
+    0,
+    0
+  ],
+  "leases": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "texture_level": 0,
+  "object_shadows": true,
+  "run_level": 0,
+  "endurance_level": 0,
+  "carry_level": 0,
+  "water": 0,
+  "food": 0,
+  "pistol_owned": false,
+  "quality": 1,
+  "version": 1,
+  "balance": 0,
+  "owned": [],
+  "color": [
+    0.8,
+    0.24,
+    0.12
+  ],
+  "position": {
+    "x": -100.0,
+    "y": 1.0,
+    "z": -160.0
+  },
+  "team": "Prisoner",
+  "robberies": 0,
+  "sensitivity": 0.003,
+  "ammo": 0,
+  "reserve": 0,
+  "render_distance": 450.0
+}

@@ -1,0 +1,12 @@
+
+running 7 tests
+test tests::disk_roundtrip_and_version_rejection ... ok
+test tests::purchased_weapon_and_quality_persist_legacy_has_no_free_gun ... ok
+test tests::roundtrip ... ok
+test tests::settings_and_training_persist_and_legacy_defaults_are_compatible ... ok
+test tests::seven_vehicle_save_preserves_every_existing_slot_and_defaults_akari ... ok
+test tests::six_vehicle_save_migrates_without_losing_upgrades ... ok
+test tests::weapons_leases_and_vehicle_plans_roundtrip ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

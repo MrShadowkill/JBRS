@@ -1,0 +1,9 @@
+
+running 4 tests
+test alarm::tests::cannot_collect_from_outside_and_deadline_has_priority ... ok
+test alarm::tests::deadline_dispatches_and_late_escape_never_pays ... ok
+test alarm::tests::three_sites_pay_only_after_escape_and_once ... ok
+test tests::delivery_once ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

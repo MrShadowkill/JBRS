@@ -1,0 +1,156 @@
+{
+  "runtime": "Wine 10.0, Linux x86_64, Mesa llvmpipe OpenGL 2.1 / GLSL 1.20",
+  "passed": 100,
+  "failed": 1,
+  "tests": [
+    {
+      "binary": "buildings-a8a387d4b65975e4.exe",
+      "passed": 9,
+      "failed": 0,
+      "log": "tests-buildings-a8a387d4b65975e4.log"
+    },
+    {
+      "binary": "criminals-4447475eff3329d8.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-criminals-4447475eff3329d8.log"
+    },
+    {
+      "binary": "economy-350df979cdd3a4c1.exe",
+      "passed": 1,
+      "failed": 0,
+      "log": "tests-economy-350df979cdd3a4c1.log"
+    },
+    {
+      "binary": "engine_core-4020c9365c4e7974.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-engine_core-4020c9365c4e7974.log"
+    },
+    {
+      "binary": "gui-0a538bacc8f053fa.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-gui-0a538bacc8f053fa.log"
+    },
+    {
+      "binary": "jailbreak_rs-9b014889a1de0a1a.exe",
+      "passed": 51,
+      "failed": 0,
+      "log": "tests-jailbreak_rs-9b014889a1de0a1a.log"
+    },
+    {
+      "binary": "minimap-bc4499990bdcd848.exe",
+      "passed": 1,
+      "failed": 0,
+      "log": "tests-minimap-bc4499990bdcd848.log"
+    },
+    {
+      "binary": "player-e980141ea16a5737.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-player-e980141ea16a5737.log"
+    },
+    {
+      "binary": "police-bb129a70f36ee11d.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-police-bb129a70f36ee11d.log"
+    },
+    {
+      "binary": "profiling-3aaaad3ae3b81036.exe",
+      "passed": 0,
+      "failed": 0,
+      "log": "tests-profiling-3aaaad3ae3b81036.log"
+    },
+    {
+      "binary": "renderer_gl21-173c6acc13c71c10.exe",
+      "passed": 2,
+      "failed": 0,
+      "log": "tests-renderer_gl21-173c6acc13c71c10.log"
+    },
+    {
+      "binary": "roads-03e7d9068cccf403.exe",
+      "passed": 2,
+      "failed": 0,
+      "log": "tests-roads-03e7d9068cccf403.log"
+    },
+    {
+      "binary": "robberies-d74b68198fc214ff.exe",
+      "passed": 4,
+      "failed": 0,
+      "log": "tests-robberies-d74b68198fc214ff.log"
+    },
+    {
+      "binary": "save_system-a3172a9d74ab34ae.exe",
+      "passed": 7,
+      "failed": 0,
+      "log": "tests-save_system-a3172a9d74ab34ae.log"
+    },
+    {
+      "binary": "terrain-762e52339ef297e1.exe",
+      "passed": 2,
+      "failed": 0,
+      "log": "tests-terrain-762e52339ef297e1.log"
+    },
+    {
+      "binary": "vehicle_physics-2723f7d45364c0c9.exe",
+      "passed": 3,
+      "failed": 0,
+      "log": "tests-vehicle_physics-2723f7d45364c0c9.log"
+    },
+    {
+      "binary": "vehicles-8abe077780dd092c.exe",
+      "passed": 6,
+      "failed": 0,
+      "log": "tests-vehicles-8abe077780dd092c.log"
+    },
+    {
+      "binary": "weapons-9b04be4e1c00a104.exe",
+      "passed": 3,
+      "failed": 0,
+      "log": "tests-weapons-9b04be4e1c00a104.log"
+    },
+    {
+      "binary": "world-eaf6803e78cde7fd.exe",
+      "passed": 9,
+      "failed": 1,
+      "log": "tests-world-eaf6803e78cde7fd.log"
+    }
+  ],
+  "scenes": [
+    "scene-jstore-lasers-new.log",
+    "scene-jstore-roof-new.log",
+    "scene-jstore-showroom-new.log",
+    "scene-jstore-stairs-new.log",
+    "scene-menu.log",
+    "scene-skyline-new.log"
+  ],
+  "vehicles": [
+    "vehicle-0.log",
+    "vehicle-1.log",
+    "vehicle-2.log",
+    "vehicle-3.log",
+    "vehicle-4.log",
+    "vehicle-5.log",
+    "vehicle-6.log",
+    "vehicle-7.log"
+  ],
+  "save_checks": [
+    {
+      "launch": "default-save",
+      "exit": 0,
+      "save_verified": true
+    },
+    {
+      "launch": "unicode-save-first",
+      "exit": 0,
+      "save_verified": true
+    },
+    {
+      "launch": "unicode-save-replace",
+      "exit": 0,
+      "save_verified": true
+    }
+  ]
+}

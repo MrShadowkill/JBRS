@@ -1,0 +1,8 @@
+
+running 3 tests
+test tests::bounded_speed ... ok
+test tests::braking_large_dt_does_not_reverse_or_lose_elevation ... ok
+test tests::engine_upgrade_accelerates_and_brakes_upgrade_stops_faster ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

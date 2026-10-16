@@ -1,0 +1,11 @@
+
+running 6 tests
+test body::tests::catalog_meshes_are_distinct_and_cached ... ok
+test body::tests::every_catalog_model_has_bounded_geometry_and_real_lod ... ok
+test body::tests::imported_body_skirts_are_paintable_but_wheel_centers_are_not ... ok
+test body::tests::imported_headlights_face_the_same_direction_as_vehicle_physics ... ok
+test body::tests::malformed_assets_return_meaningful_errors ... ok
+test rail::tests::rail_geometry_stays_inside_streaming_bounds ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+

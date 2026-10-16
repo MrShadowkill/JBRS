@@ -1,0 +1,5 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+VEHICLE_CACHE parts=0 bytes=0
+GEOMETRY scene_triangles=34578 world_triangles=33502 interior_triangles=0 quality=1 vehicles=0 actors_and_effects=480
+PROFILE scene=skyline-new frames=90 mean_ms=14.53 p95_ms=15.99 max_ms=30.45 rss_mb=139.1 gpu_mb=4.5 active_chunks=40 visible_chunks=20 effective_distance=320
+Rendered 90 frames; observed 45.6 FPS (host only)

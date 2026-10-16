@@ -1,0 +1,27 @@
+
+running 10 tests
+test city_blocks::tests::infill_is_bounded_and_keeps_original_entrances_and_roads_clear ... ok
+test streaming::tests::closing_a_full_job_queue_does_not_deadlock ... ok
+test tests::bridge_and_tunnel_surface ... ok
+test tests::deterministic_rebuild ... ok
+test tests::elevated_factory_mesh_collision_and_surface_use_same_base ... ok
+test tests::every_cell_has_clear_doorway ... ok
+test tests::map_audit ... ok
+test tests::navigation_exits_cell_block_without_crossing_walls ... FAILED
+test tests::prison_perimeter_has_no_free_gate_exit ... ok
+test tests::road_clearance ... ok
+
+failures:
+
+---- tests::navigation_exits_cell_block_without_crossing_walls stdout ----
+
+thread 'tests::navigation_exits_cell_block_without_crossing_walls' panicked at world/src/lib.rs:665:9:
+stuck at -144.30794,-204.92383
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::navigation_exits_cell_block_without_crossing_walls
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.13s
+

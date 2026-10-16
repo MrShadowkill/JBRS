@@ -1,0 +1,6 @@
+[package]
+name="buildings"
+version="0.2.0"
+edition="2021"
+[dependencies]
+engine_core={path="../engine_core"}
