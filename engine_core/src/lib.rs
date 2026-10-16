@@ -1,3 +1,5 @@
+/// Stable vehicle slots, shared by the catalog and save migration. Append new types only.
+pub const VEHICLE_SLOTS: usize = 8;
 use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Default, Debug, Serialize, Deserialize)]
 pub struct Vec3 {

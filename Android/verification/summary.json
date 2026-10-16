@@ -1,0 +1,52 @@
+{
+  "unit_tests": {
+    "passed": 115,
+    "failed": 1,
+    "known_failure": "world::tests::navigation_exits_cell_block_without_crossing_walls"
+  },
+  "gles2_scenes": [
+    {
+      "log": "gles2-bathroom-new.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    },
+    {
+      "log": "gles2-jstore-lasers-new.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    },
+    {
+      "log": "gles2-kitchen-new.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    },
+    {
+      "log": "gles2-menu.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    },
+    {
+      "log": "gles2-skyline-new.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    },
+    {
+      "log": "gles2-vehicle-new.log",
+      "frames": 90,
+      "world_buffer": "640x360",
+      "ui_buffer": "1024x576",
+      "host": "Linux + Xvfb + Mesa llvmpipe"
+    }
+  ],
+  "android_runtime": "not tested; no attached Android device or Android emulator available"
+}

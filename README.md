@@ -7,6 +7,14 @@
 
 Нові локації, потяг, наручники, поверхи й налаштування авто: [UPDATE_0_6.md](UPDATE_0_6.md).
 
+Деталізовані авто та потяг: [TRANSPORT_MODELS.md](TRANSPORT_MODELS.md).
+
+Місто й квартири: [CITY_REBUILD.md](CITY_REBUILD.md).
+
+Ювелірний J-STORE: [JSTORE_HEIST.md](JSTORE_HEIST.md).
+
+Android 10 ARM64 із сенсорним керуванням (preview): [інструкція й APK](Android/README.md).
+
 ## Запуск
 
 Розпакуйте архів та виконайте `./run.sh` у папці `jailbreak-rs`.

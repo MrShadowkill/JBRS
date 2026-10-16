@@ -1,4 +1,4 @@
-use engine_core::{Team, Vec3};
+use engine_core::{Team, Vec3, VEHICLE_SLOTS};
 use serde::{Deserialize, Serialize};
 use std::{io, path::PathBuf};
 #[derive(Serialize, Deserialize)]
@@ -15,19 +15,19 @@ pub struct Save {
     pub bounty: u32,
     #[serde(default)]
     #[serde(deserialize_with = "read_car_engine")]
-    pub car_engine: [u32; 7],
+    pub car_engine: [u32; VEHICLE_SLOTS],
     #[serde(default = "default_selected_engine")]
     #[serde(deserialize_with = "read_car_engine_selected")]
-    pub car_engine_selected: [u32; 7],
+    pub car_engine_selected: [u32; VEHICLE_SLOTS],
     #[serde(default)]
     #[serde(deserialize_with = "read_car_brakes")]
-    pub car_brakes: [u32; 7],
+    pub car_brakes: [u32; VEHICLE_SLOTS],
     #[serde(default)]
     #[serde(deserialize_with = "read_car_suspension")]
-    pub car_suspension: [u32; 7],
+    pub car_suspension: [u32; VEHICLE_SLOTS],
     #[serde(default)]
     #[serde(deserialize_with = "read_car_paint")]
-    pub car_paint: [[f32; 3]; 7],
+    pub car_paint: [[f32; 3]; VEHICLE_SLOTS],
     #[serde(default)]
     pub weapon_owned: [bool; 3],
     #[serde(default)]
@@ -77,11 +77,11 @@ impl Default for Save {
             robbery_cooldown: [0.; 7],
             wanted: 0,
             bounty: 0,
-            car_engine: [0; 7],
-            car_engine_selected: [u32::MAX; 7],
-            car_brakes: [0; 7],
-            car_suspension: [0; 7],
-            car_paint: [[0.; 3]; 7],
+            car_engine: [0; VEHICLE_SLOTS],
+            car_engine_selected: [u32::MAX; VEHICLE_SLOTS],
+            car_brakes: [0; VEHICLE_SLOTS],
+            car_suspension: [0; VEHICLE_SLOTS],
+            car_paint: [[0.; 3]; VEHICLE_SLOTS],
             weapon_owned: [false; 3],
             magazines: [0; 3],
             ammunition: [0; 3],
@@ -161,7 +161,7 @@ fn load_from(p: &std::path::Path) -> Result<Save, String> {
         || s.water > 20
         || s.food > 20
         || s.quality > 3
-        || s.owned.iter().any(|i| *i >= 6)
+        || s.owned.iter().any(|i| *i >= VEHICLE_SLOTS)
         || !s.position.x.is_finite()
         || !s.position.z.is_finite()
         || !s.position.y.is_finite()
@@ -205,64 +205,74 @@ fn default_shadows() -> bool {
     true
 }
 
-fn default_selected_engine() -> [u32; 7] {
-    [u32::MAX; 7]
+fn default_selected_engine() -> [u32; VEHICLE_SLOTS] {
+    [u32::MAX; VEHICLE_SLOTS]
 }
 
-fn read_car_engine<'de, D: serde::Deserializer<'de>>(d: D) -> Result<[u32; 7], D::Error> {
+fn read_car_engine<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<[u32; VEHICLE_SLOTS], D::Error> {
     let values = Vec::<u32>::deserialize(d)?;
-    if values.len() > 7 {
+    if values.len() > VEHICLE_SLOTS {
         return Err(serde::de::Error::custom("too many vehicle slots"));
     }
-    let mut out = [0; 7];
+    let mut out = [0; VEHICLE_SLOTS];
     for (i, v) in values.into_iter().enumerate() {
         out[i] = v;
     }
     Ok(out)
 }
 
-fn read_car_engine_selected<'de, D: serde::Deserializer<'de>>(d: D) -> Result<[u32; 7], D::Error> {
+fn read_car_engine_selected<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<[u32; VEHICLE_SLOTS], D::Error> {
     let values = Vec::<u32>::deserialize(d)?;
-    if values.len() > 7 {
+    if values.len() > VEHICLE_SLOTS {
         return Err(serde::de::Error::custom("too many vehicle slots"));
     }
-    let mut out = [u32::MAX; 7];
+    let mut out = [u32::MAX; VEHICLE_SLOTS];
     for (i, v) in values.into_iter().enumerate() {
         out[i] = v;
     }
     Ok(out)
 }
 
-fn read_car_brakes<'de, D: serde::Deserializer<'de>>(d: D) -> Result<[u32; 7], D::Error> {
+fn read_car_brakes<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<[u32; VEHICLE_SLOTS], D::Error> {
     let values = Vec::<u32>::deserialize(d)?;
-    if values.len() > 7 {
+    if values.len() > VEHICLE_SLOTS {
         return Err(serde::de::Error::custom("too many vehicle slots"));
     }
-    let mut out = [0; 7];
+    let mut out = [0; VEHICLE_SLOTS];
     for (i, v) in values.into_iter().enumerate() {
         out[i] = v;
     }
     Ok(out)
 }
 
-fn read_car_suspension<'de, D: serde::Deserializer<'de>>(d: D) -> Result<[u32; 7], D::Error> {
+fn read_car_suspension<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<[u32; VEHICLE_SLOTS], D::Error> {
     let values = Vec::<u32>::deserialize(d)?;
-    if values.len() > 7 {
+    if values.len() > VEHICLE_SLOTS {
         return Err(serde::de::Error::custom("too many vehicle slots"));
     }
-    let mut out = [0; 7];
+    let mut out = [0; VEHICLE_SLOTS];
     for (i, v) in values.into_iter().enumerate() {
         out[i] = v;
     }
     Ok(out)
 }
 
-fn read_car_paint<'de, D: serde::Deserializer<'de>>(d: D) -> Result<[[f32; 3]; 7], D::Error> {
+fn read_car_paint<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<[[f32; 3]; VEHICLE_SLOTS], D::Error> {
     let values = Vec::<[f32; 3]>::deserialize(d)?;
-    if values.len() > 7 {
+    if values.len() > VEHICLE_SLOTS {
         return Err(serde::de::Error::custom("too many vehicle slots"));
     }
-    let mut out = [[0.; 3]; 7];
+    let mut out = [[0.; 3]; VEHICLE_SLOTS];
     for (i, v) in values.into_iter().enumerate() {
         out[i] = v;
     }
@@ -290,6 +300,40 @@ mod tests {
         assert_eq!(migrated.car_engine_selected[6], u32::MAX);
     }
 
+    #[test]
+    fn seven_vehicle_save_preserves_every_existing_slot_and_defaults_akari() {
+        let mut value = serde_json::to_value(super::Save::default()).unwrap();
+        for field in [
+            "car_engine",
+            "car_engine_selected",
+            "car_brakes",
+            "car_suspension",
+            "car_paint",
+        ] {
+            value[field].as_array_mut().unwrap().truncate(7);
+        }
+        value["car_engine"][6] = serde_json::json!(3);
+        value["car_engine_selected"][6] = serde_json::json!(2);
+        value["car_paint"][6] = serde_json::json!([0.2, 0.4, 0.6]);
+        let mut migrated: super::Save = serde_json::from_value(value).unwrap();
+        assert_eq!(migrated.car_engine[6], 3);
+        assert_eq!(migrated.car_engine_selected[6], 2);
+        assert_eq!(migrated.car_paint[6], [0.2, 0.4, 0.6]);
+        assert_eq!(migrated.car_engine[7], 0);
+        assert_eq!(migrated.car_engine_selected[7], u32::MAX);
+        assert_eq!(migrated.car_paint[7], [0.; 3]);
+        migrated.car_engine[7] = 4;
+        migrated.car_paint[7] = [0.9, 0.1, 0.2];
+        migrated.owned.push(7);
+        let path = std::env::temp_dir().join(format!("jbrs-akari-{}.json", std::process::id()));
+        super::store_at(&path, &migrated).unwrap();
+        let loaded = super::load_from(&path).unwrap();
+        std::fs::remove_file(path).unwrap();
+        assert_eq!(loaded.car_engine[7], 4);
+        assert_eq!(loaded.car_paint[7], [0.9, 0.1, 0.2]);
+        assert_eq!(loaded.owned, vec![7]);
+    }
+
     use super::*;
     #[test]
     fn weapons_leases_and_vehicle_plans_roundtrip() {
@@ -298,7 +342,7 @@ mod tests {
             magazines: [0, 5, 20],
             ammunition: [0, 10, 50],
             leases: [800., 0., 0., 900.],
-            car_engine: [2, 0, 0, 0, 0, 0, 0],
+            car_engine: [2, 0, 0, 0, 0, 0, 0, 0],
             ..Default::default()
         };
         let t: Save = serde_json::from_slice(&serde_json::to_vec(&s).unwrap()).unwrap();

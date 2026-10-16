@@ -69,6 +69,9 @@ impl Building {
                 }
                 continue;
             }
+            for f in apartment_rooms::fixtures(self, floor) {
+                m.cuboid(f.position, f.size, f.color, f.material, 0.);
+            }
             for side in [-1., 1.] {
                 let rx = x + side * 8.;
                 let rz = z + (variant % 4) as f32 - 1.5;
@@ -178,6 +181,7 @@ pub fn search_target(b: &Building, p: Vec3) -> Option<(u64, bool, &'static str)>
 pub(super) fn furniture_colliders(b: &Building) -> Vec<Collider> {
     let mut out = Vec::new();
     for floor in 1..(b.size.y / 4.) as usize {
+        out.extend(apartment_rooms::colliders(b, floor));
         let variant = (b.id * 13 + floor * 7) % 32;
         for side in [-1., 1.] {
             let x = b.p.x + side * 8.;
@@ -222,7 +226,7 @@ mod tests {
             .vertices
             .iter()
             .all(|v| v.position[1] >= 17.9 && v.position[1] <= 22.1));
-        assert!(m.vertices.len() < 2500);
+        assert!(m.vertices.len() < 5000);
         assert!(b.interior_mesh().vertices.len() > m.vertices.len() * 5);
         assert!(b.interior_mesh_at(0).vertices.len() < m.vertices.len());
     }

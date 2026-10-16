@@ -12,6 +12,10 @@ impl Game {
                 self.notify("COMPLETE SECURITY PUZZLES BEFORE DELIVERY");
                 return true;
             }
+            if self.heists.site==Some(0) && !self.heists.jewelry_roof_reached {
+                self.notify("J-STORE: REACH ROOF WITH JEWELS BEFORE DELIVERY");
+                return true;
+            }
             let money = self.heists.bag;
             self.save.balance += money;
             self.heists.bag = 0;
@@ -73,6 +77,10 @@ impl Game {
                 if p.distance(lift) < 2.5 {
                     if name == "Jewelry" && self.heists.site == Some(0) && self.heists.strikes < 3 {
                         self.notify("BREAK DISPLAY GLASS FIRST - F");
+                        return true;
+                    }
+                    if name=="Jewelry" && self.heists.site==Some(0) && self.heists.bag>0 {
+                        self.notify("J-STORE SECURITY LOCK: USE SIDE RAMPS TO ROOF");
                         return true;
                     }
                     let max = if matches!(name, "Office" | "Westhaven") {
@@ -145,7 +153,7 @@ impl Game {
                     }
                 }
                 self.notify(if matches!(site, 0 | 4) && self.heists.strikes < 3 {
-                    "F: BREAK GLASS, THEN LIFT TO DIAMOND STORAGE"
+                    if site==0 {"J-STORE: F BREAK DISPLAY; UPSTAIRS HOLD E TO LOAD JEWELS"} else {"F BREAK GLASS; HOLD E TO COLLECT"}
                 } else {
                     "HOLD E AT LOOT TO FILL BAG; DELIVER TO COLLECTOR"
                 });
@@ -160,7 +168,7 @@ impl Game {
         };
         let spec = crate::heists::SITES[id];
         let p = self.player.pos;
-        if [-1., 1.].iter().any(|side| {
+        if (p.y-self.world.surface(spec.x,spec.z)-1.).abs()<1.0 && [-1., 1.].iter().any(|side| {
             p.distance(Vec3::new(
                 spec.x + side * if id == 0 { 6. } else { 8. },
                 self.world.surface(spec.x, spec.z) + 1.,
@@ -172,7 +180,7 @@ impl Game {
                 if id == 4 {
                     "GLASS BROKEN - HOLD E THEN LEAVE AREA"
                 } else {
-                    "GLASS BROKEN - LIFT TO DIAMOND STORAGE"
+                    "J-STORE GLASS BROKEN - UPSTAIRS FOR DIAMONDS"
                 }
             } else {
                 "GLASS CRACKED"
@@ -226,6 +234,10 @@ impl Game {
             .find(|b| b.name == spec.name)
             .map(|b| b.p.y)
             .unwrap_or(0.);
+        if id==0 && self.heists.bag>0 && (p.x-spec.x).abs()<14. && (p.z-spec.z).abs()<14.
+            && p.y>=floor+buildings::jewelry::ROOF+0.8 {
+            self.heists.jewelry_roof_reached=true;
+        }
         let ready = match id {
             0 => self.heists.strikes >= 3 && p.y > floor + 4.5 && p.y < floor + 7.5,
             1 => true,
@@ -253,14 +265,17 @@ impl Game {
             self.wanted = 0;
             self.notify(&format!("ESCAPED GAS STATION WITH ${cash}"));
         }
-        // Laser grids share exact visual and damage coordinates. Crouch or jump across beams.
-        if matches!(id, 0 | 3) && near && !self.heists.quiz {
-            let local = (p.z - spec.z + 8.).rem_euclid(4.);
-            if !(0.35..=3.65).contains(&local)
-                && self.stance == 0
-                && (p.y - floor - 1.).abs() < 0.25
-            {
-                self.player.health = (self.player.health - 20. * STEP).max(0.);
+        // J-Store beams use the same positions for visible geometry and collision.
+        if id==0 && !self.heists.quiz {
+            let local=Vec3::new(p.x-spec.x,p.y-floor,p.z-spec.z);
+            if buildings::jewelry::beams(self.clock).iter().any(|beam|beam.touches(local,self.stance)) {
+                self.player.health=(self.player.health-24.*STEP).max(0.);
+            }
+        }
+        if id==3 && near && !self.heists.quiz {
+            let local=(p.z-spec.z+8.).rem_euclid(4.);
+            if !(0.35..=3.65).contains(&local) && self.stance==0 && (p.y-floor-1.).abs()<0.25 {
+                self.player.health=(self.player.health-20.*STEP).max(0.);
             }
         }
     }
@@ -277,12 +292,25 @@ impl Game {
                 0.4,
             );
         }
-        let floor = self.world.surface(260., 190.);
-        if self.player.pos.distance(Vec3::new(260., floor + 1., 190.)) < 60. {
+        let [jx,jz]=buildings::jewelry::CENTER;
+        let floor = self.world.surface(buildings::jewelry::CENTER[0],buildings::jewelry::CENTER[1]);
+        if self.heists.site==Some(0) && self.player.pos.distance(Vec3::new(buildings::jewelry::CENTER[0],floor+1.,buildings::jewelry::CENTER[1]))<80. {
+            for beam in buildings::jewelry::beams(self.clock) {
+                let p=[buildings::jewelry::CENTER[0]+beam.p[0],floor+beam.p[1],buildings::jewelry::CENTER[1]+beam.p[2]];
+                r.cube(p,beam.size,[1.,0.055,0.035],0.);
+                // Bright core supplies the stylized light strip without a bloom dependency.
+                r.cube(p,beam.size.map(|v|(v*0.45).max(0.025)),[1.,0.65,0.35],0.);
+            }
+        }
+        if self.player.pos.distance(Vec3::new(jx, floor + 1., jz)) < 60. {
             for side in [-1., 1.] {
                 if self.heists.site != Some(0) || self.heists.strikes < 3 {
+                    for edge in [-1.,1.] {
+                        r.glass([jx+side*6.+edge*1.5,floor+1.64,jz],[0.025,0.6,5.],[0.25,0.7,0.82],0.);
+                        r.glass([jx+side*6.,floor+1.64,jz+edge*2.5],[3.,0.6,0.025],[0.25,0.7,0.82],0.);
+                    }
                     r.glass(
-                        [260. + side * 6., floor + 1.95, 190.],
+                        [jx + side * 6., floor + 1.95, jz],
                         [3., 0.04, 5.],
                         [0.15, 0.65, 0.85],
                         0.,
@@ -291,9 +319,9 @@ impl Game {
                     for shard in 0..8 {
                         r.cube(
                             [
-                                260. + side * 6. - 1. + shard as f32 * 0.3,
+                                jx + side * 6. - 1. + shard as f32 * 0.3,
                                 floor + 0.03,
-                                190. - (shard % 3) as f32 * 0.5,
+                                jz - (shard % 3) as f32 * 0.5,
                             ],
                             [0.2, 0.04, 0.25],
                             [0.55, 0.8, 0.9],
@@ -351,21 +379,12 @@ impl Game {
                     a,
                 );
             }
-            for side in [-1., 1.] {
-                for end in [-1., 1.] {
-                    r.rounded(
-                        [
-                            p.x + a.cos() * side * 1.8 + a.sin() * end * 2.6,
-                            p.y - 0.4,
-                            p.z - a.sin() * side * 1.8 + a.cos() * end * 2.6,
-                        ],
-                        [0.4, 1., 1.],
-                        [0.08, 0.09, 0.1],
-                        a,
-                        8,
-                        0.35,
-                    );
-                }
+            thread_local! { static RUNNING_GEAR: engine_core::Mesh = vehicles::rail::running_gear(); }
+            RUNNING_GEAR.with(|mesh| r.solid_model(mesh, [p.x, p.y, p.z], a, [1.; 3]));
+            // The opened robbery wagon keeps its accessible deck unobstructed.
+            if !(self.heists.site == Some(5) && self.heists.riding == Some(wagon) && self.heists.opened) {
+                thread_local! { static EQUIPMENT: engine_core::Mesh = vehicles::rail::wagon_equipment(); }
+                EQUIPMENT.with(|mesh| r.solid_model(mesh, [p.x, p.y, p.z], a, [1.; 3]));
             }
             if gold {
                 r.cube([p.x, p.y + 3., p.z], [1.5, 0.3, 2.], [0.95, 0.75, 0.18], a);
@@ -374,28 +393,17 @@ impl Game {
         let (p, a) = crate::heists::Heists::train(self.clock, 0);
         let q = Vec3::new(p.x + a.sin() * 10., p.y, p.z + a.cos() * 10.);
         if q.distance(self.player.pos) < quality.distance && visible(q) {
-            r.rounded(
-                [q.x, q.y + 1.4, q.z],
-                [4., 3.8, 9.],
-                [0.75, 0.3, 0.12],
-                a,
-                8,
-                0.35,
-            );
-        }
-        for id in [0, 3] {
-            let s = crate::heists::SITES[id];
-            let floor = self.world.surface(s.x, s.z);
-            if self.player.pos.distance(Vec3::new(s.x, floor + 1., s.z)) > 80. {
-                continue;
+            thread_local! {
+                static LOCOMOTIVES: [engine_core::Mesh; 2] = [vehicles::rail::locomotive(false), vehicles::rail::locomotive(true)];
             }
+            LOCOMOTIVES.with(|meshes| r.solid_model(&meshes[usize::from(q.distance(self.player.pos) < quality.detail)], [q.x, q.y, q.z], a, [1.; 3]));
+        }
+        // Casino retains its existing security beams; J-Store uses the shared layout above.
+        let s=crate::heists::SITES[3];
+        let floor=self.world.surface(s.x,s.z);
+        if self.player.pos.distance(Vec3::new(s.x,floor+1.,s.z))<=80. {
             for i in 0..5 {
-                r.cube(
-                    [s.x, floor + 0.8, s.z - 8. + i as f32 * 4.],
-                    [22., 0.06, 0.06],
-                    [1., 0.12, 0.03],
-                    0.,
-                );
+                r.cube([s.x,floor+0.8,s.z-8.+i as f32*4.],[22.,0.06,0.06],[1.,0.12,0.03],0.);
             }
         }
         for (p, taken) in &self.drops {
@@ -460,10 +468,12 @@ impl Game {
                     300.,
                     470.,
                     1.8,
-                    &format!(
+                    &if b.name=="Jewelry" && self.heists.bag>0 {
+                        "J-STORE: SIDE RAMPS TO ROOF; P PARACHUTE; DELIVER LOOT".to_string()
+                    } else {format!(
                         "FLOOR {} - E AT REAR LIFT; P PARACHUTE",
                         ((self.player.pos.y - b.p.y - 0.6) / 4.).floor() as u32 + 1
-                    ),
+                    )},
                     GOLD,
                 );
             }
@@ -488,7 +498,7 @@ impl Game {
                 s.delay / (1. + self.wanted.saturating_sub(1) as f32 * 0.12)
             };
             r.panel([720., 260., 280., 105.], INK, 0.9, 18.);
-            text(r, 735., 275., 2., s.name, GOLD);
+            text(r, 735., 275., 2., if id==0 {"J-STORE"} else {s.name}, GOLD);
             text(
                 r,
                 735.,
@@ -697,6 +707,43 @@ mod expansion_tests {
         g
     }
     #[test]
+    fn jewelry_ramps_are_walkable_through_real_player_simulation() {
+        let mut g=game();
+        g.npcs.clear();
+        let b=g.world.buildings.iter().find(|b|b.name=="Jewelry").unwrap().clone();
+        for ramp in buildings::jewelry::RAMPS {
+            g.player.pos=Vec3::new(b.p.x+ramp.start[0],b.p.y+ramp.start[1]+1.,b.p.z+ramp.start[2]);
+            g.player.vy=0.;
+            let dx=ramp.end[0]-ramp.start[0];let dz=ramp.end[2]-ramp.start[2];
+            g.yaw=dx.atan2(-dz);
+            for _ in 0..200 {g.simulate(1.,0.,false,false,false);}
+            assert!((g.player.pos.y-b.p.y-ramp.end[1]-1.).abs()<0.15,"ramp {:?}: y {}",ramp.end,g.player.pos.y);
+            assert!(g.player.pos.distance(Vec3::new(b.p.x+ramp.end[0],g.player.pos.y,b.p.z+ramp.end[2]))<0.3);
+        }
+    }
+    #[test]
+    fn jewelry_upper_floors_cannot_break_ground_displays_or_collect_early() {
+        let mut g=game();g.npcs.clear();g.heists.start(0);
+        g.player.pos=Vec3::new(254.,13.,190.);
+        for _ in 0..3 {g.special_strike();}
+        assert_eq!(g.heists.strikes,0);
+        g.player.pos=Vec3::new(260.,5.,190.);g.holding=true;
+        for _ in 0..481 {g.tick_heists();}
+        assert_eq!(g.heists.bag,0);
+        assert_eq!(g.heists.progress,0.);
+    }
+    #[test]
+    fn jewelry_laser_damage_matches_jump_crouch_and_alarm_state() {
+        let mut g=game();g.npcs.clear();
+        g.player.pos=Vec3::new(260.,1.,184.);
+        g.tick_heists();assert_eq!(g.player.health,100.);
+        g.heists.start(0);g.tick_heists();assert!(g.player.health<100.);
+        g.player.health=100.;g.player.pos.y=2.;g.tick_heists();assert_eq!(g.player.health,100.);
+        g.player.pos=Vec3::new(260.,9.,188.);g.stance=1;g.tick_heists();assert_eq!(g.player.health,100.);
+        g.stance=0;g.tick_heists();assert!(g.player.health<100.);
+    }
+
+    #[test]
     fn jewelry_has_storage_roof_and_collector_pays_once() {
         let mut g = game();
         g.player.pos = Vec3::new(254., 1., 190.);
@@ -723,6 +770,13 @@ mod expansion_tests {
         }
         assert!(g.heists.bag > 0);
         assert_eq!(g.save.balance, 0);
+        g.player.pos = Vec3::new(-290., 1., 100.);
+        assert!(g.special_interact());
+        assert_eq!(g.save.balance,0);
+        assert!(g.heists.bag>0);
+        g.player.pos=Vec3::new(260.,13.,182.);
+        g.tick_heists();
+        assert!(g.heists.jewelry_roof_reached);
         g.player.pos = Vec3::new(-290., 1., 100.);
         assert!(g.special_interact());
         let paid = g.save.balance;

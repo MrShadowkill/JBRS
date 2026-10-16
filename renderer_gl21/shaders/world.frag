@@ -5,6 +5,7 @@ uniform float opacity;
 uniform float fog_end;
 uniform float detail_amount;
 uniform int mesh_mode;
+uniform vec3 model_tint;
 varying vec4 col;
 varying vec2 uv;
 varying float dist;
@@ -15,6 +16,7 @@ void main(){
   float grain=sin(uv.x*1200.)*sin(uv.y*900.);
   base*=1.+detail_amount*grain*(1.-clamp(dist/160.,0.,1.));
  }
+ if(mesh_mode==2){base*=model_tint;}
  float light=max(0.25+daylight*0.75,emission);
  vec3 sky=vec3(0.08+daylight*0.35,0.11+daylight*0.49,0.2+daylight*0.52);
  float fog=clamp((dist-fog_end*0.55)/(fog_end*0.45),0.,1.);

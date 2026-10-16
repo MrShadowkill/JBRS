@@ -1,3 +1,4 @@
+mod city_blocks;
 mod geography;
 pub mod prison;
 mod streaming;
@@ -239,7 +240,13 @@ impl World {
             if b.name == "Jewelry" && p.y > b.p.y + 12.5 {
                 return f32::MAX;
             }
-            if matches!(b.name, "Office" | "Jewelry" | "Westhaven") {
+            if b.name == "Jewelry" {
+                if let Some(height) = buildings::jewelry::ramp_height(b, p) {
+                    return height + 4.;
+                }
+                return b.p.y + ((p.y - b.p.y - 0.6) / 4.).floor().max(0.) * 4. + 4.;
+            }
+            if matches!(b.name, "Office" | "Westhaven") {
                 return b.support(p) + 4.;
             }
             return b.p.y + b.size.y;
@@ -295,7 +302,7 @@ impl World {
             b.interior
                 && b.inside(p)
                 && p.y + 1.5 >= b.p.y
-                && p.y - 0.8 <= b.p.y + b.size.y + if b.name == "Jewelry" { 0.5 } else { 0. }
+                && p.y - 0.8 <= b.p.y + b.size.y + if b.name == "Jewelry" { 6.5 } else { 0. }
         })
     }
     pub fn chunk(&self, key: (i32, i32), lod: u8) -> Mesh {

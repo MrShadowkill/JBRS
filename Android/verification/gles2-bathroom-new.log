@@ -1,0 +1,6 @@
+MOBILE_TARGET 640x360; UI 1024x576
+OpenGL OpenGL ES 2.0 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+VEHICLE_CACHE parts=0 bytes=0
+GEOMETRY scene_triangles=20782 world_triangles=20050 interior_triangles=1044 quality=0 vehicles=0 actors_and_effects=384
+PROFILE scene=bathroom-new frames=90 mean_ms=17.09 p95_ms=18.95 max_ms=179.75 rss_mb=100.0 gpu_mb=3.2 active_chunks=23 visible_chunks=10 effective_distance=173
+Rendered 90 frames; observed 52.7 FPS (host only)

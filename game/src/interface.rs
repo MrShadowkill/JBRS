@@ -14,7 +14,11 @@ impl Game {
             &format!("${}", self.save.balance),
             [0.4, 0.9, 0.28],
         );
-        for (x, label) in [(378., "MAP  M"), (482., "SET  G"), (586., "GAR  J")] {
+        for (x, label) in if crate::mobile::enabled() {
+            [(378., "MAP"), (482., "SET"), (586., "GAR")]
+        } else {
+            [(378., "MAP  M"), (482., "SET  G"), (586., "GAR  J")]
+        } {
             gui::button(r, [x, 14., 94., 58.], label, INK);
         }
         r.panel([18., 83., 245., 58.], INK, 0.83, 18.);
@@ -82,7 +86,18 @@ impl Game {
                     r.panel([x + 30., 518., 16., 12.], ORANGE, 1., 4.);
                 }
             }
-            text(r, 22., 550., 1.2, "TAB CURSOR   C CROUCH   Z CRAWL", WHITE);
+            text(
+                r,
+                22.,
+                550.,
+                1.2,
+                if crate::mobile::enabled() {
+                    "MOVE: LEFT   LOOK: RIGHT"
+                } else {
+                    "TAB CURSOR   C CROUCH   Z CRAWL"
+                },
+                WHITE,
+            );
             if let Some(id) = self.world.interior(self.player.pos) {
                 r.panel([335., 425., 355., 40.], INK, 0.84, 18.);
                 text(
@@ -90,7 +105,14 @@ impl Game {
                     351.,
                     436.,
                     1.7,
-                    &format!("{}   [E]", if self.world.buildings[id].name == "Office" { "APARTMENTS" } else { self.world.buildings[id].name }),
+                    &format!(
+                        "{}   [E]",
+                        if self.world.buildings[id].name == "Office" {
+                            "APARTMENTS"
+                        } else {
+                            self.world.buildings[id].name
+                        }
+                    ),
                     WHITE,
                 );
             }

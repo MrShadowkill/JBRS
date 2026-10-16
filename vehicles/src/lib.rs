@@ -1,4 +1,5 @@
 pub mod body;
+pub mod rail;
 use engine_core::Vec3;
 pub struct Spec {
     pub name: &'static str,
@@ -8,9 +9,9 @@ pub struct Spec {
     pub grip: f32,
     pub color: [f32; 3],
 }
-pub const CATALOG: [Spec; 7] = [
+pub const CATALOG: [Spec; engine_core::VEHICLE_SLOTS] = [
     Spec {
-        name: "Starter Coupe",
+        name: "Vesper C240",
         price: 0,
         max_speed: 43.,
         acceleration: 12.,
@@ -18,7 +19,7 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.8, 0.24, 0.12],
     },
     Spec {
-        name: "Starter Hatchback",
+        name: "Mica Cityline",
         price: 0,
         max_speed: 35.,
         acceleration: 14.,
@@ -26,7 +27,7 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.22, 0.7, 0.53],
     },
     Spec {
-        name: "Police Cruiser",
+        name: "Sentinel Patrol",
         price: 0,
         max_speed: 49.,
         acceleration: 15.,
@@ -34,7 +35,7 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.14, 0.28, 0.7],
     },
     Spec {
-        name: "Electric GT",
+        name: "Voltura GT",
         price: 2500,
         max_speed: 40.,
         acceleration: 16.,
@@ -42,7 +43,7 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.88, 0.7, 0.22],
     },
     Spec {
-        name: "Pickup Truck",
+        name: "Ridgeback 250",
         price: 6000,
         max_speed: 38.,
         acceleration: 10.,
@@ -50,7 +51,7 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.45, 0.53, 0.58],
     },
     Spec {
-        name: "Track Sport",
+        name: "Kestrel RS",
         price: 12000,
         max_speed: 60.,
         acceleration: 18.,
@@ -58,12 +59,20 @@ pub const CATALOG: [Spec; 7] = [
         color: [0.65, 0.18, 0.5],
     },
     Spec {
-        name: "Apex Hypercar",
+        name: "Aether V12",
         price: 24000,
         max_speed: 72.,
         acceleration: 20.,
         grip: 3.8,
         color: [0.05, 0.65, 0.92],
+    },
+    Spec {
+        name: "Akari R7",
+        price: 18000,
+        max_speed: 57.,
+        acceleration: 17.,
+        grip: 3.7,
+        color: [0.9, 0.91, 0.94],
     },
 ];
 pub struct Car {

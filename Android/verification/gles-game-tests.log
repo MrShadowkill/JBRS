@@ -1,0 +1,65 @@
+   Compiling gui v0.1.0 (/workspace/JBRS/gui)
+   Compiling jailbreak-rs v0.6.2 (/workspace/JBRS/game)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.10s
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/jbrs-e2e485ed192d27ae)
+
+running 56 tests
+test escape::tests::every_star_requires_exact_hits ... ok
+test escape::tests::misses_and_timeout ... ok
+test doors::tests::door_blocks_when_closed_and_clears_center_when_open ... ok
+test game::expansion_tests::casino_requires_five_answers_and_first_floor_loot ... ok
+test game::expansion_tests::direct_engine_upgrade_is_atomic_and_reaches_five ... ok
+test game::expansion_tests::jewelry_has_storage_roof_and_collector_pays_once ... ok
+test game::expansion_tests::immunity_blocks_taser_and_arrest_but_expires ... ok
+test game::expansion_tests::jewelry_laser_damage_matches_jump_crouch_and_alarm_state ... ok
+test game::expansion_tests::jewelry_upper_floors_cannot_break_ground_displays_or_collect_early ... ok
+test game::expansion_tests::train_requires_c4_and_questions_dont_accept_wrong_answers ... ok
+test game::expansion_tests::jewelry_ramps_are_walkable_through_real_player_simulation ... ok
+test game::tests::all_requested_npc_roles_exist ... ok
+test game::residential_regressions::low_wanted_does_not_track_through_building ... ok
+test game::tests::bank_timeout_discards_loot ... ok
+test game::tests::akari_spawns_can_be_stolen_and_uses_its_own_saved_tuning ... ok
+test game::tests::armory_click_selection_purchase_equipment_and_ammo_are_real ... ok
+test game::residential_regressions::furniture_cash_is_paid_once_across_reload ... ok
+test game::tests::car_cannot_drive_through_cell_block ... ok
+test game::tests::casino_stairs_support_player ... ok
+test game::tests::closed_gate_and_bomb_escape_are_real_collisions ... ok
+test game::tests::collection_requires_holding_and_bank_capacity_upgrade ... ok
+test game::tests::engine_brake_and_suspension_upgrades_charge_and_cap ... ok
+test game::tests::crouch_and_crawl_keys_have_distinct_states_and_shorter_collision ... ok
+test game::tests::gym_charges_increasing_cost_and_caps_levels ... ok
+test game::tests::factory_collects_capacity_limited_loot_and_penthouse_lift_works ... ok
+test game::tests::dispatched_police_enter_factory_and_apartment ... ok
+test game::tests::dispatched_police_walk_to_store_and_arrest_staying_player ... ok
+test game::tests::no_free_pistol_purchase_costs_exactly_350 ... ok
+test game::tests::interaction_spam_cannot_rob_and_impacts_are_cooldown_limited ... ok
+test game::tests::npc_robber_is_not_arrested_through_closed_door ... ok
+test game::tests::officers_cannot_tase_through_closed_door_or_other_floor ... ok
+test game::tests::physical_sdl_keys_dispatch_cyrillic_and_modal_navigation ... ok
+test game::tests::rent_expires_and_own_apartment_cannot_be_robbed ... ok
+test game::tests::parked_car_blocks_driving ... ok
+test game::tests::paid_vehicle_plans_survive_restart ... ok
+test game::tests::sedan_traverses_bridge ... ok
+test game::tests::sewer_escape_walks_below_perimeter_and_uses_exit_ladder ... ok
+test game::tests::sewer_side_walls_prevent_surface_teleport ... ok
+test game::tests::sprint_drains_stamina_and_idle_recovers_it ... ok
+test game::tests::stealing_response_car_cancels_scripted_movement ... ok
+test game::tests::stealing_any_car_changes_role_and_no_garage_purchase_is_needed ... ok
+test game::tests::supplies_require_vendor_and_are_consumed_from_hotbar ... ok
+test game::tests::updated_tower_lift_reaches_furnished_floors_without_obstructions ... ok
+test game::tests::workshop_requires_location_and_charges_real_car_changes ... ok
+test game::touch_tests::android_back_closes_panels_and_clears_held_contacts ... ok
+test game::touch_tests::hotbar_last_slot_and_crouch_are_available_without_keyboard ... ok
+test game::tests::store_escape_pays_and_police_deadline_confiscates_loot ... ok
+test heists::tests::cooldown_and_gold ... ok
+test heists::tests::questions_are_solvable_and_gate_completion ... ok
+test game::touch_tests::mobile_event_routes_menu_tap_then_owns_and_releases_movement ... ok
+test world_view::interior_regressions::low_boot_and_streaming_use_coarse_geometry ... ok
+test world_view::tests::frustum_rejects_behind ... ok
+test world_view::tests::opaque_occluder_requires_intersection ... ok
+test game::touch_tests::quiz_can_enter_and_delete_digits_with_touch ... ok
+test game::touch_tests::quick_fire_tap_consumes_one_item_and_shop_buttons_preserve_crouch ... ok
+test world_view::interior_regressions::interior_cache_changes_with_floor_and_clears_outside ... ok
+
+test result: ok. 56 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.06s
+

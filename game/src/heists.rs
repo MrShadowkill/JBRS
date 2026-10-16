@@ -11,8 +11,8 @@ pub struct Site {
 pub const SITES: [Site; 6] = [
     Site {
         name: "Jewelry",
-        x: 260.,
-        z: 190.,
+        x: buildings::jewelry::CENTER[0],
+        z: buildings::jewelry::CENTER[1],
         reward: 320,
         questions: 0,
         delay: 240.,
@@ -77,6 +77,7 @@ pub struct Heists {
     pub train_gold: [usize; 3],
     pub train_count: usize,
     pub riding: Option<usize>,
+    pub jewelry_roof_reached: bool,
     random: u64,
 }
 impl Heists {
@@ -114,6 +115,7 @@ impl Heists {
         self.solved = 0;
         self.strikes = 0;
         self.dispatched = false;
+        self.jewelry_roof_reached = false;
         self.opened = id != 5;
         true
     }

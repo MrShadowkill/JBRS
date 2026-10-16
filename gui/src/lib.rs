@@ -1,3 +1,5 @@
+#[cfg(any(target_os = "android", feature = "gles"))]
+extern crate renderer_gles2 as renderer_gl21;
 use renderer_gl21::Renderer;
 // Antialiased DejaVu font atlas embedded in the renderer; license is bundled.
 pub fn text(r: &mut Renderer, x: f32, y: f32, s: f32, t: &str, c: [f32; 3]) {

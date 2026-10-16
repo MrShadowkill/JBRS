@@ -41,6 +41,16 @@ impl Event {
     pub fn repeat(&self) -> bool {
         self.data[13] != 0
     }
+    pub fn finger(&self) -> (i64, f32, f32) {
+        (
+            i64::from_ne_bytes(self.data[16..24].try_into().unwrap()),
+            f32::from_ne_bytes(self.data[24..28].try_into().unwrap()),
+            f32::from_ne_bytes(self.data[28..32].try_into().unwrap()),
+        )
+    }
+    pub fn touch_mouse(&self) -> bool {
+        u32::from_ne_bytes(self.data[12..16].try_into().unwrap()) == u32::MAX
+    }
     pub fn motion(&self) -> (i32, i32) {
         (
             i32::from_ne_bytes(self.data[28..32].try_into().unwrap()),
@@ -119,6 +129,7 @@ extern "C" {
     fn glGetUniformLocation(program: u32, name: *const c_char) -> i32;
     fn glUniform1f(location: i32, v: f32);
     fn glUniform1i(location: i32, v: i32);
+    fn glUniform3f(location: i32, x: f32, y: f32, z: f32);
     fn glClearColor(r: f32, g: f32, b: f32, a: f32);
     fn glClear(mask: u32);
     fn glEnable(a: u32);
@@ -162,12 +173,14 @@ pub struct Renderer {
     pub triangles: usize,
     ui_open: bool,
     buffers: std::collections::HashSet<u32>,
+    solid_models: std::collections::HashMap<usize, GpuMesh>,
     textures: Vec<u32>,
     program: u32,
     atlas: u32,
     font: u32,
     day_uniform: i32,
     mesh_uniform: i32,
+    tint_uniform: i32,
     fog_uniform: i32,
     quality_uniform: i32,
     opacity_uniform: i32,
@@ -212,12 +225,14 @@ impl Renderer {
                 triangles: 0,
                 ui_open: false,
                 buffers: Default::default(),
+                solid_models: Default::default(),
                 textures: Vec::new(),
                 program: 0,
                 atlas: 0,
                 font: 0,
                 day_uniform: -1,
                 mesh_uniform: -1,
+                tint_uniform: -1,
                 fog_uniform: -1,
                 quality_uniform: -1,
                 opacity_uniform: -1,
@@ -251,6 +266,7 @@ impl Renderer {
             };
             self.day_uniform = uniform("daylight");
             self.mesh_uniform = uniform("mesh_mode");
+            self.tint_uniform = uniform("model_tint");
             self.fog_uniform = uniform("fog_end");
             self.quality_uniform = uniform("detail_amount");
             self.opacity_uniform = uniform("opacity");
@@ -434,6 +450,43 @@ impl Renderer {
         self.triangles += mesh.vertices.len() / 3;
         self.draws += 1;
     }
+    pub fn cached_model_usage(&self) -> (usize, usize) {
+        (
+            self.solid_models.len(),
+            self.solid_models.values().map(|m| m.bytes).sum(),
+        )
+    }
+    /// Upload immutable vehicle geometry once per renderer/context, then draw its VBO.
+    /// Keys identify an immutable catalog part and LOD, never an individual car.
+    pub fn cached_solid_model(
+        &mut self,
+        key: usize,
+        cpu_mesh: &engine_core::Mesh,
+        p: [f32; 3],
+        angle: f32,
+        tint: [f32; 3],
+    ) {
+        if cpu_mesh.vertices.is_empty() {
+            return;
+        }
+        let mesh = if let Some(mesh) = self.solid_models.get(&key) {
+            *mesh
+        } else {
+            let mesh = self.upload(cpu_mesh);
+            self.solid_models.insert(key, mesh);
+            mesh
+        };
+        unsafe {
+            glPushMatrix();
+            glTranslatef(p[0], p[1], p[2]);
+            glRotatef(angle.to_degrees(), 0., 1., 0.);
+            glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
+        }
+        self.draw_buffer(mesh, 2);
+        unsafe {
+            glPopMatrix();
+        }
+    }
     pub fn upload(&mut self, mesh: &engine_core::Mesh) -> GpuMesh {
         unsafe {
             let mut id = 0;
@@ -463,8 +516,11 @@ impl Renderer {
         }
     }
     pub fn mesh(&mut self, mesh: GpuMesh) {
+        self.draw_buffer(mesh, 1);
+    }
+    fn draw_buffer(&mut self, mesh: GpuMesh, mode: i32) {
         unsafe {
-            glUniform1i(self.mesh_uniform, 1);
+            glUniform1i(self.mesh_uniform, mode);
             glBindTexture(0x0de1, self.atlas);
             glBindBuffer(0x8892, mesh.id);
             let stride = std::mem::size_of::<engine_core::Vertex>() as i32;

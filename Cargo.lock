@@ -32,6 +32,7 @@ name = "gui"
 version = "0.1.0"
 dependencies = [
  "renderer_gl21",
+ "renderer_gles2",
 ]
 
 [[package]]
@@ -50,10 +51,12 @@ dependencies = [
  "engine_core",
  "gui",
  "minimap",
+ "mobile_controls",
  "player",
  "police",
  "profiling",
  "renderer_gl21",
+ "renderer_gles2",
  "robberies",
  "save_system",
  "terrain",
@@ -71,6 +74,10 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "minimap"
+version = "0.1.0"
+
+[[package]]
+name = "mobile_controls"
 version = "0.1.0"
 
 [[package]]
@@ -111,6 +118,13 @@ dependencies = [
 
 [[package]]
 name = "renderer_gl21"
+version = "0.1.0"
+dependencies = [
+ "engine_core",
+]
+
+[[package]]
+name = "renderer_gles2"
 version = "0.1.0"
 dependencies = [
  "engine_core",

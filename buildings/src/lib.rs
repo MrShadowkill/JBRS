@@ -1,4 +1,5 @@
 pub mod airport;
+mod apartment_rooms;
 pub mod apartments;
 pub mod bank;
 pub mod barracks;
@@ -28,6 +29,7 @@ pub mod prison;
 pub mod prison_police;
 pub mod rail_station;
 pub mod showroom;
+pub mod skyline;
 pub mod substation;
 pub mod visitors;
 pub mod weapons;
@@ -77,6 +79,14 @@ impl Building {
         (p.x - self.p.x).abs() < self.size.x / 2. && (p.z - self.p.z).abs() < self.size.z / 2.
     }
     pub fn support(&self, p: Vec3) -> f32 {
+        if self.name == "Jewelry" {
+            if let Some(height) = jewelry::ramp_height(self, p) {
+                return height;
+            }
+            if let Some(height) = jewelry::platform_height(self, p) {
+                return height;
+            }
+        }
         if matches!(self.name, "Jewelry" | "Office" | "Westhaven") {
             return self.p.y
                 + ((p.y - self.p.y - 0.6) / 4.)
@@ -144,6 +154,14 @@ impl Building {
     }
     fn local_colliders(&self) -> Vec<Collider> {
         let mut out = self.shell_colliders();
+        out.extend(self.crown());
+        if self.name == "Jewelry" {
+            out.extend(jewelry::colliders(self));
+            return out;
+        }
+        if matches!(self.name, "Apartments" | "Penthouse") {
+            out.extend(apartment_rooms::ground_colliders(self));
+        }
         if !self.interior {
             return out;
         }
@@ -187,6 +205,14 @@ impl Building {
         }
     }
     fn local_mesh(&self, m: &mut Mesh, lod: u8) {
+        if self.name == "Jewelry" {
+            self.jewelry_exterior(m, lod);
+            return;
+        }
+        if self.city_architecture() {
+            self.city_mesh(m, lod);
+            return;
+        }
         let x = self.p.x;
         let z = self.p.z;
         let w = self.size.x;
@@ -666,6 +692,10 @@ impl Building {
     }
     fn local_interior_mesh(&self) -> Mesh {
         let mut m = Mesh::default();
+        if self.name == "Jewelry" {
+            self.jewelry_interior(&mut m);
+            return m;
+        }
         let x = self.p.x;
         let z = self.p.z;
         let w = self.size.x;
@@ -763,6 +793,9 @@ impl Building {
         m
     }
     pub fn roof_mesh(&self) -> Mesh {
+        if self.name == "Jewelry" {
+            return self.jewelry_roof();
+        }
         let mut m = Mesh::default();
         m.cuboid(
             [self.p.x, self.p.y + self.size.y, self.p.z],

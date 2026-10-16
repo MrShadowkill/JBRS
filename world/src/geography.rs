@@ -93,7 +93,13 @@ pub fn build() -> World {
             {
                 continue;
             }
-            let height = 24. + ((ix * 13 + iz * 19) % 67) as f32;
+            let height = if x == 370. && z == 100. {
+                104.
+            } else if x == 210. && z == 50. {
+                88.
+            } else {
+                24. + ((ix * 13 + iz * 19) % 67) as f32
+            };
             buildings::office::place_0(&mut lib, x, z, height, ix);
         }
     }
@@ -480,6 +486,7 @@ pub fn build() -> World {
         width: 8.,
         highway: false,
     });
+    city_blocks::infill(&roadnet, &mut lib, &props);
     trees.retain(|t| {
         if (((t.x / 800.).powi(2) + (t.z / 750.).powi(2)).sqrt() - 1.).abs() < 0.022 {
             return false;

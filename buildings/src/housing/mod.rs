@@ -5,6 +5,11 @@ impl Building {
         let x = self.p.x;
         let z = self.p.z;
         let d = self.size.z;
+        if matches!(self.name, "Apartments" | "Penthouse") {
+            for f in apartment_rooms::ground_fixtures(self) {
+                m.cuboid(f.position, f.size, f.color, f.material, 0.);
+            }
+        }
 
         m.cuboid(
             [x - 5., 0.5, z + 5.],

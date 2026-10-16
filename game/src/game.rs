@@ -19,6 +19,7 @@ struct Game {
     capture_at: f32,
     player: Player,
     cars: Vec<Car>,
+    car_models: &'static [[vehicles::body::Model; 2]],
     driving: Option<usize>,
     save: save_system::Save,
     alarm: Alarm,
@@ -64,6 +65,7 @@ struct Game {
     stance: u8,
     prone: bool,
     crouched: bool,
+    mobile_stick: [f32; 2],
 
     message: String,
     message_time: f32,
@@ -111,6 +113,7 @@ impl Game {
             Car::new(4, Vec3::new(560., 0.65, 175.)),
             Car::new(5, Vec3::new(430., 0.65, -72.)),
             Car::new(6, Vec3::new(420., 0.65, 330.)),
+            Car::new(7, Vec3::new(440., 0.65, -72.)),
         ];
         for car in &mut cars {
             car.pos.y = world.surface(car.pos.x, car.pos.z) + 0.65;
@@ -149,6 +152,7 @@ impl Game {
             capture_at: 3.,
             player,
             cars,
+            car_models: vehicles::body::catalog()?,
             driving: None,
             save,
             alarm,
@@ -196,6 +200,7 @@ impl Game {
             stance: 0,
             prone: false,
             crouched: false,
+            mobile_stick: [0.; 2],
 
             message: "PRISON LOCKED - SEWER MAZE OR C4; P PARACHUTE".into(),
             message_time: 12.,
@@ -1031,9 +1036,17 @@ impl Game {
         }
     }
     fn update(&mut self, r: &Renderer) {
-        let forward = r.key(26) as i32 as f32 - r.key(22) as i32 as f32;
-        let side = r.key(7) as i32 as f32 - r.key(4) as i32 as f32;
-        self.holding = r.key(8);
+        self.update_mobile(r, None);
+    }
+    fn update_mobile(&mut self, r: &Renderer, touch: Option<&mobile_controls::TouchControls>) {
+        self.mobile_stick = touch.map_or([0.; 2], |t| t.movement);
+        let forward = (r.key(26) as i32 as f32 - r.key(22) as i32 as f32
+            + touch.map_or(0., |t| t.movement[1]))
+        .clamp(-1., 1.);
+        let side = (r.key(7) as i32 as f32 - r.key(4) as i32 as f32
+            + touch.map_or(0., |t| t.movement[0]))
+        .clamp(-1., 1.);
+        self.holding = r.key(8) || touch.is_some_and(|t| t.held(mobile_controls::Action::Interact));
         self.stance = if self.prone {
             2
         } else if self.crouched || r.key(224) {
@@ -1041,7 +1054,20 @@ impl Game {
         } else {
             0
         };
-        self.simulate(forward, side, r.key(225), r.key(224), r.key(44));
+        self.simulate(
+            forward,
+            side,
+            r.key(225) || touch.is_some_and(|t| t.held(mobile_controls::Action::Sprint)),
+            r.key(224),
+            r.key(44)
+                || touch.is_some_and(|t| t.take_jump() || t.held(mobile_controls::Action::Jump)),
+        );
+        if touch.is_some_and(|t| t.held(mobile_controls::Action::Fire))
+            && !self.modal()
+            && !matches!(self.slot, 3 | 4)
+        {
+            self.fire();
+        }
     }
     fn simulate(&mut self, forward: f32, side: f32, sprint: bool, crouch: bool, jump: bool) {
         if self.modal() {
@@ -1825,7 +1851,8 @@ impl Game {
                     1.,
                 );
             }
-            draw_car(r, c, c.color, d < quality.detail, quality.segments);
+            let lod = usize::from(d < quality.detail);
+            draw_car(r, c, &self.car_models[c.kind][lod], lod);
         }
         self.vehicle_triangles = r.triangles - car_start;
         if self.driving.is_none() {
@@ -2083,6 +2110,9 @@ impl Game {
                 WHITE,
             );
         }
+        if crate::mobile::enabled() {
+            self.draw_touch(r);
+        }
         if let Ok(path) = std::env::var("JAILBREAK_CAPTURE") {
             if !self.captured && self.clock >= self.capture_at && self.capture_frame >= 30 {
                 self.captured = true;
@@ -2324,169 +2354,17 @@ fn draw_person(
 fn draw_weapon(r: &mut Renderer, p: Vec3, a: f32, swat: bool) {
     draw_weapon_model(r, p, a, if swat { 2 } else { 0 });
 }
-fn draw_car(r: &mut Renderer, c: &Car, color: [f32; 3], detail: bool, n: usize) {
-    let p = c.pos;
-    let a = c.angle;
-    let length = match c.kind {
-        1 => 3.65,
-        3 => 4.5,
-        4 => 5.1,
-        5 => 4.8,
-        _ => 4.5,
-    };
-    let local = |x: f32, y: f32, z: f32| {
-        [
-            p.x + x * a.cos() + z * a.sin(),
-            p.y + y,
-            p.z - x * a.sin() + z * a.cos(),
-        ]
-    };
-    thread_local! { static BODIES: Vec<engine_core::Mesh> = (0..CATALOG.len()).map(vehicles::body::mesh).collect(); }
-    BODIES.with(|b| r.solid_model(&b[c.kind], [p.x, p.y, p.z], a, color));
-    for x in [-1.02, 1.02] {
-        for z in [-length * 0.31, length * 0.31] {
-            part(
-                r,
-                local(x, -0.3, z),
-                [0.36, 0.7, 0.7],
-                [0.045, 0.05, 0.055],
-                a,
-                detail,
-                n,
-                0.75,
-            );
-            if detail {
-                part(
-                    r,
-                    local(x.signum() * 1.19, -0.3, z),
-                    [0.035, 0.4, 0.4],
-                    [0.55, 0.57, 0.58],
-                    a,
-                    true,
-                    n,
-                    1.,
-                );
-            }
-        }
-    }
-    for x in [-0.68, 0.68] {
-        part(
-            r,
-            local(x, 0.4, length / 2. + 0.02),
-            [0.46, 0.18, 0.12],
-            [0.98, 0.92, 0.7],
-            a,
-            detail,
-            n,
-            0.6,
-        );
-        part(
-            r,
-            local(x, 0.4, -length / 2. - 0.02),
-            [0.46, 0.18, 0.12],
-            [0.8, 0.08, 0.05],
-            a,
-            detail,
-            n,
-            0.6,
-        );
-        if detail {
-            part(
-                r,
-                local(x.signum() * 1.02, 0.86, 0.5),
-                [0.2, 0.12, 0.24],
-                color,
-                a,
-                true,
-                n,
-                0.6,
-            );
-        }
-    }
-    if detail {
-        r.cube(
-            local(0., 0.35, length / 2. + 0.03),
-            [0.85, 0.23, 0.07],
-            [0.14, 0.16, 0.18],
-            a,
-        );
-    }
-    if detail && matches!(c.kind, 0..=2) {
-        for side in [-1., 1.] {
-            if c.kind == 1 {
-                r.cube(
-                    local(side * 0.7, 0.67, length / 2. - 0.3),
-                    [0.45, 0.35, 0.45],
-                    color,
-                    a,
-                );
-            }
-            for dx in [0.48, 0.78] {
-                r.rounded(
-                    local(side * dx, 0.48, length / 2. + 0.09),
-                    [0.22, 0.22, 0.07],
-                    [1., 0.9, 0.45],
-                    a,
-                    6,
-                    1.,
-                );
-            }
-        }
-    }
-    if c.kind == 2 {
-        for side in [-1., 1.] {
-            part(
-                r,
-                local(side * 0.45, 1.42, -0.2),
-                [0.4, 0.15, 0.25],
-                if side < 0. {
-                    [0.9, 0.1, 0.08]
-                } else {
-                    [0.1, 0.25, 0.95]
-                },
-                a,
-                detail,
-                n,
-                0.5,
-            );
-        }
-    }
-    if detail {
-        r.cube(
-            local(0., 0.18, length / 2. + 0.04),
-            [1.3, 0.17, 0.06],
-            [0.1, 0.12, 0.14],
-            a,
-        );
-        for side in [-1., 1.] {
-            r.cube(
-                local(side * 1.04, 0.6, 0.),
-                [0.025, 0.4, 0.025],
-                [0.11, 0.14, 0.16],
-                a,
-            );
-            r.cube(
-                local(side * 1.05, 0.63, -0.24),
-                [0.04, 0.045, 0.25],
-                [0.63, 0.66, 0.66],
-                a,
-            );
-            r.cube(
-                local(side * 0.86, 1., -0.1),
-                [0.055, 0.63, 0.045],
-                [0.17, 0.19, 0.21],
-                a,
-            );
-            r.cube(
-                local(side * 0.75, 0.3, -length / 2. - 0.08),
-                [0.22, 0.12, 0.16],
-                [0.2, 0.22, 0.22],
-                a,
-            );
-        }
-    }
+fn draw_car(r: &mut Renderer, c: &Car, model: &vehicles::body::Model, lod: usize) {
+    let p = [c.pos.x, c.pos.y, c.pos.z];
+    let key = c.kind * 4 + lod * 2;
+    r.cached_solid_model(key, &model.paint, p, c.angle, c.color);
+    r.cached_solid_model(key + 1, &model.trim, p, c.angle, [1.; 3]);
 }
 pub fn run() -> Result<(), String> {
+    if std::env::args().any(|a| a == "--credits") {
+        println!("{}", include_str!("../../vehicles/assets/ATTRIBUTION.md"));
+        return Ok(());
+    }
     if std::env::args().any(|a| a == "--audit-map") {
         let w = World::new();
         w.audit()?;
@@ -2529,6 +2407,11 @@ pub fn run() -> Result<(), String> {
             "museum-new" => (-200., -640., std::f32::consts::PI),
             "power-new" => (720., -179., std::f32::consts::PI),
             "gas-new" => (-650., 32., std::f32::consts::PI),
+            "jstore-front-new" => (247., 158., 2.75),
+            "jstore-showroom-new" | "jstore-loot-new" | "jstore-lasers-new" | "jstore-roof-new" => {
+                (260., 181., std::f32::consts::PI)
+            }
+            "jstore-stairs-new" => (249., 178., std::f32::consts::PI),
             "jewelry-new" => (260., 180., std::f32::consts::PI),
             "casino-new" => (375., 235., std::f32::consts::PI),
             "flats-new" | "apartment-new" => (110., 93., std::f32::consts::PI),
@@ -2598,6 +2481,96 @@ pub fn run() -> Result<(), String> {
                 d.open = true;
                 d.angle = std::f32::consts::FRAC_PI_2;
             }
+        }
+        if smoke
+            && matches!(
+                scene.as_str(),
+                "vehicle-new" | "vehicle-paint-new" | "vehicle-lod-new"
+            )
+        {
+            let kind = std::env::var("JAILBREAK_VEHICLE")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(0)
+                .min(CATALOG.len() - 1);
+            let pos = Vec3::new(720., g.world.surface(720., 660.) + 0.65, 660.);
+            g.cars = vec![Car::new(kind, pos)];
+            g.player.pos = pos;
+            g.driving = Some(0);
+            g.yaw = -0.65;
+            g.pitch = 0.18;
+            if scene == "vehicle-paint-new" {
+                g.cars[0].color = [0.82, 0.12, 0.08];
+            }
+            if scene == "vehicle-lod-new" {
+                g.driving = None;
+                g.cars[0].pos.z -= 85.;
+                g.cars[0].pos.y = g.world.surface(g.cars[0].pos.x, g.cars[0].pos.z) + 0.65;
+                g.yaw = 0.;
+                g.pitch = 0.;
+            }
+        }
+        if smoke && scene.starts_with("jstore-") {
+            g.pitch = if matches!(scene.as_str(), "jstore-front-new" | "jstore-stairs-new") {
+                -0.08
+            } else {
+                0.08
+            };
+            let floor = if scene == "jstore-loot-new" {
+                4.
+            } else if scene == "jstore-lasers-new" {
+                8.
+            } else if scene == "jstore-roof-new" {
+                12.
+            } else if scene == "jstore-stairs-new" {
+                4.
+            } else {
+                0.
+            };
+            g.player.pos.y = g.world.surface(260., 190.) + floor + 1.;
+            if scene != "jstore-front-new" {
+                g.heists.start(0);
+                if scene != "jstore-showroom-new" {
+                    g.heists.strikes = 3;
+                }
+                if matches!(scene.as_str(), "jstore-lasers-new" | "jstore-roof-new") {
+                    g.heists.bag = 100;
+                }
+            }
+        }
+        if smoke && matches!(scene.as_str(), "kitchen-new" | "bathroom-new") {
+            let b = g
+                .world
+                .buildings
+                .iter()
+                .find(|b| b.name == "Office" && b.p.x == 110. && b.p.z == 100.)
+                .ok_or("Apartment showcase building missing")?;
+            g.player.pos = if scene == "kitchen-new" {
+                Vec3::new(b.p.x + b.size.x / 2. - 4., b.p.y + 5., b.p.z - 1.)
+            } else {
+                Vec3::new(
+                    b.p.x + b.size.x / 2. - 4.,
+                    b.p.y + 5.,
+                    b.p.z + b.size.z / 2. - 4.5,
+                )
+            };
+            g.yaw = if scene == "kitchen-new" {
+                std::f32::consts::FRAC_PI_2
+            } else {
+                std::f32::consts::PI
+            };
+            g.pitch = 0.05;
+        }
+        if smoke && scene == "skyline-new" {
+            g.player.pos = Vec3::new(260., 36., -90.);
+            g.yaw = std::f32::consts::PI;
+            g.pitch = 0.08;
+        }
+        if smoke && scene == "locomotive-new" {
+            let (p, a) = crate::heists::Heists::train(g.clock, 0);
+            g.player.pos = Vec3::new(p.x + a.sin() * 10., p.y, p.z + a.cos() * 10.);
+            g.yaw = -0.65;
+            g.pitch = 0.2;
         }
         if scene == "apartment-new" {
             g.player.pos.x += 5.;
@@ -2707,6 +2680,8 @@ pub fn run() -> Result<(), String> {
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(480)
         .clamp(60, 2000);
+    let mut touch = mobile_controls::TouchControls::default();
+    let mut backgrounded = false;
     let mut timings = Vec::with_capacity(if smoke { frame_limit } else { 0 });
     let tour = smoke && std::env::var("JAILBREAK_SCENE").as_deref() == Ok("tour");
     let mut frames = 0;
@@ -2721,7 +2696,24 @@ pub fn run() -> Result<(), String> {
         }
 
         while let Some(e) = r.poll() {
+            if crate::mobile::enabled() && g.touch_event(&e, &mut touch) {
+                continue;
+            }
             match e.kind() {
+                0x101 => {
+                    g.save();
+                    running = false;
+                }
+                0x103 | 0x104 => {
+                    touch.clear();
+                    g.save();
+                    backgrounded = true;
+                }
+                0x105 | 0x106 => {
+                    backgrounded = false;
+                    last = std::time::Instant::now();
+                    accumulator = 0.;
+                }
                 0x100 => running = false,
                 0x400 => {
                     if !g.modal() && !g.cursor {
@@ -2749,16 +2741,36 @@ pub fn run() -> Result<(), String> {
                 _ => {}
             }
         }
+        if backgrounded {
+            std::thread::sleep(std::time::Duration::from_millis(20));
+            continue;
+        }
+        if crate::mobile::enabled() {
+            g.touch_actions(&mut touch);
+            let look = touch.take_look();
+            if !g.modal() && !g.cursor {
+                g.yaw += look[0] * g.save.sensitivity;
+                g.pitch = (g.pitch + look[1] * g.save.sensitivity).clamp(-0.1, 0.9);
+            }
+        }
         let now = std::time::Instant::now();
         accumulator += (now - last).as_secs_f32().min(0.1);
         last = now;
         let update_start = std::time::Instant::now();
         while accumulator >= STEP {
-            g.update(&r);
+            if crate::mobile::enabled() {
+                g.update_mobile(&r, Some(&touch));
+            } else {
+                g.update(&r);
+            }
             accumulator -= STEP;
         }
         g.stats.update_ms = update_start.elapsed().as_secs_f32() * 1000.;
         let render_start = std::time::Instant::now();
+        if smoke && std::env::var("JAILBREAK_SCENE").as_deref() == Ok("skyline-new") {
+            g.player.pos = Vec3::new(260., 36., -90.);
+            g.player.vy = 0.;
+        }
         g.draw(&mut r);
         g.stats.render_ms = render_start.elapsed().as_secs_f32() * 1000.;
         if smoke {
@@ -2775,6 +2787,8 @@ pub fn run() -> Result<(), String> {
     }
     r.validate()?;
     if smoke {
+        let (parts, bytes) = r.cached_model_usage();
+        println!("VEHICLE_CACHE parts={parts} bytes={bytes}");
         timings.sort_by(|a, b| a.total_cmp(b));
         let mean = timings.iter().sum::<f32>() / timings.len() as f32;
         let p95 = timings[(timings.len() as f32 * 0.95) as usize];
@@ -2958,6 +2972,33 @@ mod tests {
         assert_eq!(g.player.team, Team::Criminal);
         assert_eq!(g.wanted, 1);
     }
+    #[test]
+    fn akari_spawns_can_be_stolen_and_uses_its_own_saved_tuning() {
+        let mut save = save_system::Save::default();
+        save.car_engine[7] = 2;
+        save.car_brakes[7] = 1;
+        save.car_paint[7] = [0.7, 0.15, 0.08];
+        let mut g = Game::from_save(save).unwrap();
+        let id = g.cars.iter().position(|c| c.kind == 7).unwrap();
+        assert_eq!(g.cars[id].engine_level, 2);
+        assert_eq!(g.cars[id].brake_level, 1);
+        assert_eq!(g.cars[id].color, [0.7, 0.15, 0.08]);
+        g.menu = false;
+        g.player.pos = g.cars[id].pos;
+        g.interact();
+        assert_eq!(g.driving, Some(id));
+        assert_eq!(g.player.team, Team::Criminal);
+        assert_eq!(g.wanted, 1);
+        let c = &mut g.cars[id];
+        let start = c.pos;
+        for _ in 0..120 {
+            c.pos = vehicle_physics::step(c, 1., 0., false, STEP);
+        }
+        assert!(c.pos.distance(start) > 5.);
+        assert!(c.speed > 0. && c.speed <= CATALOG[7].max_speed * 1.16);
+        assert_eq!(g.save.car_engine[0], 0);
+    }
+
     #[test]
     fn store_escape_pays_and_police_deadline_confiscates_loot() {
         let mut g = Game::from_save(Default::default()).unwrap();
@@ -3309,6 +3350,28 @@ mod tests {
         assert_eq!(g.save.balance, 1630);
     }
     #[test]
+    fn updated_tower_lift_reaches_furnished_floors_without_obstructions() {
+        let mut g = Game::from_save(save_system::Save::default()).unwrap();
+        g.menu = false;
+        let b = g
+            .world
+            .buildings
+            .iter()
+            .find(|b| b.name == "Office" && b.p.x == 110. && b.p.z == 100.)
+            .unwrap()
+            .clone();
+        g.player.pos = Vec3::new(b.p.x, b.p.y + 1., b.p.z - 8.);
+        for floor in 1..=3 {
+            assert!(!g.world.blocked(g.player.pos, 0.45));
+            g.interact();
+            assert_eq!(g.player.pos.y, b.p.y + floor as f32 * 4. + 1.);
+            assert_eq!(b.rendered_floor(g.player.pos), floor);
+            assert!(!g.world.blocked(g.player.pos, 0.45));
+            assert!(b.interior_mesh_at(floor).vertices.len() < 5000);
+        }
+    }
+
+    #[test]
     fn rent_expires_and_own_apartment_cannot_be_robbed() {
         let mut g = Game::from_save(Default::default()).unwrap();
         g.menu = false;
@@ -3510,3 +3573,5 @@ mod residential_regressions {
         assert!(g.npcs[0].waypoint.distance(g.player.pos) > 4.);
     }
 }
+
+include!("touch_game.rs");
