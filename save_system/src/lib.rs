@@ -54,6 +54,18 @@ pub struct Save {
     pub pistol_owned: bool,
     #[serde(default = "default_quality")]
     pub quality: usize,
+    #[serde(default = "default_shader_pack")]
+    pub shader_pack: String,
+    #[serde(default)]
+    pub auto_shader_pack: bool,
+    #[serde(default = "default_resolution")]
+    pub resolution_scale: u8,
+    #[serde(default)]
+    pub fps_counter: bool,
+    #[serde(default = "default_shader_effects")]
+    pub shader_effects: u8,
+    #[serde(default = "default_shadow_quality")]
+    pub shadow_quality: u8,
     pub version: u32,
     pub balance: u32,
     pub owned: Vec<usize>,
@@ -96,6 +108,12 @@ impl Default for Save {
             food: 0,
             pistol_owned: false,
             quality: 1,
+            shader_pack: "builtin".into(),
+            auto_shader_pack: false,
+            resolution_scale: 100,
+            fps_counter: false,
+            shader_effects: 4,
+            shadow_quality: 1,
             version: 1,
             balance: 0,
             owned: vec![],
@@ -185,6 +203,9 @@ fn load_from(p: &std::path::Path) -> Result<Save, String> {
         || s.water > 20
         || s.food > 20
         || s.quality > 3
+        || !(50..=100).contains(&s.resolution_scale)
+        || s.shader_effects > 4
+        || s.shadow_quality > 3
         || s.owned.iter().any(|i| *i >= VEHICLE_SLOTS)
         || !s.position.x.is_finite()
         || !s.position.z.is_finite()
@@ -246,6 +267,18 @@ fn replace_save(tmp: &std::path::Path, dest: &std::path::Path) -> io::Result<()>
 
 fn default_quality() -> usize {
     1
+}
+fn default_resolution() -> u8 {
+    100
+}
+fn default_shadow_quality() -> u8 {
+    1
+}
+fn default_shader_pack() -> String {
+    "builtin".into()
+}
+fn default_shader_effects() -> u8 {
+    4
 }
 fn default_ammo() -> u32 {
     0
@@ -441,6 +474,12 @@ mod tests {
         let save = Save {
             texture_level: 3,
             object_shadows: false,
+            shader_pack: "Golden_Hour_v2".into(),
+            auto_shader_pack: true,
+            resolution_scale: 70,
+            fps_counter: true,
+            shader_effects: 3,
+            shadow_quality: 2,
             run_level: 2,
             endurance_level: 3,
             carry_level: 4,
@@ -452,11 +491,23 @@ mod tests {
         let loaded: Save = serde_json::from_value(v.clone()).unwrap();
         assert_eq!(loaded.texture_level, 3);
         assert!(!loaded.object_shadows);
+        assert_eq!(loaded.shader_pack, "Golden_Hour_v2");
+        assert!(loaded.auto_shader_pack);
+        assert_eq!(loaded.resolution_scale, 70);
+        assert!(loaded.fps_counter);
+        assert_eq!(loaded.shader_effects, 3);
+        assert_eq!(loaded.shadow_quality, 2);
         assert_eq!(loaded.carry_level, 4);
         assert_eq!(loaded.water, 2);
         for name in [
             "texture_level",
             "object_shadows",
+            "shader_pack",
+            "auto_shader_pack",
+            "resolution_scale",
+            "fps_counter",
+            "shader_effects",
+            "shadow_quality",
             "run_level",
             "endurance_level",
             "carry_level",
@@ -468,6 +519,12 @@ mod tests {
         let legacy: Save = serde_json::from_value(v).unwrap();
         assert_eq!(legacy.texture_level, 0);
         assert!(legacy.object_shadows);
+        assert_eq!(legacy.shader_pack, "builtin");
+        assert!(!legacy.auto_shader_pack);
+        assert_eq!(legacy.resolution_scale, 100);
+        assert!(!legacy.fps_counter);
+        assert_eq!(legacy.shader_effects, 4);
+        assert_eq!(legacy.shadow_quality, 1);
         assert_eq!(legacy.run_level, 0);
     }
     #[test]

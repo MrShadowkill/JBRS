@@ -135,6 +135,9 @@ pub struct Renderer {
     scene_width: i32,
     scene_height: i32,
     scene_active: bool,
+    shader_pack: String,
+    resolution_scale: u8,
+    wind_uniform: i32,
 }
 impl Renderer {
     pub fn new() -> Result<Self, String> {
@@ -194,6 +197,9 @@ impl Renderer {
                 scene_width: 640,
                 scene_height: 360,
                 scene_active: false,
+                shader_pack: "builtin".into(),
+                resolution_scale: 100,
+                wind_uniform: -1,
             };
             renderer.setup()?;
             if cfg!(target_os = "android") || std::env::var("JBRS_TOUCH").as_deref() == Ok("1") {
@@ -206,7 +212,10 @@ impl Renderer {
     fn create_mobile_target(&mut self) -> Result<(), String> {
         unsafe {
             SDL_GetWindowSize(self.window, &mut self.width, &mut self.height);
-            self.scene_width = self.width.clamp(320, 640);
+            let scale = f32::from(self.resolution_scale.clamp(50, 100)) / 100.;
+            self.scene_width = (self.width.clamp(320, 640) as f32 * scale)
+                .round()
+                .max(160.) as i32;
             self.scene_height = (self.scene_width as f32 * self.height.max(1) as f32
                 / self.width.max(1) as f32)
                 .round()
@@ -260,28 +269,7 @@ impl Renderer {
         unsafe {
             let default_vertex = include_str!("../shaders/world.vert");
             let default_fragment = include_str!("../shaders/world.frag");
-            let external = match load_external_shaders() {
-                Ok(pair) => pair,
-                Err(error) => {
-                    eprintln!("JBRS: ignoring external GLES2 shader pack: {error}");
-                    None
-                }
-            };
-            let program = match external {
-                Some(pair) => match create_world_program(&pair.vertex, &pair.fragment) {
-                    Ok(program) => {
-                        println!("JBRS: loaded GLES2 shader override from {}", pair.source);
-                        program
-                    }
-                    Err(error) => {
-                        eprintln!(
-                            "JBRS: external GLES2 shader failed ({error}); using built-in shaders"
-                        );
-                        create_world_program(default_vertex, default_fragment)?
-                    }
-                },
-                None => create_world_program(default_vertex, default_fragment)?,
-            };
+            let program = create_world_program(default_vertex, default_fragment)?;
             gl::initialize(program)?;
             self.program = program;
             let uniform = |name: &str| {
@@ -294,6 +282,7 @@ impl Renderer {
             self.fog_uniform = uniform("fog_end");
             self.quality_uniform = uniform("detail_amount");
             self.opacity_uniform = uniform("opacity");
+            self.wind_uniform = uniform("wind_time");
             glUseProgram(program);
             glUniform1f(self.opacity_uniform, 1.);
             glUniform1i(uniform("atlas"), 0);
@@ -332,6 +321,109 @@ impl Renderer {
             glUseProgram(self.program);
             glUniform1f(self.quality_uniform, amount);
         }
+    }
+    pub fn wind_time(&mut self, time: f32) {
+        unsafe {
+            glUseProgram(self.program);
+            glUniform1f(self.wind_uniform, time);
+        }
+    }
+    pub fn available_shader_packs(&self) -> Vec<String> {
+        #[cfg(target_os = "android")]
+        {
+            let mut packs = shader_pack::available_packs("gles2");
+            if !packs.iter().any(|pack| pack == "Golden_Hour_v2") {
+                packs.push("Golden_Hour_v2".into());
+            }
+            packs
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            shader_pack::available_packs("gles2")
+        }
+    }
+    pub fn active_shader_pack(&self) -> &str {
+        &self.shader_pack
+    }
+    pub fn set_resolution_scale(&mut self, scale: u8) -> Result<(), String> {
+        let scale = scale.clamp(50, 100);
+        if self.resolution_scale == scale {
+            return Ok(());
+        }
+        self.resolution_scale = scale;
+        if self.scene_fbo != 0 {
+            unsafe {
+                glDeleteFramebuffers(1, &self.scene_fbo);
+                glDeleteRenderbuffers(1, &self.scene_depth);
+                glDeleteTextures(1, &self.scene_color);
+                self.textures.retain(|texture| *texture != self.scene_color);
+                self.scene_fbo = 0;
+                self.scene_depth = 0;
+                self.scene_color = 0;
+            }
+            self.create_mobile_target()?;
+        }
+        Ok(())
+    }
+    pub fn set_shader_pack(&mut self, id: &str) -> Result<(), String> {
+        let pair = if id.eq_ignore_ascii_case("builtin") {
+            None
+        } else if let Ok(Some(pair)) = shader_pack::load_pack(id, "gles2") {
+            Some(pair)
+        } else {
+            #[cfg(target_os = "android")]
+            {
+                let prefix = format!("shaders/packs/{id}/gles2/world");
+                let vertex = read_android_asset(&format!("{prefix}.vert"));
+                let fragment = read_android_asset(&format!("{prefix}.frag"));
+                if let (Some(vertex), Some(fragment)) = (vertex, fragment) {
+                    shader_pack::from_sources(&vertex, &fragment, format!("APK {id}/gles2"))
+                } else {
+                    return Err(format!("shader pack '{id}' is not available for GLES2"));
+                }
+            }
+            #[cfg(not(target_os = "android"))]
+            {
+                None
+            }
+        };
+        let (vertex, fragment) = match pair {
+            Some(pair) => {
+                println!("JBRS: loading GLES2 shader pack {}", pair.source);
+                (pair.vertex, pair.fragment)
+            }
+            None => (
+                include_str!("../shaders/world.vert").to_owned(),
+                include_str!("../shaders/world.frag").to_owned(),
+            ),
+        };
+        let program = unsafe { create_world_program(&vertex, &fragment)? };
+        unsafe {
+            let old = self.program;
+            self.program = program;
+            gl::set_world_program(program);
+            self.refresh_world_uniforms();
+            glDeleteProgram(old);
+        }
+        self.shader_pack = id.to_owned();
+        Ok(())
+    }
+    unsafe fn refresh_world_uniforms(&mut self) {
+        let uniform = |name: &str| {
+            let c = CString::new(name).unwrap();
+            glGetUniformLocation(self.program, c.as_ptr())
+        };
+        self.day_uniform = uniform("daylight");
+        self.mesh_uniform = uniform("mesh_mode");
+        self.tint_uniform = uniform("model_tint");
+        self.fog_uniform = uniform("fog_end");
+        self.quality_uniform = uniform("detail_amount");
+        self.opacity_uniform = uniform("opacity");
+        self.wind_uniform = uniform("wind_time");
+        glUseProgram(self.program);
+        glUniform1f(self.opacity_uniform, 1.);
+        glUniform1i(uniform("atlas"), 0);
+        glUniform1f(self.fog_uniform, 450.);
     }
     /// Rounded superellipsoid: exponent 1 is an ellipsoid, 0.3 is a beveled box.
     pub fn rounded(
@@ -806,6 +898,27 @@ impl Renderer {
         self.draws += 1;
         self.triangles += 2;
     }
+    pub fn shadow_quad(&mut self, points: [[f32; 3]; 4], strength: f32) {
+        unsafe {
+            glUniform1i(self.mesh_uniform, 3);
+            glUniform1f(self.opacity_uniform, strength.clamp(0.08, 0.42));
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
+            glBegin(7);
+            glColor3f(0.18, 0.21, 0.18);
+            for point in points {
+                glVertex3f(point[0], point[1], point[2]);
+            }
+            glEnd();
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+            glUniform1i(self.mesh_uniform, 0);
+        }
+        self.draws += 1;
+        self.triangles += 2;
+    }
     pub fn ui(&mut self) {
         self.finish_ui();
         let composite = self.scene_active;
@@ -1055,26 +1168,6 @@ unsafe fn create_world_program(vertex_source: &str, fragment_source: &str) -> Re
         return Err(String::from_utf8_lossy(&log).into_owned());
     }
     Ok(program)
-}
-
-fn load_external_shaders() -> Result<Option<shader_pack::ShaderPair>, String> {
-    if let Some(pair) = shader_pack::load_external("gles2")? {
-        return Ok(Some(pair));
-    }
-    #[cfg(target_os = "android")]
-    {
-        let vertex = read_android_asset("shaders/gles2/world.vert");
-        let fragment = read_android_asset("shaders/gles2/world.frag");
-        if let (Some(vertex), Some(fragment)) = (vertex, fragment) {
-            if let Some(pair) = shader_pack::from_sources(&vertex, &fragment, "APK shaders/gles2") {
-                return Ok(Some(pair));
-            }
-        }
-        if let Some(archive) = read_android_asset("shaders/shaderpack.zip") {
-            return shader_pack::load_archive(&archive, "gles2", "APK shaders/shaderpack.zip");
-        }
-    }
-    Ok(None)
 }
 
 #[cfg(target_os = "android")]

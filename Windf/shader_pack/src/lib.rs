@@ -17,6 +17,125 @@ pub struct ShaderPair {
     pub source: String,
 }
 
+/// Directories where user-installed shader packs live. Pack names are plain
+/// directory or ZIP stems, so the returned IDs are safe to persist in saves.
+pub fn available_packs(platform: &str) -> Vec<String> {
+    let mut packs = vec!["builtin".to_owned()];
+    for root in pack_roots() {
+        let Ok(entries) = fs::read_dir(&root) else {
+            continue;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            let Some(name) = path.file_stem().and_then(|s| s.to_str()) else {
+                continue;
+            };
+            if !valid_pack_id(name) {
+                continue;
+            }
+            let found = if path.is_dir() {
+                find_pack_directory(&path, platform)
+                    .ok()
+                    .flatten()
+                    .is_some()
+            } else if path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
+            {
+                read_archive(&path)
+                    .ok()
+                    .and_then(|bytes| load_archive(&bytes, platform, name).ok().flatten())
+                    .is_some()
+            } else {
+                false
+            };
+            if found && !packs.iter().any(|pack| pack.eq_ignore_ascii_case(name)) {
+                packs.push(name.to_owned());
+            }
+        }
+    }
+    packs.sort_by_key(|name| name.to_ascii_lowercase());
+    packs.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
+    if let Some(index) = packs.iter().position(|name| name == "builtin") {
+        packs.swap(0, index);
+    }
+    packs
+}
+
+pub fn load_pack(id: &str, platform: &str) -> Result<Option<ShaderPair>, String> {
+    if id.eq_ignore_ascii_case("builtin") {
+        return Ok(None);
+    }
+    if !valid_pack_id(id) {
+        return Err("invalid shader pack name".into());
+    }
+    for root in pack_roots() {
+        let directory = root.join(id);
+        if directory.is_dir() {
+            if let Some(pair) = find_pack_directory(&directory, platform)? {
+                return Ok(Some(pair));
+            }
+        }
+        let archive = root.join(format!("{id}.zip"));
+        if archive.is_file() {
+            let bytes = read_archive(&archive)?;
+            return load_archive(&bytes, platform, &archive.display().to_string());
+        }
+    }
+    Err(format!("shader pack '{id}' was not found for {platform}"))
+}
+
+fn valid_pack_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 80
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+}
+
+fn pack_roots() -> Vec<PathBuf> {
+    let mut roots = roots()
+        .into_iter()
+        .map(|root| root.join("packs"))
+        .collect::<Vec<_>>();
+    if let Some(path) = std::env::var_os("JBRS_SHADER_DIR") {
+        roots.push(PathBuf::from(path).join("packs"));
+    }
+    #[cfg(windows)]
+    {
+        let root = PathBuf::from(r"C:\JBRS\shaders\packs");
+        let _ = fs::create_dir_all(&root);
+        roots.push(root);
+    }
+    #[cfg(target_os = "android")]
+    {
+        let root = PathBuf::from("/storage/emulated/0/JBRS/shaders/packs");
+        let _ = fs::create_dir_all(&root);
+        roots.push(root);
+    }
+    #[cfg(not(any(windows, target_os = "android")))]
+    if let Some(home) = std::env::var_os("HOME") {
+        let root = PathBuf::from(home).join("JBRS/shaders/packs");
+        let _ = fs::create_dir_all(&root);
+        roots.push(root);
+    }
+    let mut unique = Vec::new();
+    for root in roots {
+        if !unique.contains(&root) {
+            unique.push(root);
+        }
+    }
+    unique
+}
+
+fn find_pack_directory(root: &Path, platform: &str) -> Result<Option<ShaderPair>, String> {
+    let platform_root = root.join(platform);
+    if platform_root.is_dir() {
+        return find_directory_pair(&platform_root, platform);
+    }
+    find_directory_pair(root, platform)
+}
+
 pub fn from_sources(
     vertex: &[u8],
     fragment: &[u8],

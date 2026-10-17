@@ -66,7 +66,6 @@ impl Event {
 extern "C" {
     fn SDL_Init(flags: u32) -> i32;
     fn SDL_SetMainReady();
-    #[cfg(windows)]
     fn SDL_GL_GetProcAddress(name: *const c_char) -> *mut c_void;
     fn SDL_Quit();
     fn SDL_GetError() -> *const c_char;
@@ -175,6 +174,26 @@ pub struct GpuMesh {
 pub struct Texture {
     pub id: u32,
 }
+type GenObjects = unsafe extern "system" fn(i32, *mut u32);
+type DeleteObjects = unsafe extern "system" fn(i32, *const u32);
+type BindObject = unsafe extern "system" fn(u32, u32);
+type FramebufferTexture = unsafe extern "system" fn(u32, u32, u32, u32, i32);
+type FramebufferRenderbuffer = unsafe extern "system" fn(u32, u32, u32, u32);
+type CheckFramebuffer = unsafe extern "system" fn(u32) -> u32;
+type RenderbufferStorage = unsafe extern "system" fn(u32, u32, i32, i32);
+#[derive(Clone, Copy)]
+struct FboApi {
+    gen_framebuffers: GenObjects,
+    delete_framebuffers: DeleteObjects,
+    bind_framebuffer: BindObject,
+    framebuffer_texture: FramebufferTexture,
+    framebuffer_renderbuffer: FramebufferRenderbuffer,
+    check_framebuffer: CheckFramebuffer,
+    gen_renderbuffers: GenObjects,
+    delete_renderbuffers: DeleteObjects,
+    bind_renderbuffer: BindObject,
+    renderbuffer_storage: RenderbufferStorage,
+}
 pub struct Renderer {
     window: *mut c_void,
     context: *mut c_void,
@@ -196,6 +215,15 @@ pub struct Renderer {
     fog_uniform: i32,
     quality_uniform: i32,
     opacity_uniform: i32,
+    shader_pack: String,
+    wind_uniform: i32,
+    fbo_api: Option<FboApi>,
+    scene_fbo: u32,
+    scene_depth: u32,
+    scene_color: u32,
+    scene_width: i32,
+    scene_height: i32,
+    resolution_scale: u8,
 }
 impl Renderer {
     pub fn new() -> Result<Self, String> {
@@ -256,6 +284,15 @@ impl Renderer {
                 fog_uniform: -1,
                 quality_uniform: -1,
                 opacity_uniform: -1,
+                shader_pack: "builtin".into(),
+                wind_uniform: -1,
+                fbo_api: load_fbo_api(),
+                scene_fbo: 0,
+                scene_depth: 0,
+                scene_color: 0,
+                scene_width: 1024,
+                scene_height: 576,
+                resolution_scale: 100,
             };
             renderer.setup()?;
             Ok(renderer)
@@ -265,28 +302,7 @@ impl Renderer {
         unsafe {
             let default_vertex = include_str!("../shaders/world.vert");
             let default_fragment = include_str!("../shaders/world.frag");
-            let external = match shader_pack::load_external("desktop") {
-                Ok(pair) => pair,
-                Err(error) => {
-                    eprintln!("JBRS: ignoring external shader pack: {error}");
-                    None
-                }
-            };
-            let program = match external {
-                Some(pair) => match create_world_program(&pair.vertex, &pair.fragment) {
-                    Ok(program) => {
-                        println!("JBRS: loaded desktop GLSL override from {}", pair.source);
-                        program
-                    }
-                    Err(error) => {
-                        eprintln!(
-                            "JBRS: external desktop GLSL failed ({error}); using built-in shaders"
-                        );
-                        create_world_program(default_vertex, default_fragment)?
-                    }
-                },
-                None => create_world_program(default_vertex, default_fragment)?,
-            };
+            let program = create_world_program(default_vertex, default_fragment)?;
             self.program = program;
             let uniform = |name: &str| {
                 let c = CString::new(name).unwrap();
@@ -298,6 +314,7 @@ impl Renderer {
             self.fog_uniform = uniform("fog_end");
             self.quality_uniform = uniform("detail_amount");
             self.opacity_uniform = uniform("opacity");
+            self.wind_uniform = uniform("wind_time");
             glUseProgram(program);
             glUniform1f(self.opacity_uniform, 1.);
             glUniform1i(uniform("atlas"), 0);
@@ -334,6 +351,143 @@ impl Renderer {
             glUseProgram(self.program);
             glUniform1f(self.quality_uniform, amount);
         }
+    }
+    pub fn wind_time(&mut self, time: f32) {
+        unsafe {
+            glUseProgram(self.program);
+            glUniform1f(self.wind_uniform, time);
+        }
+    }
+    pub fn available_shader_packs(&self) -> Vec<String> {
+        shader_pack::available_packs("desktop")
+    }
+    pub fn active_shader_pack(&self) -> &str {
+        &self.shader_pack
+    }
+    pub fn set_resolution_scale(&mut self, scale: u8) -> Result<(), String> {
+        let scale = scale.clamp(50, 100);
+        if scale == self.resolution_scale {
+            return Ok(());
+        }
+        if scale < 100 && self.fbo_api.is_none() {
+            return Err("driver has no checked GL_EXT_framebuffer_object support".into());
+        }
+        self.resolution_scale = scale;
+        if let Err(error) = self.recreate_scene_target() {
+            self.resolution_scale = 100;
+            let _ = self.recreate_scene_target();
+            return Err(error);
+        }
+        Ok(())
+    }
+    fn recreate_scene_target(&mut self) -> Result<(), String> {
+        unsafe {
+            if let Some(api) = self.fbo_api {
+                if self.scene_fbo != 0 {
+                    (api.delete_framebuffers)(1, &self.scene_fbo);
+                }
+                if self.scene_depth != 0 {
+                    (api.delete_renderbuffers)(1, &self.scene_depth);
+                }
+                if self.scene_color != 0 {
+                    glDeleteTextures(1, &self.scene_color);
+                    self.textures.retain(|texture| *texture != self.scene_color);
+                }
+            }
+            self.scene_fbo = 0;
+            self.scene_depth = 0;
+            self.scene_color = 0;
+            if self.resolution_scale == 100 {
+                return Ok(());
+            }
+            let api = self
+                .fbo_api
+                .ok_or_else(|| "framebuffer API unavailable".to_owned())?;
+            SDL_GetWindowSize(self.window, &mut self.width, &mut self.height);
+            self.scene_width = (self.width.max(1) as f32 * self.resolution_scale as f32 / 100.)
+                .round()
+                .max(320.) as i32;
+            self.scene_height = (self.height.max(1) as f32 * self.resolution_scale as f32 / 100.)
+                .round()
+                .max(180.) as i32;
+            glGenTextures(1, &mut self.scene_color);
+            self.textures.push(self.scene_color);
+            glBindTexture(0x0de1, self.scene_color);
+            glTexImage2D(
+                0x0de1,
+                0,
+                0x1908,
+                self.scene_width,
+                self.scene_height,
+                0,
+                0x1908,
+                0x1401,
+                std::ptr::null(),
+            );
+            glTexParameteri(0x0de1, 0x2801, 0x2601);
+            glTexParameteri(0x0de1, 0x2800, 0x2601);
+            glTexParameteri(0x0de1, 0x2802, 0x812f);
+            glTexParameteri(0x0de1, 0x2803, 0x812f);
+            (api.gen_renderbuffers)(1, &mut self.scene_depth);
+            (api.bind_renderbuffer)(0x8d41, self.scene_depth);
+            (api.renderbuffer_storage)(0x8d41, 0x81a6, self.scene_width, self.scene_height);
+            (api.gen_framebuffers)(1, &mut self.scene_fbo);
+            (api.bind_framebuffer)(0x8d40, self.scene_fbo);
+            (api.framebuffer_texture)(0x8d40, 0x8ce0, 0x0de1, self.scene_color, 0);
+            (api.framebuffer_renderbuffer)(0x8d40, 0x8d00, 0x8d41, self.scene_depth);
+            let status = (api.check_framebuffer)(0x8d40);
+            (api.bind_framebuffer)(0x8d40, 0);
+            (api.bind_renderbuffer)(0x8d41, 0);
+            if status != 0x8cd5 {
+                return Err(format!(
+                    "desktop scaled-render framebuffer incomplete: 0x{status:x}"
+                ));
+            }
+            println!(
+                "DESKTOP_TARGET {}x{}; display {}x{}",
+                self.scene_width, self.scene_height, self.width, self.height
+            );
+        }
+        Ok(())
+    }
+    pub fn set_shader_pack(&mut self, id: &str) -> Result<(), String> {
+        let pair = shader_pack::load_pack(id, "desktop")?;
+        let (vertex, fragment) = match pair {
+            Some(pair) => {
+                println!("JBRS: loading desktop shader pack {}", pair.source);
+                (pair.vertex, pair.fragment)
+            }
+            None => (
+                include_str!("../shaders/world.vert").to_owned(),
+                include_str!("../shaders/world.frag").to_owned(),
+            ),
+        };
+        let program = unsafe { create_world_program(&vertex, &fragment)? };
+        unsafe {
+            let old = self.program;
+            self.program = program;
+            self.refresh_world_uniforms();
+            glDeleteProgram(old);
+        }
+        self.shader_pack = id.to_owned();
+        Ok(())
+    }
+    unsafe fn refresh_world_uniforms(&mut self) {
+        let uniform = |name: &str| {
+            let c = CString::new(name).unwrap();
+            glGetUniformLocation(self.program, c.as_ptr())
+        };
+        self.day_uniform = uniform("daylight");
+        self.mesh_uniform = uniform("mesh_mode");
+        self.tint_uniform = uniform("model_tint");
+        self.fog_uniform = uniform("fog_end");
+        self.quality_uniform = uniform("detail_amount");
+        self.opacity_uniform = uniform("opacity");
+        self.wind_uniform = uniform("wind_time");
+        glUseProgram(self.program);
+        glUniform1f(self.opacity_uniform, 1.);
+        glUniform1i(uniform("atlas"), 0);
+        glUniform1f(self.fog_uniform, 450.);
     }
     /// Rounded superellipsoid: exponent 1 is an ellipsoid, 0.3 is a beveled box.
     pub fn rounded(
@@ -626,7 +780,23 @@ impl Renderer {
             glUseProgram(self.program);
             glUniform1f(self.day_uniform, day);
             glUniform1i(self.mesh_uniform, 0);
-            glViewport(0, 0, self.width, self.height);
+            if let Some(api) = self.fbo_api {
+                (api.bind_framebuffer)(0x8d40, self.scene_fbo);
+            }
+            glViewport(
+                0,
+                0,
+                if self.scene_fbo == 0 {
+                    self.width
+                } else {
+                    self.scene_width
+                },
+                if self.scene_fbo == 0 {
+                    self.height
+                } else {
+                    self.scene_height
+                },
+            );
             glClearColor(0.08 + day * 0.35, 0.11 + day * 0.49, 0.2 + day * 0.52, 1.);
             glClear(0x4100);
             glEnable(0xb71);
@@ -790,8 +960,33 @@ impl Renderer {
         self.draws += 1;
         self.triangles += 2;
     }
+    pub fn shadow_quad(&mut self, points: [[f32; 3]; 4], strength: f32) {
+        unsafe {
+            glUniform1i(self.mesh_uniform, 3);
+            glUniform1f(self.opacity_uniform, strength.clamp(0.08, 0.42));
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
+            glBegin(7);
+            glColor3f(0.18, 0.21, 0.18);
+            for point in points {
+                glVertex3f(point[0], point[1], point[2]);
+            }
+            glEnd();
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+            glUniform1i(self.mesh_uniform, 0);
+        }
+        self.draws += 1;
+        self.triangles += 2;
+    }
     pub fn ui(&mut self) {
         unsafe {
+            if let Some(api) = self.fbo_api {
+                (api.bind_framebuffer)(0x8d40, 0);
+            }
+            glViewport(0, 0, self.width, self.height);
             glUseProgram(0);
             glDisable(0x0de1);
             glDisable(0xb71);
@@ -800,6 +995,25 @@ impl Renderer {
             glOrtho(0., 1024., 576., 0., -1., 1.);
             glMatrixMode(0x1700);
             glLoadIdentity();
+            if self.scene_fbo != 0 {
+                glEnable(0x0de1);
+                glBindTexture(0x0de1, self.scene_color);
+                glColor4f(1., 1., 1., 1.);
+                glBegin(7);
+                for (x, y, u, v) in [
+                    (0., 0., 0., 1.),
+                    (1024., 0., 1., 1.),
+                    (1024., 576., 1., 0.),
+                    (0., 576., 0., 0.),
+                ] {
+                    glTexCoord2f(u, v);
+                    glVertex3f(x, y, 0.);
+                }
+                glEnd();
+                glDisable(0x0de1);
+                self.draws += 1;
+                self.triangles += 2;
+            }
             glBegin(7);
             self.ui_open = true;
             self.draws += 1;
@@ -946,6 +1160,14 @@ impl Drop for Renderer {
             for id in &self.textures {
                 glDeleteTextures(1, id);
             }
+            if let Some(api) = self.fbo_api {
+                if self.scene_fbo != 0 {
+                    (api.delete_framebuffers)(1, &self.scene_fbo);
+                }
+                if self.scene_depth != 0 {
+                    (api.delete_renderbuffers)(1, &self.scene_depth);
+                }
+            }
             glDeleteProgram(self.program);
             SDL_GL_DeleteContext(self.context);
             SDL_DestroyWindow(self.window);
@@ -957,6 +1179,46 @@ unsafe fn error() -> String {
     CStr::from_ptr(SDL_GetError())
         .to_string_lossy()
         .into_owned()
+}
+
+fn load_fbo_api() -> Option<FboApi> {
+    unsafe fn get<T: Copy>(names: &[&str]) -> Option<T> {
+        for name in names {
+            let name = CString::new(*name).ok()?;
+            let pointer = SDL_GL_GetProcAddress(name.as_ptr());
+            if !pointer.is_null() {
+                return Some(std::mem::transmute_copy(&pointer));
+            }
+        }
+        None
+    }
+    unsafe {
+        let extensions = glGetString(0x1f03);
+        if extensions.is_null() {
+            return None;
+        }
+        let extensions = CStr::from_ptr(extensions.cast()).to_string_lossy();
+        if !extensions.contains("GL_EXT_framebuffer_object")
+            && !extensions.contains("GL_ARB_framebuffer_object")
+        {
+            return None;
+        }
+        Some(FboApi {
+            gen_framebuffers: get(&["glGenFramebuffers", "glGenFramebuffersEXT"])?,
+            delete_framebuffers: get(&["glDeleteFramebuffers", "glDeleteFramebuffersEXT"])?,
+            bind_framebuffer: get(&["glBindFramebuffer", "glBindFramebufferEXT"])?,
+            framebuffer_texture: get(&["glFramebufferTexture2D", "glFramebufferTexture2DEXT"])?,
+            framebuffer_renderbuffer: get(&[
+                "glFramebufferRenderbuffer",
+                "glFramebufferRenderbufferEXT",
+            ])?,
+            check_framebuffer: get(&["glCheckFramebufferStatus", "glCheckFramebufferStatusEXT"])?,
+            gen_renderbuffers: get(&["glGenRenderbuffers", "glGenRenderbuffersEXT"])?,
+            delete_renderbuffers: get(&["glDeleteRenderbuffers", "glDeleteRenderbuffersEXT"])?,
+            bind_renderbuffer: get(&["glBindRenderbuffer", "glBindRenderbufferEXT"])?,
+            renderbuffer_storage: get(&["glRenderbufferStorage", "glRenderbufferStorageEXT"])?,
+        })
+    }
 }
 
 unsafe fn compile(kind: u32, source: &str) -> Result<u32, String> {

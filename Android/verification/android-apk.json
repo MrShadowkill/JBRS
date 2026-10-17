@@ -1,0 +1,40 @@
+{
+  "apk": "JBRS-Android10-arm64.apk",
+  "sha256": "91f9741a5ada5712a058db4f3a758395cdf3e8f6acea1fe16d810666c8256c65",
+  "api": 29,
+  "abi": "arm64-v8a",
+  "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): false\nVerified using v3 scheme (APK Signature Scheme v3): true\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1",
+  "libraries": {
+    "libjbrs.so": {
+      "needed": [
+        "libSDL2.so",
+        "liblog.so",
+        "libGLESv2.so",
+        "libdl.so",
+        "libm.so",
+        "libc.so"
+      ],
+      "entry_points_verified": [
+        "SDL_main"
+      ]
+    },
+    "libSDL2.so": {
+      "needed": [
+        "libm.so",
+        "libOpenSLES.so",
+        "libdl.so",
+        "liblog.so",
+        "libandroid.so",
+        "libGLESv1_CM.so",
+        "libGLESv2.so",
+        "libc.so"
+      ],
+      "entry_points_verified": [
+        "Java_org_libsdl_app_SDLActivity_nativeSetupJNI",
+        "Java_org_libsdl_app_SDLActivity_nativeRunMain",
+        "Java_org_libsdl_app_HIDDeviceManager_HIDDeviceRegisterCallback"
+      ]
+    }
+  },
+  "runtime_on_android_device": "not tested"
+}

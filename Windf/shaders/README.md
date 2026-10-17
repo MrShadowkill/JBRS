@@ -1,52 +1,54 @@
 # JBRS GLSL shader packs
 
-Place a custom shader pair here to override the built-in world shader. JBRS
-ships its own renderer and does not execute arbitrary shader files: the pair
-must use the attributes, uniforms, and varyings expected by the world renderer.
-The menus and interface continue to use their built-in shaders.
+Put shader packs in `shaders/packs/<PackName>/`. The in-game Settings menu
+lists usable packs and switches them while playing. Settings are written into
+the existing JBRS save file, preserving existing game progress. The built-in
+renderer shaders remain the safe fallback. Menus and interface keep their
+built-in rendering.
+
+User pack directories are `C:\\JBRS\\shaders\\packs` on Windows,
+`~/JBRS/shaders/packs` on Linux, and `/storage/emulated/0/JBRS/shaders/packs`
+on Android. You can also set `JBRS_SHADER_DIR` to a shader directory; packs
+belong in its `packs/` subdirectory. Android APK builds include repository
+packs as assets. External shared storage access depends on Android storage
+permissions and may vary by device.
 
 ## Desktop OpenGL 2.1
 
-Put the pair in `shaders/desktop/`, for example:
+Put the pair in `shaders/packs/<PackName>/desktop/`, for example:
 
 ```text
-shaders/desktop/world.vert
-shaders/desktop/world.frag
+shaders/packs/Example/desktop/world.vert
+shaders/packs/Example/desktop/world.frag
 ```
 
-Use GLSL 1.20 (`#version 120`) and the fixed-function OpenGL 2.1 interface used
-by the built-in desktop world shaders. Keep the same vertex outputs and
-fragment inputs as the built-in files in `renderer_gl21/shaders/`.
+Use GLSL 1.20 (`#version 120`) and the fixed-function OpenGL 2.1 interface in
+`renderer_gl21/shaders/`.
 
 ## GLES2 (Android)
 
-Put the GLES pair in `shaders/gles2/`, for example:
+Put a separate pair in `shaders/packs/<PackName>/gles2/`, for example:
 
 ```text
-shaders/gles2/world.vert
-shaders/gles2/world.frag
+shaders/packs/Example/gles2/world.vert
+shaders/packs/Example/gles2/world.frag
 ```
 
-Use GLSL ES 1.00 (`#version 100`). Keep the built-in shader interface from
-`renderer_gles2/shaders/`: vertex attributes `position`, `color`, `texcoord`;
-uniforms `model_view` and `projection`; and the world fragment shader's
-`atlas`, `daylight`, `opacity`, `fog_end`, `detail_amount`, `mesh_mode`, and
-`model_tint` uniforms with `col`, `uv`, and `dist` varyings.
+Use GLSL ES 1.00 (`#version 100`) and the interface in
+`renderer_gles2/shaders/`. Never pass desktop GLSL directly to GLES2.
 
 ## Folder or ZIP
 
-You can place a folder containing a matching vertex/fragment pair under this
-directory, or put a `.zip` archive here. Archives are read without extraction.
-For Android APK assets, name the archive `shaderpack.zip`, or put the pair in
-`gles2/` directly.
-Supported vertex suffixes include `.vert`, `.vert.glsl`, `.vertex`, `.vs`, and
-`.vsh`; fragment suffixes include `.frag`, `.frag.glsl`, `.fragment`, `.fs`,
-and `.fsh`. `world.vert` and `world.frag` are preferred when a pack contains
-multiple pairs. For a pack with both renderers, use `desktop/` and `gles2/`
-subfolders in the archive.
+You can use a `<PackName>` directory or `<PackName>.zip`; archives are read
+without extraction. For ZIP packs, include both `desktop/` and `gles2/`
+subdirectories. Matching vertex/fragment suffixes include `.vert`,
+`.vert.glsl`, `.vertex`, `.vs`, `.vsh` and `.frag`, `.frag.glsl`, `.fragment`,
+`.fs`, `.fsh`; `world.vert` and `world.frag` are preferred.
 
-An external pair is compiled at startup. If it does not compile or link, JBRS
-logs the error and uses its built-in shader pair. Set `JBRS_SHADER_DIR` to a
-different pack directory to load it from elsewhere. Android APKs include the
-contents of this directory as assets; replace the assets and rebuild the APK
-to ship a different pack.
+Shader sources are limited to 1 MiB each and ZIPs to 64 MiB. If compilation
+fails, JBRS logs the driver error and retains or restores the built-in pair.
+
+## Golden Hour example
+
+`packs/Golden_Hour_v2/` demonstrates desktop and GLES2 pairs with stylized
+day/night color and distance fog. It does not cast geometry shadows.

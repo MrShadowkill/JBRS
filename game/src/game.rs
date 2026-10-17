@@ -55,6 +55,8 @@ struct Game {
     training: bool,
     graphics_row: usize,
     texture_applied: usize,
+    active_shader_pack: String,
+    resolution_applied: u8,
     stamina: f32,
     holding: bool,
     punch_time: f32,
@@ -184,6 +186,8 @@ impl Game {
             training: false,
             graphics_row: 0,
             texture_applied: usize::MAX,
+            active_shader_pack: String::new(),
+            resolution_applied: 100,
             stamina: 100.,
             holding: false,
             punch_time: 0.,
@@ -213,6 +217,45 @@ impl Game {
     fn notify(&mut self, s: &str) {
         self.message = s.into();
         self.message_time = 8.;
+    }
+    fn adjust_graphics_setting(&mut self, direction: i32) {
+        let step = direction.signum();
+        match self.graphics_row {
+            0 => {
+                let packs = shader_pack::available_packs(if cfg!(target_os = "android") {
+                    "gles2"
+                } else {
+                    "desktop"
+                });
+                let current = packs
+                    .iter()
+                    .position(|name| name == &self.save.shader_pack)
+                    .unwrap_or(0);
+                let next = (current as i32 + step).rem_euclid(packs.len().max(1) as i32) as usize;
+                self.save.shader_pack =
+                    packs.get(next).cloned().unwrap_or_else(|| "builtin".into());
+            }
+            1 => self.save.auto_shader_pack = !self.save.auto_shader_pack,
+            2 => {
+                self.save.shader_effects =
+                    (self.save.shader_effects as i32 + step).rem_euclid(5) as u8
+            }
+            3 => {
+                self.save.resolution_scale =
+                    (self.save.resolution_scale as i32 + step * 10).clamp(50, 100) as u8
+            }
+            4 => self.save.quality = (self.save.quality as i32 + step).rem_euclid(4) as usize,
+            5 => {
+                self.save.texture_level =
+                    (self.save.texture_level as i32 + step).rem_euclid(4) as usize
+            }
+            6 => self.save.object_shadows = !self.save.object_shadows,
+            7 => {
+                self.save.shadow_quality =
+                    (self.save.shadow_quality as i32 + step).rem_euclid(4) as u8
+            }
+            _ => self.save.fps_counter = !self.save.fps_counter,
+        }
     }
     fn save(&mut self) {
         self.save.heist_cooldown = self.heists.cooldown;
@@ -655,15 +698,10 @@ impl Game {
                 }
             }
 
-            1073741906 if self.garage => self.graphics_row = (self.graphics_row + 2) % 3,
-            1073741905 if self.garage => self.graphics_row = (self.graphics_row + 1) % 3,
+            1073741906 if self.garage => self.graphics_row = (self.graphics_row + 8) % 9,
+            1073741905 if self.garage => self.graphics_row = (self.graphics_row + 1) % 9,
             1073741904 | 1073741903 if self.garage => {
-                let d = if k == 1073741904 { 3 } else { 1 };
-                match self.graphics_row {
-                    0 => self.save.quality = (self.save.quality + d) % 4,
-                    1 => self.save.texture_level = (self.save.texture_level + d) % 4,
-                    _ => self.save.object_shadows = !self.save.object_shadows,
-                }
+                self.adjust_graphics_setting(if k == 1073741904 { -1 } else { 1 });
             }
             1073741886 => self.save(),
             1073741884 => self.debug = !self.debug,
@@ -1846,6 +1884,48 @@ impl Game {
             self.notify("CUFFED - SPACE WHEN MARKER IS IN TARGET");
         }
     }
+    fn draw_sun_shadow(
+        &self,
+        r: &mut Renderer,
+        p: Vec3,
+        size: [f32; 3],
+        angle: f32,
+        daylight: f32,
+    ) {
+        let altitude = (0.22 + daylight.clamp(0., 1.) * 0.73).clamp(0.22, 0.95);
+        let horizontal = (1. - altitude * altitude).sqrt();
+        let phase = self.clock / 120.;
+        let sun = [phase.cos() * horizontal, altitude, phase.sin() * horizontal];
+        let (sin, cos) = angle.sin_cos();
+        let top = p.y + size[1] * 0.5;
+        let mut ground_points = [[0.; 3]; 4];
+        for (i, [lx, lz]) in [
+            [-size[0] * 0.5, -size[2] * 0.5],
+            [size[0] * 0.5, -size[2] * 0.5],
+            [size[0] * 0.5, size[2] * 0.5],
+            [-size[0] * 0.5, size[2] * 0.5],
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let x = p.x + lx * cos + lz * sin;
+            let z = p.z - lx * sin + lz * cos;
+            let mut t = ((top - self.world.surface(x, z)) / sun[1]).clamp(0., 24.);
+            let mut hit = [x, self.world.surface(x, z), z];
+            // Two terrain samples approximate a ray/heightfield intersection.
+            for _ in 0..2 {
+                hit[0] = x - sun[0] * t;
+                hit[2] = z - sun[2] * t;
+                hit[1] = self.world.surface(hit[0], hit[2]);
+                t = ((top - hit[1]) / sun[1]).clamp(0., 24.);
+            }
+            hit[1] += 0.045;
+            ground_points[i] = hit;
+        }
+        let strength = [0.16, 0.21, 0.26, 0.31][self.save.shadow_quality.min(3) as usize];
+        r.shadow_quad(ground_points, strength);
+    }
+
     fn draw(&mut self, r: &mut Renderer) {
         self.capture_frame += 1;
         let p = self.player.pos;
@@ -1905,9 +1985,47 @@ impl Game {
         }
         self.camera = Some(eye);
         let daylight = 0.55 + 0.45 * (self.clock / 120.).cos();
+        let packs = r.available_shader_packs();
+        if self.resolution_applied != self.save.resolution_scale {
+            match r.set_resolution_scale(self.save.resolution_scale) {
+                Ok(()) => self.resolution_applied = self.save.resolution_scale,
+                Err(error) => {
+                    eprintln!("JBRS: requested render resolution was not applied: {error}");
+                    self.resolution_applied = self.save.resolution_scale;
+                }
+            }
+        }
+        let requested = if self.save.auto_shader_pack {
+            if daylight < 0.42 && packs.iter().any(|id| id == "Golden_Hour_v2") {
+                "Golden_Hour_v2"
+            } else {
+                "builtin"
+            }
+        } else {
+            self.save.shader_pack.as_str()
+        };
+        if self.active_shader_pack != requested {
+            match r.set_shader_pack(requested) {
+                Ok(()) => self.active_shader_pack = requested.to_owned(),
+                Err(error) => {
+                    eprintln!("JBRS: shader pack {requested} could not be applied: {error}");
+                    self.save.shader_pack = "builtin".into();
+                    self.active_shader_pack = "builtin".into();
+                    let _ = r.set_shader_pack("builtin");
+                }
+            }
+        }
         let quality = crate::quality::PRESETS[self.save.quality];
         r.begin(eye, self.yaw, self.pitch, daylight);
-        r.detail(quality.grain);
+        r.wind_time(self.clock);
+        let effect_amount =
+            [0.0, 0.025, 0.05, 0.075, 0.1][self.save.shader_effects.min(4) as usize];
+        let quality_factor = [0.5, 0.75, 1.0, 1.0][self.save.quality];
+        r.detail(if self.save.shader_effects == 0 {
+            0.0
+        } else {
+            (quality.grain + effect_amount * 0.5) * quality_factor
+        });
         if self.texture_applied != self.save.texture_level {
             r.material_resolution(self.save.texture_level);
             self.texture_applied = self.save.texture_level;
@@ -1922,19 +2040,15 @@ impl Game {
             view.draw(r, eye, self.yaw, self.pitch);
         }
         if self.save.object_shadows {
+            let shadow_budget = [12, 22, 36, 52][self.save.shadow_quality.min(3) as usize];
             for c in self
                 .world
                 .colliders
                 .iter()
                 .filter(|c| c.size.y < 4. && c.size.y > 0.4 && c.p.distance(p) < 32.)
-                .take(36)
+                .take(shadow_budget)
             {
-                r.object_shadow(
-                    [c.p.x, c.p.y, c.p.z],
-                    [c.size.x, c.size.y, c.size.z],
-                    self.world.surface(c.p.x, c.p.z),
-                    0.,
-                );
+                self.draw_sun_shadow(r, c.p, [c.size.x, c.size.y, c.size.z], 0., daylight);
             }
         }
         for b in &self.world.buildings {
@@ -2082,13 +2196,11 @@ impl Game {
             {
                 continue;
             }
-            if self.save.object_shadows && d < quality.detail {
-                r.object_shadow(
-                    [c.pos.x, c.pos.y, c.pos.z],
-                    [2.5, 1.1, 4.7],
-                    self.world.surface(c.pos.x, c.pos.z),
-                    c.angle,
-                );
+            if self.save.object_shadows
+                && self.save.shadow_quality > 0
+                && d < quality.detail * (0.55 + self.save.shadow_quality as f32 * 0.15)
+            {
+                self.draw_sun_shadow(r, c.pos, [2.5, 1.1, 4.7], c.angle, daylight);
             }
             let lod = usize::from(d < quality.detail);
             draw_car(r, c, &self.car_models[c.kind][lod], lod);
@@ -2181,13 +2293,12 @@ impl Game {
                     quality.distance,
                 )
             {
-                if self.save.object_shadows && p.distance(n.pos) < quality.detail {
-                    r.object_shadow(
-                        [n.pos.x, n.pos.y, n.pos.z],
-                        [0.85, 1.8, 0.65],
-                        self.world.walking_surface(n.pos),
-                        0.,
-                    );
+                if self.save.object_shadows
+                    && self.save.shadow_quality > 0
+                    && p.distance(n.pos)
+                        < quality.detail * (0.55 + self.save.shadow_quality as f32 * 0.15)
+                {
+                    self.draw_sun_shadow(r, n.pos, [0.85, 1.8, 0.65], 0., daylight);
                 }
                 draw_person(
                     r,
@@ -2278,7 +2389,7 @@ impl Game {
         self.draw_interface(r);
         self.draw_escape(r);
         self.draw_heist_ui(r);
-        if self.debug
+        if (self.debug || self.save.fps_counter)
             && !self.garage
             && !self.menu
             && !self.map
@@ -2630,7 +2741,19 @@ pub fn run() -> Result<(), String> {
     if let Ok(v) = std::env::var("JBRS_SHADOWS") {
         g.save.object_shadows = v != "0";
     }
+    if let Ok(value) = std::env::var("JBRS_SHADER_PACK") {
+        g.save.shader_pack = value;
+    }
+    if let Ok(value) = std::env::var("JBRS_RESOLUTION_SCALE") {
+        if let Ok(scale) = value.parse::<u8>() {
+            g.save.resolution_scale = scale.clamp(50, 100);
+        }
+    }
     let mut r = Renderer::new()?;
+    if let Err(error) = r.set_resolution_scale(g.save.resolution_scale) {
+        eprintln!("JBRS: requested render resolution was not applied: {error}");
+    }
+    g.resolution_applied = g.save.resolution_scale;
     println!("OpenGL {} renderer: {}", r.version(), r.driver);
     g.world.audit()?;
     g.view = Some(crate::world_view::WorldView::new(
@@ -2680,6 +2803,7 @@ pub fn run() -> Result<(), String> {
             "city" => (310., -20., std::f32::consts::PI),
             "harbor" => (825., 110., 1.8),
             "mountains" => (200., -580., 0.),
+            "graphics" => (-100., -160., 0.),
             "airport" => (720., 660., std::f32::consts::PI),
             "bridge" => (-455., 0., 2.),
             "interior" => (320., 30., std::f32::consts::PI),
@@ -2696,6 +2820,7 @@ pub fn run() -> Result<(), String> {
         );
         g.yaw = yaw;
         g.menu = false;
+        g.garage = scene == "graphics";
         if matches!(
             scene.as_str(),
             "cells"

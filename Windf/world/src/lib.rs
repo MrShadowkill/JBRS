@@ -449,6 +449,56 @@ impl World {
                 }
             }
         }
+        // Sparse crossed grass blades on open grassy ground; nearby chunks have
+        // a denser tuft LOD while distant chunks retain only occasional silhouettes.
+        let grass_step = if lod == 0 { 10.0 } else { 24.0 };
+        let grass_stride = if lod == 0 { 2 } else { 4 };
+        for ix in 0..(CHUNK / grass_step) as i32 {
+            for iz in 0..(CHUNK / grass_step) as i32 {
+                if (ix * 13 + iz * 7).rem_euclid(grass_stride) != 0 {
+                    continue;
+                }
+                let x = x0 + (ix as f32 + 0.37) * grass_step;
+                let z = z0 + (iz as f32 + 0.61) * grass_step;
+                let raw = terrain::height(x, z);
+                if raw < -0.2
+                    || terrain::material(x, z, raw).0 != 6
+                    || self
+                        .roads
+                        .iter()
+                        .any(|road| road.distance(Vec3::new(x, raw, z)).0 < road.width * 0.5 + 2.0)
+                    || self
+                        .trees
+                        .iter()
+                        .any(|tree| tree.distance(Vec3::new(x, raw, z)) < 6.0)
+                    || pads.iter().any(|b| {
+                        (x - b.p.x).abs() < b.size.x * 0.5 + 3.0
+                            && (z - b.p.z).abs() < b.size.z * 0.5 + 3.0
+                    })
+                    || self
+                        .props
+                        .iter()
+                        .any(|prop| prop.p.distance(Vec3::new(x, raw, z)) < 3.0)
+                    || terrain::railway::nearest(Vec3::new(x, raw, z)).0 < 10.0
+                {
+                    continue;
+                }
+                let y = self.surface(x, z) + 0.03;
+                let height = if lod == 0 { 0.48 } else { 0.34 };
+                let half = if lod == 0 { 0.085 } else { 0.11 };
+                let green = [0.30, 0.48, 0.24];
+                m.swaying_triangle(
+                    [[x - half, y, z], [x + half, y, z], [x, y + height, z]],
+                    green,
+                    6,
+                );
+                m.swaying_triangle(
+                    [[x, y, z - half], [x, y, z + half], [x, y + height, z]],
+                    [0.36, 0.53, 0.27],
+                    6,
+                );
+            }
+        }
         // Mountain tunnel has continuous visible inner walls and a clear 6m envelope.
         if lod == 0 {
             for r in &self.roads {
@@ -746,6 +796,20 @@ mod tests {
         let mb = b.chunk((2, 0), 0);
         assert_eq!(ma.vertices.len(), mb.vertices.len());
         assert_eq!(ma.vertices[55].position, mb.vertices[55].position);
+    }
+    #[test]
+    fn grass_chunks_have_sway_tags_and_lod_reduces_blades() {
+        let w = World::new();
+        let key = (-6, -2);
+        let close = w.chunk(key, 0);
+        let close_count = close.vertices.iter().filter(|v| v.color[3] < 0.).count();
+        let distant = w.chunk(key, 1);
+        let distant_count = distant.vertices.iter().filter(|v| v.color[3] < 0.).count();
+        assert!(close_count > 0, "open grass chunk has no tagged blades");
+        assert!(
+            close_count > distant_count,
+            "grass LOD did not reduce blade density"
+        );
     }
     #[test]
     fn road_clearance() {

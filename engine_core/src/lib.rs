@@ -35,6 +35,22 @@ pub struct Mesh {
     pub vertices: Vec<Vertex>,
 }
 impl Mesh {
+    /// Add a grass blade whose alpha tags encode its base (−1) and flexible tip (−2).
+    /// World shaders animate the tip and clamp the tag out of material emission.
+    pub fn swaying_triangle(&mut self, p: [[f32; 3]; 3], c: [f32; 3], material: u8) {
+        let tx = (material % 4) as f32 / 4.;
+        let ty = (material / 4) as f32 / 4.;
+        for (i, position) in p.into_iter().enumerate() {
+            self.vertices.push(Vertex {
+                position,
+                color: [c[0], c[1], c[2], if i == 2 { -2. } else { -1. }],
+                uv: [
+                    tx + if i == 1 { 0.245 } else { 0.005 },
+                    ty + if i == 2 { 0.245 } else { 0.005 },
+                ],
+            });
+        }
+    }
     /// Price labels built into the static shop mesh, readable in the world.
     pub fn price(&mut self, p: [f32; 3], scale: f32, value: u32) {
         let digits = [

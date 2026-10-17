@@ -240,16 +240,15 @@ impl Game {
         }
         if self.garage {
             modal_title(r, "GRAPHICS SETTINGS");
+            let packs = r.available_shader_packs();
+            let pack = packs.iter().position(|name| name == &self.save.shader_pack).unwrap_or(0);
             let names = [
-                format!(
-                    "QUALITY   {}",
-                    crate::quality::PRESETS[self.save.quality].name
-                ),
-                format!(
-                    "TEXTURES   {} X {}",
-                    [64, 128, 256, 512][self.save.texture_level],
-                    [64, 128, 256, 512][self.save.texture_level]
-                ),
+                format!("SHADER PACK   {} / {}", packs.get(pack).map(String::as_str).unwrap_or("builtin"), packs.len()),
+                format!("AUTO PACK BY TIME   {}", if self.save.auto_shader_pack { "ON" } else { "OFF" }),
+                format!("SHADER EFFECTS   {}", ["OFF", "LOW", "MEDIUM", "HIGH", "ULTRA"][self.save.shader_effects.min(4) as usize]),
+                format!("WORLD RESOLUTION   {}%", self.save.resolution_scale),
+                format!("QUALITY   {}", crate::quality::PRESETS[self.save.quality].name),
+                format!("TEXTURES   {} X {}", [64, 128, 256, 512][self.save.texture_level], [64, 128, 256, 512][self.save.texture_level]),
                 format!(
                     "OBJECT SHADOWS   {}",
                     if self.save.object_shadows {
@@ -258,11 +257,14 @@ impl Game {
                         "OFF"
                     }
                 ),
+                format!("SHADOW QUALITY   {}", ["LOW", "MEDIUM", "HIGH", "ULTRA"][self.save.shadow_quality.min(3) as usize]),
+                format!("FPS COUNTER   {}", if self.save.fps_counter { "ON" } else { "OFF" }),
             ];
             for (i, n) in names.iter().enumerate() {
+                let y = 174. + i as f32 * 30.;
                 gui::button(
                     r,
-                    [206., 205. + i as f32 * 70., 612., 54.],
+                    [206., y, 612., 27.],
                     n,
                     if self.graphics_row == i {
                         BLUE
@@ -270,6 +272,17 @@ impl Game {
                         [0.12, 0.15, 0.2]
                     },
                 );
+                let value = match i {
+                    2 => Some((self.save.shader_effects as f32 / 4.0).clamp(0., 1.)),
+                    3 => Some((f32::from(self.save.resolution_scale) - 50.) / 50.),
+                    7 => Some(self.save.shadow_quality as f32 / 3.0),
+                    _ => None,
+                };
+                if let Some(value) = value {
+                    r.panel([686., y + 18., 112., 4.], [0.26, 0.3, 0.36], 1., 2.);
+                    r.panel([686., y + 18., 112. * value, 4.], BLUE, 1., 2.);
+                    r.panel([682. + 112. * value, y + 14., 8., 12.], WHITE, 1., 3.);
+                }
             }
             text(
                 r,
@@ -487,10 +500,21 @@ impl Game {
                 }
             }
         } else if self.garage {
-            for i in 0..3 {
-                if hit([206., 205. + i as f32 * 70., 612., 54.]) {
+            for i in 0..9 {
+                let row = [206., 174. + i as f32 * 30., 612., 27.];
+                if hit(row) {
                     self.graphics_row = i;
-                    self.key_action(1073741903);
+                    if (i == 2 || i == 3 || i == 7) && (686. ..=798.).contains(&x) {
+                        let value = ((x - 686.) / 112.).clamp(0., 1.);
+                        match i {
+                            2 => self.save.shader_effects = (value * 4.).round() as u8,
+                            3 => self.save.resolution_scale = 50 + (value * 5.).round() as u8 * 10,
+                            7 => self.save.shadow_quality = (value * 3.).round() as u8,
+                            _ => {}
+                        }
+                    } else {
+                        self.key_action(1073741903);
+                    }
                     return;
                 }
             }

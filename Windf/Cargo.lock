@@ -145,6 +145,7 @@ dependencies = [
  "roads",
  "robberies",
  "save_system",
+ "shader_pack",
  "terrain",
  "vehicle_physics",
  "vehicles",

@@ -13,7 +13,7 @@ varying mediump float dist;
 void main(){
  vec3 base=col.rgb;float emission=0.;
  if(mesh_mode==1){
-  base*=texture2D(atlas,uv).rgb;emission=col.a;
+  base*=texture2D(atlas,uv).rgb;emission=max(col.a,0.0);
   float grain=sin(uv.x*1200.)*sin(uv.y*900.);
   base*=1.+detail_amount*grain*(1.-clamp(dist/160.,0.,1.));
  }

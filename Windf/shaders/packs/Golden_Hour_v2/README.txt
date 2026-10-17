@@ -1,0 +1,1 @@
+JBRS Golden Hour v2 shader pack. GLSL 1.20 for desktop OpenGL 2.1 and GLSL ES 1.00 for GLES2. Place this folder under JBRS/shaders/packs, then choose Golden_Hour_v2 in Graphics Settings. This is stylized day/night lighting and fog, not a real shadow map.

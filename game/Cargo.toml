@@ -12,6 +12,7 @@ minimap={path="../minimap"}
 engine_core={path="../engine_core"}
 gui={path="../gui"}
 profiling={path="../profiling"}
+shader_pack={path="../shader_pack"}
 player={path="../player"}
 renderer_gles2={path="../renderer_gles2"}
 mobile_controls={path="../mobile_controls"}

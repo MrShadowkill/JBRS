@@ -261,6 +261,14 @@ pub(super) unsafe fn shutdown() {
         *s = State::default();
     });
 }
+pub(super) unsafe fn set_world_program(world: u32) {
+    STATE.with(|s| {
+        let mut s = s.borrow_mut();
+        s.world = world;
+        s.world_m = api::glGetUniformLocation(world, c"model_view".as_ptr());
+        s.world_p = api::glGetUniformLocation(world, c"projection".as_ptr());
+    });
+}
 pub(super) unsafe fn glUseProgram(id: u32) {
     STATE.with(|s| {
         let mut s = s.borrow_mut();
