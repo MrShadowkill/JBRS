@@ -17,8 +17,13 @@ pub fn step(car: &mut Car, throttle: f32, steer: f32, brake: bool, dt: f32) -> V
     }
     let maximum = s.max_speed * (1. + car.engine_level as f32 * 0.08);
     car.speed = car.speed.clamp(-maximum * 0.35, maximum);
-    car.angle += steer * car.speed * dt * 0.22 * s.grip * (1. + car.suspension_level as f32 * 0.12)
-        / (1. + car.speed.abs() * 0.04);
+    let steering_goal = steer.clamp(-1., 1.);
+    let steering_step = 8. * dt;
+    car.steering += (steering_goal - car.steering).clamp(-steering_step, steering_step);
+    let speed_factor = car.speed.abs() / (car.speed.abs() + 2.5);
+    let grip_factor = (s.grip / 3.5).clamp(0.75, 1.15) * (1. + car.suspension_level as f32 * 0.035);
+    let yaw_rate = car.steering * 1.8 * speed_factor * grip_factor;
+    car.angle += yaw_rate * car.speed.signum() * dt;
     Vec3::new(
         car.pos.x + car.angle.sin() * car.speed * dt,
         car.pos.y,
@@ -137,6 +142,37 @@ mod tests {
         }
         assert!(c.speed <= 43.);
         assert!(c.speed > 30.);
+    }
+
+    #[test]
+    fn high_speed_steering_ramps_and_limits_yaw_rate() {
+        let mut car = Car::new(5, Vec3::default());
+        car.speed = 60.;
+        let mut largest_turn: f32 = 0.;
+        for _ in 0..30 {
+            let old_angle = car.angle;
+            step(&mut car, 0., 1., false, 1. / 60.);
+            largest_turn = largest_turn.max((car.angle - old_angle).abs());
+        }
+        assert!(car.steering > 0.9);
+        assert!(largest_turn < 0.05);
+        assert!(car.angle.abs() < 0.8);
+        for _ in 0..12 {
+            step(&mut car, 0., 0., false, 1. / 60.);
+        }
+        assert!(car.steering < 0.1);
+    }
+
+    #[test]
+    fn reverse_steering_turns_smoothly_and_recenters() {
+        let mut car = Car::new(0, Vec3::default());
+        car.speed = -15.;
+        for _ in 0..60 {
+            step(&mut car, 0., 1., false, 1. / 60.);
+        }
+        assert!(car.angle < 0.);
+        step(&mut car, 0., 0., false, 1. / 60.);
+        assert!(car.steering < 1.);
     }
 }
 

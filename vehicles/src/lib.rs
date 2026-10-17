@@ -79,6 +79,8 @@ pub struct Car {
     pub pos: Vec3,
     pub angle: f32,
     pub speed: f32,
+    /// Smoothed steering input in the range -1..=1. This is runtime-only state.
+    pub steering: f32,
     pub vertical_speed: f32,
     pub tilt: [f32; 2],
     pub kind: usize,
@@ -94,6 +96,7 @@ impl Car {
             pos,
             angle: 0.,
             speed: 0.,
+            steering: 0.,
             vertical_speed: 0.,
             tilt: [0.; 2],
             kind,

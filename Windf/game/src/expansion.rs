@@ -296,9 +296,14 @@ impl Game {
         if self.heists.site==Some(0) && self.player.pos.distance(Vec3::new(buildings::jewelry::CENTER[0],floor+1.,buildings::jewelry::CENTER[1]))<80. {
             for beam in buildings::jewelry::beams(self.clock) {
                 let p=[buildings::jewelry::CENTER[0]+beam.p[0],floor+beam.p[1],buildings::jewelry::CENTER[1]+beam.p[2]];
-                r.cube(p,beam.size,[1.,0.055,0.035],0.);
-                // Bright core supplies the stylized light strip without a bloom dependency.
-                r.cube(p,beam.size.map(|v|(v*0.45).max(0.025)),[1.,0.65,0.35],0.);
+                r.glass(p, beam.size, [1., 0.055, 0.035], 0.);
+                // Translucent bright core keeps the beam legible without opaque geometry.
+                r.glass(
+                    p,
+                    beam.size.map(|v| (v * 0.45).max(0.025)),
+                    [1., 0.65, 0.35],
+                    0.,
+                );
             }
         }
         if self.player.pos.distance(Vec3::new(jx, floor + 1., jz)) < 60. {
@@ -401,7 +406,12 @@ impl Game {
         let floor=self.world.surface(s.x,s.z);
         if self.player.pos.distance(Vec3::new(s.x,floor+1.,s.z))<=80. {
             for i in 0..5 {
-                r.cube([s.x,floor+0.8,s.z-8.+i as f32*4.],[22.,0.06,0.06],[1.,0.12,0.03],0.);
+                r.glass(
+                    [s.x, floor + 0.8, s.z - 8. + i as f32 * 4.],
+                    [22., 0.06, 0.06],
+                    [1., 0.12, 0.03],
+                    0.,
+                );
             }
         }
         for (p, taken) in &self.drops {
@@ -436,8 +446,14 @@ impl Game {
             }
         }
         if self.player.pos.distance(Vec3::new(320., 1., 35.)) < 70. {
+            let floor = self.world.surface(320., 24.);
             for z in [20., 24., 28.] {
-                r.cube([320., 0.8, z], [14., 0.06, 0.06], [1., 0.1, 0.05], 0.);
+                r.glass(
+                    [320., floor + 0.8, z],
+                    [14., 0.06, 0.06],
+                    [1., 0.1, 0.05],
+                    0.,
+                );
             }
         }
         let y = self.world.surface(-290., 100.);

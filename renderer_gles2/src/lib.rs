@@ -768,26 +768,40 @@ impl Renderer {
         self.draws += 1;
         self.triangles += 12;
     }
-    pub fn object_shadow(&mut self, p: [f32; 3], size: [f32; 3], ground: f32) {
+    pub fn object_shadow(&mut self, p: [f32; 3], size: [f32; 3], ground: f32, angle: f32) {
         let h = (p[1] + size[1] * 0.5 - ground).max(0.);
-        let x = p[0] - size[0] * 0.5;
-        let z = p[2] - size[2] * 0.5;
         let sx = size[0];
         let sz = size[2];
         let dx = h * 0.55;
         let dz = h * 0.3;
+        let center = [p[0] + dx * 0.5, p[2] + dz * 0.5];
+        let half = [(sx + dx) * 0.5, (sz + dz) * 0.5];
+        let (sin, cos) = angle.sin_cos();
         unsafe {
+            glUniform1i(self.mesh_uniform, 3);
+            glUniform1f(self.opacity_uniform, 0.28);
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
             glBegin(7);
             glColor3f(0.18, 0.21, 0.18);
-            for v in [
-                [x, ground + 0.035, z],
-                [x + sx + dx, ground + 0.035, z + dz],
-                [x + sx + dx, ground + 0.035, z + sz + dz],
-                [x, ground + 0.035, z + sz],
+            for [x, z] in [
+                [-half[0], -half[1]],
+                [half[0], -half[1]],
+                [half[0], half[1]],
+                [-half[0], half[1]],
             ] {
-                glVertex3f(v[0], v[1], v[2]);
+                glVertex3f(
+                    center[0] + x * cos + z * sin,
+                    ground + 0.035,
+                    center[1] - x * sin + z * cos,
+                );
             }
             glEnd();
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+            glUniform1i(self.mesh_uniform, 0);
         }
         self.draws += 1;
         self.triangles += 2;

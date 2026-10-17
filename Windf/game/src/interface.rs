@@ -21,6 +21,18 @@ impl Game {
         } {
             gui::button(r, [x, 14., 94., 58.], label, INK);
         }
+        let hp = (self.player.health / 100.).clamp(0., 1.);
+        r.panel([690., 14., 116., 58.], INK, 0.88, 18.);
+        text(r, 700., 21., 1.5, &format!("HP {:.0}", self.player.health), WHITE);
+        r.panel([700., 46., 96., 10.], [0.16, 0.19, 0.23], 1., 5.);
+        if hp > 0. {
+            r.panel(
+                [700., 46., 96. * hp, 10.],
+                [1. - hp * 0.85, 0.15 + hp * 0.65, 0.12],
+                1.,
+                5.,
+            );
+        }
         r.panel([18., 83., 245., 58.], INK, 0.83, 18.);
         text(
             r,

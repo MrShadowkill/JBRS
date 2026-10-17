@@ -961,6 +961,14 @@ impl Game {
             self.response = Some(primary);
         }
     }
+
+    fn response_role(wanted: u32, side: f32) -> Role {
+        if wanted >= 4 && side > 0. {
+            Role::Swat
+        } else {
+            Role::Police
+        }
+    }
     fn tick_traffic(&mut self) {
         let world = &self.world;
         let doors = &self.doors;
@@ -1049,15 +1057,7 @@ impl Game {
                     }
                 }
                 if let Some(p) = exit {
-                    let mut n = Npc::new(
-                        if side > 0. && self.wanted >= 3 {
-                            Role::Swat
-                        } else {
-                            Role::Police
-                        },
-                        p.x,
-                        p.z,
-                    );
+                    let mut n = Npc::new(Self::response_role(self.wanted, side), p.x, p.z);
                     n.pos = p;
                     n.home = p;
                     driver.crew.push(self.npcs.len());
@@ -1586,6 +1586,13 @@ impl Game {
         self.tick_npcs();
     }
     fn tick_npcs(&mut self) {
+        if self.wanted < 4 {
+            for npc in &mut self.npcs {
+                if npc.role == Role::Swat {
+                    npc.role = Role::Police;
+                }
+            }
+        }
         let target = self.player.pos;
         let pursuit = self.wanted > 0 && self.player.team == Team::Criminal;
         let dispatched = self.alarm.dispatched
@@ -1926,6 +1933,7 @@ impl Game {
                     [c.p.x, c.p.y, c.p.z],
                     [c.size.x, c.size.y, c.size.z],
                     self.world.surface(c.p.x, c.p.z),
+                    0.,
                 );
             }
         }
@@ -2075,17 +2083,11 @@ impl Game {
                 continue;
             }
             if self.save.object_shadows && d < quality.detail {
-                r.rounded(
-                    [
-                        c.pos.x,
-                        self.world.surface(c.pos.x, c.pos.z) + 0.06,
-                        c.pos.z,
-                    ],
-                    [2.5, 0.03, 4.7],
-                    [0.12, 0.15, 0.12],
+                r.object_shadow(
+                    [c.pos.x, c.pos.y, c.pos.z],
+                    [2.5, 1.1, 4.7],
+                    self.world.surface(c.pos.x, c.pos.z),
                     c.angle,
-                    10,
-                    1.,
                 );
             }
             let lod = usize::from(d < quality.detail);
@@ -2180,13 +2182,11 @@ impl Game {
                 )
             {
                 if self.save.object_shadows && p.distance(n.pos) < quality.detail {
-                    r.rounded(
-                        [n.pos.x, self.world.walking_surface(n.pos) + 0.05, n.pos.z],
-                        [0.85, 0.025, 0.65],
-                        [0.15, 0.18, 0.14],
+                    r.object_shadow(
+                        [n.pos.x, n.pos.y, n.pos.z],
+                        [0.85, 1.8, 0.65],
+                        self.world.walking_surface(n.pos),
                         0.,
-                        8,
-                        1.,
                     );
                 }
                 draw_person(
@@ -3488,7 +3488,7 @@ mod tests {
         for _ in 0..1801 {
             g.simulate(0., 0., false, false, false);
         }
-        assert!(g.npcs.iter().any(|n| n.role == Role::Swat));
+        assert!(!g.npcs.iter().any(|n| n.role == Role::Swat));
         // Reinforcements must approach and stun, never just deduct cash on timeout.
         assert!(g.alarm.dispatched);
         assert_eq!(g.save.balance, 80);
@@ -3571,17 +3571,27 @@ mod tests {
         assert_eq!(g.npcs[1].disabled, 0.);
     }
     #[test]
-    fn all_requested_npc_roles_exist() {
+    fn police_patrol_the_city_and_swat_waits_for_high_wanted_levels() {
         let ns = crate::npcs::population();
-        for role in [
-            Role::Resident,
-            Role::Robber,
-            Role::Prisoner,
-            Role::Police,
-            Role::Swat,
-        ] {
-            assert!(ns.iter().any(|n| n.role == role));
-        }
+        assert!(ns.iter().any(|n| n.role == Role::Resident));
+        assert!(ns.iter().any(|n| n.role == Role::Robber));
+        assert!(ns.iter().any(|n| n.role == Role::Prisoner));
+        assert!(ns.iter().filter(|n| n.role == Role::Police).count() >= 10);
+        assert!(!ns.iter().any(|n| n.role == Role::Swat));
+        assert_eq!(Game::response_role(3, 1.), Role::Police);
+        assert_eq!(Game::response_role(4, 1.), Role::Swat);
+        assert_eq!(Game::response_role(5, -1.), Role::Police);
+    }
+
+    #[test]
+    fn swat_reinforcements_return_to_regular_police_below_four_stars() {
+        let mut game = Game::from_save(Default::default()).unwrap();
+        game.menu = false;
+        game.player.team = Team::Criminal;
+        game.wanted = 3;
+        game.npcs = vec![Npc::new(Role::Swat, 80., 80.)];
+        game.tick_npcs();
+        assert_eq!(game.npcs[0].role, Role::Police);
     }
     #[test]
     fn casino_stairs_support_player() {
@@ -3618,6 +3628,21 @@ mod tests {
         b.tick(Vec3::default(), 71.);
         assert!(!b.active);
         assert_eq!(b.deliver(), 0);
+    }
+    #[test]
+    fn bank_security_beam_damages_player_inside_bank() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        g.npcs.clear();
+        let floor = g.world.surface(320., 20.);
+        g.player.pos = Vec3::new(320., floor + 0.8, 20.);
+        assert!(g
+            .world
+            .interior(g.player.pos)
+            .is_some_and(|id| g.world.buildings[id].name == "Bank"));
+        let health = g.player.health;
+        g.simulate(0., 0., false, false, false);
+        assert!(g.player.health < health);
     }
     #[test]
     fn interaction_spam_cannot_rob_and_impacts_are_cooldown_limited() {

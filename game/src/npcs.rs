@@ -118,7 +118,7 @@ pub fn population() -> Vec<Npc> {
         (Role::Police, -100., -145.),
         (Role::Police, -50., -153.),
         (Role::Police, 0., -150.),
-        (Role::Swat, 18., -150.),
+        (Role::Police, 18., -150.),
         (Role::Resident, 100., 15.),
         (Role::Resident, 210., 15.),
         (Role::Resident, 260., 155.),
@@ -128,7 +128,7 @@ pub fn population() -> Vec<Npc> {
         (Role::Robber, 120., 210.),
         (Role::Robber, 290., 15.),
         (Role::Robber, -250., 100.),
-        (Role::Swat, 440., 15.),
+        (Role::Police, 440., 15.),
     ] {
         out.push(Npc::new(role, x, z));
     }
