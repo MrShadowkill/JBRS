@@ -33,6 +33,7 @@ try {
     Copy-Item 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'README_WINDOWS.md', 'TRANSPORT_UPDATE.md' 'dist/' -Force
     Copy-Item 'vendor/SDL2/LICENSE.txt' 'dist/SDL2-LICENSE.txt' -Force
     Copy-Item 'vehicles/assets/ATTRIBUTION.md' 'dist/VEHICLE_ATTRIBUTION.md' -Force
+    Copy-Item 'shaders' 'dist/shaders' -Recurse -Force
     Compress-Archive -Path 'dist/*' -DestinationPath 'JBRS-Windows11-x64.zip' -Force
     Write-Host 'Ready: dist/Start.cmd and JBRS-Windows11-x64.zip'
 } finally {

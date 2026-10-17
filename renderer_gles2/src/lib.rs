@@ -67,6 +67,14 @@ extern "C" {
     fn SDL_Init(flags: u32) -> i32;
     fn SDL_Quit();
     fn SDL_GetError() -> *const c_char;
+    #[cfg(target_os = "android")]
+    fn SDL_RWFromFile(file: *const c_char, mode: *const c_char) -> *mut c_void;
+    #[cfg(target_os = "android")]
+    fn SDL_RWsize(context: *mut c_void) -> i64;
+    #[cfg(target_os = "android")]
+    fn SDL_RWread(context: *mut c_void, ptr: *mut c_void, size: usize, maxnum: usize) -> usize;
+    #[cfg(target_os = "android")]
+    fn SDL_RWclose(context: *mut c_void) -> i32;
     fn SDL_GL_SetAttribute(a: i32, v: i32) -> i32;
     fn SDL_CreateWindow(
         t: *const c_char,
@@ -250,25 +258,30 @@ impl Renderer {
     }
     fn setup(&mut self) -> Result<(), String> {
         unsafe {
-            let vertex = compile(0x8b31, include_str!("../shaders/world.vert"))?;
-            let fragment = compile(0x8b30, include_str!("../shaders/world.frag"))?;
-            let program = glCreateProgram();
-            glAttachShader(program, vertex);
-            glAttachShader(program, fragment);
-            glBindAttribLocation(program, 0, c"position".as_ptr());
-            glBindAttribLocation(program, 1, c"color".as_ptr());
-            glBindAttribLocation(program, 2, c"texcoord".as_ptr());
-            glLinkProgram(program);
-            glDeleteShader(vertex);
-            glDeleteShader(fragment);
-            let mut ok = 0;
-            glGetProgramiv(program, 0x8b82, &mut ok);
-            if ok == 0 {
-                let mut log = vec![0u8; 2048];
-                glGetProgramInfoLog(program, 2048, std::ptr::null_mut(), log.as_mut_ptr().cast());
-                glDeleteProgram(program);
-                return Err(String::from_utf8_lossy(&log).into_owned());
-            }
+            let default_vertex = include_str!("../shaders/world.vert");
+            let default_fragment = include_str!("../shaders/world.frag");
+            let external = match load_external_shaders() {
+                Ok(pair) => pair,
+                Err(error) => {
+                    eprintln!("JBRS: ignoring external GLES2 shader pack: {error}");
+                    None
+                }
+            };
+            let program = match external {
+                Some(pair) => match create_world_program(&pair.vertex, &pair.fragment) {
+                    Ok(program) => {
+                        println!("JBRS: loaded GLES2 shader override from {}", pair.source);
+                        program
+                    }
+                    Err(error) => {
+                        eprintln!(
+                            "JBRS: external GLES2 shader failed ({error}); using built-in shaders"
+                        );
+                        create_world_program(default_vertex, default_fragment)?
+                    }
+                },
+                None => create_world_program(default_vertex, default_fragment)?,
+            };
             gl::initialize(program)?;
             self.program = program;
             let uniform = |name: &str| {
@@ -979,7 +992,10 @@ unsafe fn error() -> String {
 
 unsafe fn compile(kind: u32, source: &str) -> Result<u32, String> {
     let id = glCreateShader(kind);
-    let source = CString::new(source).unwrap();
+    if id == 0 {
+        return Err("glCreateShader returned 0".into());
+    }
+    let source = CString::new(source).map_err(|_| "shader source contains a NUL byte")?;
     let p = source.as_ptr();
     glShaderSource(id, 1, &p, std::ptr::null());
     glCompileShader(id);
@@ -992,6 +1008,81 @@ unsafe fn compile(kind: u32, source: &str) -> Result<u32, String> {
         return Err(String::from_utf8_lossy(&log).into_owned());
     }
     Ok(id)
+}
+unsafe fn create_world_program(vertex_source: &str, fragment_source: &str) -> Result<u32, String> {
+    let vertex = compile(0x8b31, vertex_source)?;
+    let fragment = match compile(0x8b30, fragment_source) {
+        Ok(shader) => shader,
+        Err(error) => {
+            glDeleteShader(vertex);
+            return Err(error);
+        }
+    };
+    let program = glCreateProgram();
+    if program == 0 {
+        glDeleteShader(vertex);
+        glDeleteShader(fragment);
+        return Err("glCreateProgram returned 0".into());
+    }
+    glAttachShader(program, vertex);
+    glAttachShader(program, fragment);
+    glBindAttribLocation(program, 0, c"position".as_ptr());
+    glBindAttribLocation(program, 1, c"color".as_ptr());
+    glBindAttribLocation(program, 2, c"texcoord".as_ptr());
+    glLinkProgram(program);
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+    let mut ok = 0;
+    glGetProgramiv(program, 0x8b82, &mut ok);
+    if ok == 0 {
+        let mut log = vec![0u8; 2048];
+        glGetProgramInfoLog(program, 2048, std::ptr::null_mut(), log.as_mut_ptr().cast());
+        glDeleteProgram(program);
+        return Err(String::from_utf8_lossy(&log).into_owned());
+    }
+    Ok(program)
+}
+
+fn load_external_shaders() -> Result<Option<shader_pack::ShaderPair>, String> {
+    if let Some(pair) = shader_pack::load_external("gles2")? {
+        return Ok(Some(pair));
+    }
+    #[cfg(target_os = "android")]
+    {
+        let vertex = read_android_asset("shaders/gles2/world.vert");
+        let fragment = read_android_asset("shaders/gles2/world.frag");
+        if let (Some(vertex), Some(fragment)) = (vertex, fragment) {
+            if let Some(pair) = shader_pack::from_sources(&vertex, &fragment, "APK shaders/gles2") {
+                return Ok(Some(pair));
+            }
+        }
+        if let Some(archive) = read_android_asset("shaders/shaderpack.zip") {
+            return shader_pack::load_archive(&archive, "gles2", "APK shaders/shaderpack.zip");
+        }
+    }
+    Ok(None)
+}
+
+#[cfg(target_os = "android")]
+fn read_android_asset(path: &str) -> Option<Vec<u8>> {
+    unsafe {
+        let path = CString::new(path).ok()?;
+        let mode = c"rb";
+        let context = SDL_RWFromFile(path.as_ptr(), mode.as_ptr());
+        if context.is_null() {
+            return None;
+        }
+        let size = SDL_RWsize(context);
+        let result = if (0..=64 * 1024 * 1024).contains(&size) {
+            let mut bytes = vec![0; size as usize];
+            let read = SDL_RWread(context, bytes.as_mut_ptr().cast(), 1, bytes.len());
+            (read == bytes.len()).then_some(bytes)
+        } else {
+            None
+        };
+        SDL_RWclose(context);
+        result
+    }
 }
 fn atlas_pixels(tile: usize) -> Vec<u8> {
     let mut pixels = vec![0u8; (tile * 4) * (tile * 4) * 3];

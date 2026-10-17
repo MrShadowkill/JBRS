@@ -1,0 +1,7 @@
+[package]
+name = "shader_pack"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zip = { version = "2.4.2", default-features = false, features = ["deflate"] }

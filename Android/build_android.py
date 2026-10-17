@@ -107,6 +107,11 @@ def main():
             z.write(path, path.name)
         z.write(target_dir / 'aarch64-linux-android/release/libjbrs.so', 'lib/arm64-v8a/libjbrs.so')
         z.write(sdl_build / 'libSDL2.so', 'lib/arm64-v8a/libSDL2.so')
+        shader_root = ROOT / 'shaders'
+        if shader_root.is_dir():
+            for path in sorted(shader_root.rglob('*')):
+                if path.is_file():
+                    z.write(path, 'assets/shaders/' + path.relative_to(shader_root).as_posix())
         for path, name in [(ROOT / 'LICENSE', 'LICENSE'), (ROOT / 'THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md'),
                            (ROOT / 'vehicles/assets/ATTRIBUTION.md', 'VEHICLE_ATTRIBUTION.md'),
                            (ROOT / 'renderer_gles2/assets/FONT-LICENSE.txt', 'FONT-LICENSE.txt'),

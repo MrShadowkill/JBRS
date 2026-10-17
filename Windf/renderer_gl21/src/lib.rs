@@ -263,22 +263,30 @@ impl Renderer {
     }
     fn setup(&mut self) -> Result<(), String> {
         unsafe {
-            let vertex = compile(0x8b31, include_str!("../shaders/world.vert"))?;
-            let fragment = compile(0x8b30, include_str!("../shaders/world.frag"))?;
-            let program = glCreateProgram();
-            glAttachShader(program, vertex);
-            glAttachShader(program, fragment);
-            glLinkProgram(program);
-            glDeleteShader(vertex);
-            glDeleteShader(fragment);
-            let mut ok = 0;
-            glGetProgramiv(program, 0x8b82, &mut ok);
-            if ok == 0 {
-                let mut log = vec![0u8; 2048];
-                glGetProgramInfoLog(program, 2048, std::ptr::null_mut(), log.as_mut_ptr().cast());
-                glDeleteProgram(program);
-                return Err(String::from_utf8_lossy(&log).into_owned());
-            }
+            let default_vertex = include_str!("../shaders/world.vert");
+            let default_fragment = include_str!("../shaders/world.frag");
+            let external = match shader_pack::load_external("desktop") {
+                Ok(pair) => pair,
+                Err(error) => {
+                    eprintln!("JBRS: ignoring external shader pack: {error}");
+                    None
+                }
+            };
+            let program = match external {
+                Some(pair) => match create_world_program(&pair.vertex, &pair.fragment) {
+                    Ok(program) => {
+                        println!("JBRS: loaded desktop GLSL override from {}", pair.source);
+                        program
+                    }
+                    Err(error) => {
+                        eprintln!(
+                            "JBRS: external desktop GLSL failed ({error}); using built-in shaders"
+                        );
+                        create_world_program(default_vertex, default_fragment)?
+                    }
+                },
+                None => create_world_program(default_vertex, default_fragment)?,
+            };
             self.program = program;
             let uniform = |name: &str| {
                 let c = CString::new(name).unwrap();
@@ -939,7 +947,10 @@ unsafe fn error() -> String {
 
 unsafe fn compile(kind: u32, source: &str) -> Result<u32, String> {
     let id = glCreateShader(kind);
-    let source = CString::new(source).unwrap();
+    if id == 0 {
+        return Err("glCreateShader returned 0".into());
+    }
+    let source = CString::new(source).map_err(|_| "shader source contains a NUL byte")?;
     let p = source.as_ptr();
     glShaderSource(id, 1, &p, std::ptr::null());
     glCompileShader(id);
@@ -952,6 +963,36 @@ unsafe fn compile(kind: u32, source: &str) -> Result<u32, String> {
         return Err(String::from_utf8_lossy(&log).into_owned());
     }
     Ok(id)
+}
+unsafe fn create_world_program(vertex_source: &str, fragment_source: &str) -> Result<u32, String> {
+    let vertex = compile(0x8b31, vertex_source)?;
+    let fragment = match compile(0x8b30, fragment_source) {
+        Ok(shader) => shader,
+        Err(error) => {
+            glDeleteShader(vertex);
+            return Err(error);
+        }
+    };
+    let program = glCreateProgram();
+    if program == 0 {
+        glDeleteShader(vertex);
+        glDeleteShader(fragment);
+        return Err("glCreateProgram returned 0".into());
+    }
+    glAttachShader(program, vertex);
+    glAttachShader(program, fragment);
+    glLinkProgram(program);
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+    let mut ok = 0;
+    glGetProgramiv(program, 0x8b82, &mut ok);
+    if ok == 0 {
+        let mut log = vec![0u8; 2048];
+        glGetProgramInfoLog(program, 2048, std::ptr::null_mut(), log.as_mut_ptr().cast());
+        glDeleteProgram(program);
+        return Err(String::from_utf8_lossy(&log).into_owned());
+    }
+    Ok(program)
 }
 fn atlas_pixels(tile: usize) -> Vec<u8> {
     let mut pixels = vec![0u8; (tile * 4) * (tile * 4) * 3];
