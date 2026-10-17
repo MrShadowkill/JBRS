@@ -282,8 +282,71 @@ pub fn network() -> Vec<Road> {
         7.5,
         false,
     ));
+    align_rail_crossings(&mut r);
     r
 }
+
+fn align_rail_crossings(roads: &mut [Road]) {
+    const MAX_GRADE: f32 = 0.035;
+    for road in roads {
+        if road.points.len() < 3 {
+            continue;
+        }
+        let distances: Vec<_> = road
+            .points
+            .iter()
+            .map(|p| terrain::railway::nearest(*p).0)
+            .collect();
+        let mut crossings = Vec::new();
+        for i in 1..road.points.len() - 1 {
+            if distances[i] < 3.0
+                && distances[i] <= distances[i - 1]
+                && distances[i] <= distances[i + 1]
+                && crossings.last().is_none_or(|last| i - *last > 2)
+            {
+                crossings.push(i);
+            }
+        }
+        for center in crossings {
+            let p = road.points[center];
+            if terrain::height(p.x, p.z) < -0.35 {
+                continue;
+            }
+            let rail_y = terrain::railway::nearest(p).1.y;
+            let crossing_y = rail_y - 0.08;
+            if p.y > crossing_y + 2.5 {
+                // A clearly elevated deck remains a deliberate overpass.
+                continue;
+            }
+            road.points[center].y = crossing_y;
+            for direction in [-1isize, 1] {
+                let mut distance = 0.0;
+                let mut i = center as isize;
+                loop {
+                    let next = i + direction;
+                    if next < 0 || next >= road.points.len() as isize {
+                        break;
+                    }
+                    let previous = road.points[i as usize];
+                    let next_point = road.points[next as usize];
+                    distance += previous.distance(next_point);
+                    i = next;
+                    let original = next_point.y;
+                    let allowance = MAX_GRADE * distance;
+                    if (original - crossing_y).abs() <= allowance {
+                        break;
+                    }
+                    road.points[i as usize].y = if original < crossing_y {
+                        crossing_y - allowance
+                    } else {
+                        crossing_y + allowance
+                    };
+                }
+            }
+        }
+    }
+}
+
 pub fn connected(roads: &[Road], start: Vec3, end: Vec3) -> bool {
     let nodes: Vec<Vec3> = roads
         .iter()
@@ -323,6 +386,43 @@ mod tests {
                     s[0],
                     s[1]
                 );
+            }
+        }
+    }
+    #[test]
+    fn west_shore_rail_crossing_has_a_continuous_approach() {
+        let roads = network();
+        let road = roads
+            .iter()
+            .find(|road| road.name == "West shore road")
+            .unwrap();
+        let (index, point) = road
+            .points
+            .iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| {
+                terrain::railway::nearest(**a)
+                    .0
+                    .total_cmp(&terrain::railway::nearest(**b).0)
+            })
+            .unwrap();
+        let (distance, rail) = terrain::railway::nearest(*point);
+        assert!(distance < 3.0, "crossing miss: {distance} at {point:?}");
+        assert!((point.y - (rail.y - 0.08)).abs() < 0.02);
+        for direction in [-1isize, 1] {
+            let mut i = index as isize;
+            let mut walked = 0.0;
+            while walked < 90.0 {
+                let next = i + direction;
+                if next < 0 || next >= road.points.len() as isize {
+                    break;
+                }
+                let a = road.points[i as usize];
+                let b = road.points[next as usize];
+                let length = a.distance(b);
+                assert!((b.y - a.y).abs() / length.max(0.001) <= 0.04);
+                walked += length;
+                i = next;
             }
         }
     }

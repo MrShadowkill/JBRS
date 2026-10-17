@@ -41,7 +41,7 @@ impl Game {
                 return true;
             }
             self.heists.riding = None;
-            let (q, a) = crate::heists::Heists::train(self.clock, wagon);
+            let (q, a) = crate::heists::Heists::train(self.train.distance, wagon);
             self.player.pos = Vec3::new(
                 q.x + a.cos() * 5.,
                 self.world.surface(q.x + a.cos() * 5., q.z - a.sin() * 5.) + 1.,
@@ -52,7 +52,12 @@ impl Game {
         }
         if self.driving.is_none() {
             if let Some(wagon) =
-                (0..25).find(|i| crate::heists::Heists::train(self.clock, *i).0.distance(p) < 6.)
+                (0..25).find(|i| {
+                    crate::heists::Heists::train(self.train.distance, *i)
+                        .0
+                        .distance(p)
+                        < 6.
+                })
             {
                 self.heists.riding = Some(wagon);
                 if self.heists.gold(wagon) && self.heists.start(5) {
@@ -191,7 +196,7 @@ impl Game {
     fn tick_heists(&mut self) {
         self.heists.tick(STEP);
         if let Some(w) = self.heists.riding {
-            let (p, _) = crate::heists::Heists::train(self.clock, w);
+            let (p, _) = crate::heists::Heists::train(self.train.distance, w);
             self.player.pos = Vec3::new(p.x, p.y + 2.8, p.z);
             self.player.vy = 0.;
         }
@@ -330,7 +335,7 @@ impl Game {
         let aspect=r.width as f32/r.height as f32;
         let visible=|p:Vec3| crate::world_view::sphere_visible([p.x,p.y+1.,p.z],7.,eye,self.yaw,self.pitch,aspect,quality.distance);
         for wagon in 0..25 {
-            let (p, a) = crate::heists::Heists::train(self.clock, wagon);
+            let (p, a) = crate::heists::Heists::train(self.train.distance, wagon);
             if p.distance(self.player.pos) > quality.distance || !visible(p) {
                 continue;
             }
@@ -384,7 +389,7 @@ impl Game {
                 r.cube([p.x, p.y + 3., p.z], [1.5, 0.3, 2.], [0.95, 0.75, 0.18], a);
             }
         }
-        let (q, a) = terrain::railway::locomotive(self.clock);
+        let (q, a) = terrain::railway::locomotive(self.train.distance);
         if q.distance(self.player.pos) < quality.distance && visible(q) {
             thread_local! {
                 static LOCOMOTIVES: [engine_core::Mesh; 2] = [vehicles::rail::locomotive(false), vehicles::rail::locomotive(true)];

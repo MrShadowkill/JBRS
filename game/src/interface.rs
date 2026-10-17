@@ -209,17 +209,15 @@ impl Game {
             r.panel([174., 125., 676., 363.], INK, 0.92, 28.);
             text(r, 328., 150., 5.2, "JBRS", WHITE);
             text(r, 368., 202., 1.5, "CHOOSE YOUR SIDE", [0.65, 0.7, 0.78]);
-            gui::button(r, [204., 242., 188., 127.], "POLICE  [2]", BLUE);
-            text(r, 225., 329., 1.6, "PATROL THE CITY", WHITE);
-            gui::button(r, [418., 242., 188., 127.], "PRISONER [1]", ORANGE);
-            text(r, 436., 329., 1.6, "PLAN YOUR ESCAPE", WHITE);
+            gui::button(r, [230., 242., 260., 127.], "PRISONER [1]", ORANGE);
+            text(r, 267., 329., 1.6, "PLAN YOUR ESCAPE", WHITE);
             gui::button(
                 r,
-                [632., 242., 188., 127.],
-                "CRIMINAL [3]",
+                [534., 242., 260., 127.],
+                "CRIMINAL [2]",
                 [0.75, 0.2, 0.15],
             );
-            text(r, 650., 329., 1.6, "TAKE THE RISK", WHITE);
+            text(r, 601., 329., 1.6, "TAKE THE RISK", WHITE);
             gui::button(
                 r,
                 [280., 405., 300., 54.],
@@ -466,9 +464,8 @@ impl Game {
         }
         if self.menu {
             for (rect, key) in [
-                ([204., 242., 188., 127.], 50),
-                ([418., 242., 188., 127.], 49),
-                ([632., 242., 188., 127.], 51),
+                ([230., 242., 260., 127.], 49),
+                ([534., 242., 260., 127.], 50),
                 ([280., 405., 300., 54.], 13),
                 ([605., 405., 180., 54.], 103),
             ] {

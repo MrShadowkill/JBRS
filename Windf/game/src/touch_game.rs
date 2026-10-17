@@ -217,9 +217,10 @@ mod touch_tests {
         let mut g = Game::from_save(Default::default()).unwrap();
         let mut touch = TouchControls::default();
         assert!(g.menu);
-        // Original menu's prisoner choice, using normalized SDL touch coordinates.
-        g.touch_event(&finger(0x700, 1, 500. / 1024., 300. / 576.), &mut touch);
+        // The prisoner's menu choice uses normalized SDL touch coordinates.
+        g.touch_event(&finger(0x700, 1, 360. / 1024., 300. / 576.), &mut touch);
         assert!(!g.menu);
+        assert_eq!(g.player.team, Team::Prisoner);
         g.touch_event(&finger(0x700, 2, 150. / 1024., 390. / 576.), &mut touch);
         g.touch_event(&finger(0x700, 3, 970. / 1024., 460. / 576.), &mut touch);
         assert!(touch.movement[1] > 0.5);

@@ -173,8 +173,8 @@ impl Heists {
         self.strikes = 0;
         self.riding = None;
     }
-    pub fn train(clock: f32, wagon: usize) -> (Vec3, f32) {
-        terrain::railway::carriage(clock, wagon)
+    pub fn train(distance: f32, wagon: usize) -> (Vec3, f32) {
+        terrain::railway::carriage(distance, wagon)
     }
     pub fn gold(&self, wagon: usize) -> bool {
         self.train_gold[..self.train_count].contains(&wagon)

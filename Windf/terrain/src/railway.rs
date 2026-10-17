@@ -14,9 +14,22 @@ fn alignment() -> &'static Alignment {
         let mut points: Vec<Vec3> = (0..N)
             .map(|i| {
                 let a = i as f32 / N as f32 * std::f32::consts::TAU;
-                let x = 930. * a.cos();
+                let mut x = 930. * a.cos();
                 let z = if a.sin() < 0. { 400. } else { 900. } * a.sin();
-                Vec3::new(x, super::height(x, z).max(0.) + 3.8, z)
+                // Bend east around the low industrial shed near the east shore.
+                // Smooth, long approaches avoid a tight curve and keep wagon spacing.
+                if x > 800.0 && (70.0..250.0).contains(&z) {
+                    let smooth = |t: f32| {
+                        let t = t.clamp(0.0, 1.0);
+                        t * t * (3.0 - 2.0 * t)
+                    };
+                    let enter = smooth((z - 70.0) / 75.0);
+                    let leave = 1.0 - smooth((z - 160.0) / 90.0);
+                    x += 34.0 * enter.min(leave);
+                }
+                let ground = super::height(x, z);
+                let rail_bed = if ground < -0.35 { 1.15 } else { ground + 0.45 };
+                Vec3::new(x, rail_bed, z)
             })
             .collect();
         // A cyclic grade envelope raises approaches gradually instead of burying the line.
@@ -69,16 +82,28 @@ pub fn pose(distance: f32) -> (Vec3, f32) {
         (q.x - p.x).atan2(q.z - p.z),
     )
 }
+pub fn grade(distance: f32) -> f32 {
+    let a = alignment();
+    let d = distance.rem_euclid(length());
+    let i = a
+        .lengths
+        .partition_point(|v| *v <= d)
+        .saturating_sub(1)
+        .min(N - 1);
+    let p = a.points[i];
+    let q = a.points[i + 1];
+    (q.y - p.y) / (a.lengths[i + 1] - a.lengths[i]).max(0.001)
+}
 pub fn samples() -> &'static [Vec3] {
     &alignment().points
 }
-pub fn nearest(p: Vec3) -> (f32, Vec3) {
+pub fn project(p: Vec3) -> (f32, f32, Vec3, f32) {
     let radius = if p.z < 0. { 400. } else { 900. };
     let a = (p.z / radius)
         .atan2(p.x / 930.)
         .rem_euclid(std::f32::consts::TAU);
     let center = (a / std::f32::consts::TAU * N as f32) as usize;
-    let mut best = (f32::MAX, Vec3::default());
+    let mut best = (f32::MAX, 0.0, Vec3::default(), 0.0);
     for j in -3..=3 {
         let i = (center as isize + j).rem_euclid(N as isize) as usize;
         let a = alignment().points[i];
@@ -90,30 +115,36 @@ pub fn nearest(p: Vec3) -> (f32, Vec3) {
         let q = Vec3::new(a.x + dx * t, a.y + (b.y - a.y) * t, a.z + dz * t);
         let d = (q.x - p.x).hypot(q.z - p.z);
         if d < best.0 {
-            best = (d, q);
+            let arc =
+                alignment().lengths[i] + t * (alignment().lengths[i + 1] - alignment().lengths[i]);
+            best = (d, arc, q, dx.atan2(dz));
         }
     }
     best
 }
-pub fn carriage(clock: f32, wagon: usize) -> (Vec3, f32) {
-    let (mut p, a) = pose(clock * 11.2 - wagon as f32 * SPACING);
+pub fn nearest(p: Vec3) -> (f32, Vec3) {
+    let (distance, _, point, _) = project(p);
+    (distance, point)
+}
+pub fn carriage(distance: f32, wagon: usize) -> (Vec3, f32) {
+    let (mut p, a) = pose(distance - wagon as f32 * SPACING);
     p.y += 0.8;
     (p, a)
 }
-pub fn locomotive(clock: f32) -> (Vec3, f32) {
-    let (mut p, a) = pose(clock * 11.2 + SPACING);
+pub fn locomotive(distance: f32) -> (Vec3, f32) {
+    let (mut p, a) = pose(distance + SPACING);
     p.y += 0.8;
     (p, a)
 }
-pub fn occupied(p: Vec3, r: f32, clock: f32) -> bool {
+pub fn occupied(p: Vec3, r: f32, distance: f32) -> bool {
     if nearest(p).0 > 7. + r {
         return false;
     }
     (0..=COUNT).any(|i| {
         let (q, a) = if i == COUNT {
-            locomotive(clock)
+            locomotive(distance)
         } else {
-            carriage(clock, i)
+            carriage(distance, i)
         };
         let dx = p.x - q.x;
         let dz = p.z - q.z;
@@ -131,7 +162,12 @@ mod tests {
     #[test]
     fn alignment_stays_above_land_and_grade_is_bounded() {
         for p in samples().windows(2) {
-            assert!(p[0].y >= super::super::height(p[0].x, p[0].z) + 3.79);
+            let ground = super::super::height(p[0].x, p[0].z);
+            if ground >= -0.35 {
+                assert!(p[0].y >= ground + 0.44);
+            } else {
+                assert!(p[0].y >= 1.14);
+            }
             let d = (p[1].x - p[0].x).hypot(p[1].z - p[0].z);
             assert!((p[1].y - p[0].y).abs() <= d * 0.0351);
         }
@@ -143,7 +179,8 @@ mod tests {
                 let (p, _) = carriage(time, i);
                 assert!((nearest(p).1.y + 0.8 - p.y).abs() < 0.01);
                 if i > 0 {
-                    assert!(p.distance(carriage(time, i - 1).0) > 10.5);
+                    let spacing = p.distance(carriage(time, i - 1).0);
+                    assert!(spacing > 10.5, "time={time} wagon={i} spacing={spacing}");
                 }
             }
         }

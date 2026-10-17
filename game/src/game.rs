@@ -20,9 +20,11 @@ struct Game {
     player: Player,
     cars: Vec<Car>,
     traffic: crate::traffic::Traffic,
+    train: vehicle_physics::train::Train,
     car_models: &'static [[vehicles::body::Model; 2]],
     driving: Option<usize>,
     save: save_system::Save,
+    fleet: crate::fleet::FleetCycle,
     alarm: Alarm,
     npcs: Vec<Npc>,
     doors: Vec<crate::doors::Door>,
@@ -83,6 +85,9 @@ impl Game {
         Self::from_save(save_system::load()?)
     }
     fn from_save(mut save: save_system::Save) -> Result<Self, String> {
+        if save.team == Team::Police {
+            save.team = Team::Prisoner;
+        }
         for i in 0..CATALOG.len() {
             if save.car_engine_selected[i] == u32::MAX {
                 save.car_engine_selected[i] = save.car_engine[i];
@@ -99,6 +104,10 @@ impl Game {
             ..Default::default()
         };
         let world = std::sync::Arc::new(World::new());
+        let seed = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos() as u64;
         if !world::prison::underground(player.pos) {
             player.pos.y = world.walking_surface(player.pos) + 1.;
         }
@@ -107,27 +116,9 @@ impl Game {
             .iter()
             .map(|_| crate::doors::Door::new())
             .collect();
-        let mut cars = vec![
-            Car::new(0, Vec3::new(-95., 0.65, -76.)),
-            Car::new(1, Vec3::new(-74., 0.65, -76.)),
-            Car::new(2, Vec3::new(0., 0.65, -140.)),
-            Car::new(3, Vec3::new(750., 0.65, -430.)),
-            Car::new(4, Vec3::new(560., 0.65, 175.)),
-            Car::new(5, Vec3::new(430., 0.65, -72.)),
-            Car::new(6, Vec3::new(420., 0.65, 330.)),
-            Car::new(7, Vec3::new(440., 0.65, -72.)),
-        ];
-        for car in &mut cars {
-            car.pos.y = world.surface(car.pos.x, car.pos.z) + 0.65;
-            configure_car(car, &save);
-        }
-        let traffic = crate::traffic::Traffic::new(&world, &mut cars);
-        let mut heists = crate::heists::Heists::new(
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos() as u64,
-        );
+        let mut cars = parked_cars(&world, &save, 0);
+        let traffic = crate::traffic::Traffic::with_seed(&world, &mut cars, 0);
+        let mut heists = crate::heists::Heists::new(seed);
         heists.cooldown = save.heist_cooldown;
         let wanted = save.wanted;
         let bounty = save.bounty;
@@ -156,9 +147,11 @@ impl Game {
             player,
             cars,
             traffic,
+            train: vehicle_physics::train::Train::default(),
             car_models: vehicles::body::catalog()?,
             driving: None,
             save,
+            fleet: crate::fleet::FleetCycle::new(seed),
             alarm,
             npcs: {
                 let mut npcs = crate::npcs::population();
@@ -252,6 +245,242 @@ impl Game {
                 .iter()
                 .zip(&self.world.buildings)
                 .any(|(door, b)| door.blocked(b, p, r))
+    }
+    fn safe_vehicle_exit(&self, car_id: usize, ignore_npc: Option<usize>) -> Option<Vec3> {
+        self.safe_vehicle_exit_avoiding(car_id, ignore_npc, &[])
+    }
+    fn safe_vehicle_exit_avoiding(
+        &self,
+        car_id: usize,
+        ignore_npc: Option<usize>,
+        additional_cars: &[Car],
+    ) -> Option<Vec3> {
+        let car = self.cars.get(car_id)?;
+        for radius in [3.2, 4.5, 6.0, 8.0, 11.0, 15.0, 20.0, 28.0] {
+            for direction in 0..16 {
+                let angle = car.angle + direction as f32 * std::f32::consts::TAU / 16.0;
+                let mut p = Vec3::new(
+                    car.pos.x + angle.sin() * radius,
+                    car.pos.y,
+                    car.pos.z + angle.cos() * radius,
+                );
+                p.y = self.world.walking_surface(p) + 1.0;
+                if self.blocked(p, 0.55)
+                    || terrain::railway::occupied(p, 0.55, self.train.distance)
+                    || self.cars.iter().enumerate().any(|(id, other)| {
+                        id != car_id
+                            && p.distance(other.pos) < 3.7
+                            && (p.y - other.pos.y).abs() < 2.0
+                    })
+                    || additional_cars
+                        .iter()
+                        .any(|other| p.distance(other.pos) < 3.7 && (p.y - other.pos.y).abs() < 2.0)
+                    || self.npcs.iter().enumerate().any(|(id, npc)| {
+                        Some(id) != ignore_npc
+                            && !npc.aboard
+                            && npc.disabled <= 0.0
+                            && p.distance(npc.pos) < 1.35
+                            && (p.y - npc.pos.y).abs() < 2.0
+                    })
+                {
+                    continue;
+                }
+                return Some(p);
+            }
+        }
+        None
+    }
+    fn train_push_path_clear(&self, from: Vec3, to: Vec3, radius: f32) -> bool {
+        let count = (from.distance(to) / 0.35).ceil().max(1.0) as usize;
+        (1..=count).all(|index| {
+            let t = index as f32 / count as f32;
+            let p = Vec3::new(
+                from.x + (to.x - from.x) * t,
+                from.y + (to.y - from.y) * t,
+                from.z + (to.z - from.z) * t,
+            );
+            !self.blocked(p, radius)
+        })
+    }
+    fn push_car_from_train(&mut self, car_id: usize, distance: f32) -> bool {
+        let Some(car) = self.cars.get(car_id) else {
+            return true;
+        };
+        let origin = car.pos;
+        let (separation, _, track, angle) = terrain::railway::project(origin);
+        if separation > 9.0 {
+            return false;
+        }
+        for radius in [4.6, 5.5, 7.0, 9.0, 12.0, 16.0] {
+            for side in [-1.0, 1.0] {
+                let mut p = Vec3::new(
+                    track.x + angle.cos() * side * radius,
+                    0.0,
+                    track.z - angle.sin() * side * radius,
+                );
+                p.y = self.world.surface(p.x, p.z) + 0.65;
+                if terrain::railway::occupied(p, 2.5, distance)
+                    || self.world.ceiling(p) < p.y + 1.8
+                    || self.blocked(p, 1.0)
+                    || !self.train_push_path_clear(origin, p, 0.95)
+                    || self.cars.iter().enumerate().any(|(id, other)| {
+                        id != car_id
+                            && p.distance(other.pos) < 3.8
+                            && (p.y - other.pos.y).abs() < 2.0
+                    })
+                    || self.npcs.iter().any(|npc| {
+                        !npc.aboard
+                            && npc.disabled <= 0.0
+                            && p.distance(npc.pos) < 1.4
+                            && (p.y - npc.pos.y).abs() < 2.0
+                    })
+                    || (self.driving.is_none()
+                        && p.distance(self.player.pos) < 1.5
+                        && (p.y - self.player.pos.y).abs() < 2.0)
+                {
+                    continue;
+                }
+                let car = &mut self.cars[car_id];
+                car.pos = p;
+                car.speed = 0.0;
+                car.vertical_speed = 0.0;
+                return true;
+            }
+        }
+        false
+    }
+    fn push_person_from_train(&self, origin: Vec3, radius: f32, distance: f32) -> Option<Vec3> {
+        let (separation, _, track, angle) = terrain::railway::project(origin);
+        if separation > 9.0 {
+            return None;
+        }
+        for offset in [3.0, 4.0, 5.5, 7.5, 10.0] {
+            for side in [-1.0, 1.0] {
+                let mut p = Vec3::new(
+                    track.x + angle.cos() * side * offset,
+                    0.0,
+                    track.z - angle.sin() * side * offset,
+                );
+                p.y = self.world.walking_surface(p) + 1.0;
+                if terrain::railway::occupied(p, radius, distance)
+                    || self.world.ceiling(p) < p.y + 1.8
+                    || !self.train_push_path_clear(origin, p, radius)
+                    || self.npcs.iter().any(|npc| {
+                        !npc.aboard
+                            && npc.disabled <= 0.0
+                            && p.distance(npc.pos) < radius + 0.5
+                            && (p.y - npc.pos.y).abs() < 2.0
+                    })
+                    || self
+                        .cars
+                        .iter()
+                        .any(|car| p.distance(car.pos) < 3.0 && (p.y - car.pos.y).abs() < 2.0)
+                    || (self.driving.is_none()
+                        && p.distance(self.player.pos) < 0.8
+                        && (p.y - self.player.pos.y).abs() < 2.0)
+                {
+                    continue;
+                }
+                return Some(p);
+            }
+        }
+        None
+    }
+    fn tick_train(&mut self) {
+        let previous_distance = self.train.distance;
+        let previous_speed = self.train.speed;
+        self.train
+            .cruise_step(STEP, terrain::railway::grade(previous_distance), 11.2);
+        let distance = self.train.distance;
+        for car_id in 0..self.cars.len() {
+            if terrain::railway::occupied(self.cars[car_id].pos, 0.4, distance)
+                && !self.push_car_from_train(car_id, distance)
+            {
+                self.train.distance = previous_distance;
+                self.train.speed = 0.0;
+                return;
+            }
+        }
+        for npc_id in 0..self.npcs.len() {
+            if self.npcs[npc_id].aboard || self.npcs[npc_id].disabled > 0.0 {
+                continue;
+            }
+            if terrain::railway::occupied(self.npcs[npc_id].pos, 0.45, distance) {
+                let origin = self.npcs[npc_id].pos;
+                if let Some(p) = self.push_person_from_train(origin, 0.45, distance) {
+                    self.npcs[npc_id].pos = p;
+                    self.npcs[npc_id].waypoint = p;
+                } else {
+                    self.train.distance = previous_distance;
+                    self.train.speed = 0.0;
+                    return;
+                }
+            }
+        }
+        if self.heists.riding.is_none()
+            && self.driving.is_none()
+            && terrain::railway::occupied(self.player.pos, 0.45, distance)
+        {
+            if let Some(p) = self.push_person_from_train(self.player.pos, 0.45, distance) {
+                self.player.pos = p;
+                self.player.vy = 0.0;
+            } else {
+                self.train.distance = previous_distance;
+                self.train.speed = 0.0;
+                return;
+            }
+        }
+        if let Some(wagon) = self.heists.riding {
+            let (p, _) = crate::heists::Heists::train(distance, wagon);
+            self.player.pos = Vec3::new(p.x, p.y + 2.8, p.z);
+            self.player.vy = 0.0;
+        }
+        if !self.train.speed.is_finite() {
+            self.train.distance = previous_distance;
+            self.train.speed = previous_speed.max(0.0);
+        }
+    }
+    fn refresh_fleet(&mut self, seed: u64) {
+        let mut cars = parked_cars(&self.world, &self.save, seed);
+        let traffic = crate::traffic::Traffic::with_seed(&self.world, &mut cars, seed);
+        if let Some(id) = self.driving {
+            if let Some(p) = self.safe_vehicle_exit_avoiding(id, None, &cars) {
+                self.player.pos = p;
+                self.player.vy = 0.0;
+            }
+        }
+        self.driving = None;
+        self.camera = None;
+
+        let crews: Vec<_> = self
+            .traffic
+            .drivers
+            .iter()
+            .map(|driver| (driver.car, driver.crew.clone()))
+            .collect();
+        for (car_id, crew) in crews {
+            for npc_id in crew {
+                let exit = self.safe_vehicle_exit_avoiding(car_id, Some(npc_id), &cars);
+                if let Some(npc) = self.npcs.get_mut(npc_id) {
+                    npc.aboard = false;
+                    npc.returning = false;
+                    if let Some(p) = exit {
+                        npc.pos = p;
+                        npc.home = p;
+                    }
+                }
+            }
+        }
+
+        self.cars = cars;
+        self.traffic = traffic;
+        self.response = None;
+        self.heist_call = None;
+        self.workshop = None;
+        self.workshop_config = false;
+        if let Some(site) = self.alarm.site.filter(|_| self.alarm.dispatched) {
+            self.prepare_response(site);
+        }
     }
     fn clear(&self, a: Vec3, b: Vec3) -> bool {
         if (a.y - b.y).abs() > 2. {
@@ -362,10 +591,9 @@ impl Game {
             }
             49..=53 if self.workshop.is_some() => self.service((k - 48) as u32),
             49..=51 if self.training => self.train((k - 48) as u32),
-            49..=51 if self.menu => {
+            49..=50 if self.menu => {
                 self.player = Player::new(match k {
                     49 => Team::Prisoner,
-                    50 => Team::Police,
                     _ => Team::Criminal,
                 });
                 self.driving = None;
@@ -543,7 +771,7 @@ impl Game {
             .position(|&(x, z)| p.distance(Vec3::new(x, 0., z)) < 14.)
     }
     fn player_blocked(&self, p: Vec3, r: f32) -> bool {
-        if self.heists.riding.is_none() && terrain::railway::occupied(p, r, self.clock) {
+        if self.heists.riding.is_none() && terrain::railway::occupied(p, r, self.train.distance) {
             return true;
         }
         if self.stance == 0 {
@@ -617,21 +845,11 @@ impl Game {
             return;
         }
         if let Some(i) = self.driving {
-            let c = &self.cars[i];
-            for side in [1., -1.] {
-                let mut p = Vec3::new(
-                    c.pos.x + side * c.angle.cos() * 3.,
-                    c.pos.y,
-                    c.pos.z - side * c.angle.sin() * 3.,
-                );
-                p.y = self.world.surface(p.x, p.z) + 1.;
-                if !self.blocked(p, 0.5) {
-                    self.player.pos = p;
-                    self.player.vy = 0.;
-                    self.driving = None;
-                    self.camera = None;
-                    break;
-                }
+            if let Some(p) = self.safe_vehicle_exit(i, None) {
+                self.player.pos = p;
+                self.player.vy = 0.;
+                self.driving = None;
+                self.camera = None;
             }
             return;
         }
@@ -713,28 +931,11 @@ impl Game {
                 .iter()
                 .position(|site| site.center.distance(self.world.buildings[id].p) < 1.)
             {
-                if self.player.team == Team::Police {
-                    self.notify("POLICE CANNOT ROB STORES");
-                    return;
-                }
                 self.notify(if self.alarm.hits[site] < 3 {
                     "SLOT 1 - F OR LEFT CLICK: HIT THE GLASS 3 TIMES"
                 } else {
                     "HOLD E NEAR THE BROKEN CASE TO TAKE LOOT"
                 });
-                return;
-            }
-        }
-        if self.player.team == Team::Police {
-            if let Some(id) = self.npcs.iter().position(|n| {
-                n.role == Role::Robber
-                    && n.disabled <= 0.
-                    && n.pos.distance(p) < 3.
-                    && self.clear(p, n.pos)
-            }) {
-                self.npcs[id].disabled = 60.;
-                self.save.balance += 50;
-                self.notify("ROBBER ARRESTED - $50");
                 return;
             }
         }
@@ -768,7 +969,7 @@ impl Game {
             world,
             &mut self.cars,
             self.driving,
-            self.clock,
+            self.train.distance,
             STEP,
             |p, r| {
                 world.blocked(p, r)
@@ -841,7 +1042,7 @@ impl Game {
                     p.y = world.walking_surface(p) + 1.;
                     if !world.blocked(p, 0.5)
                         && !world::prison::barrier(p, 0.5, breached)
-                        && !terrain::railway::occupied(p, 0.5, self.clock)
+                        && !terrain::railway::occupied(p, 0.5, self.train.distance)
                     {
                         exit = Some(p);
                         break;
@@ -893,11 +1094,7 @@ impl Game {
             let dx = case.x - p.x;
             let dz = case.z - p.z;
             let facing = dx * a.sin() + dz * a.cos();
-            if p.distance(case) < 2.6
-                && facing > 0.3
-                && self.player.team != Team::Police
-                && self.clear(p, case)
-            {
+            if p.distance(case) < 2.6 && facing > 0.3 && self.clear(p, case) {
                 let starting = self.alarm.site.is_none();
                 if self.alarm.strike(id) {
                     self.player.team = Team::Criminal;
@@ -1094,10 +1291,8 @@ impl Game {
             return;
         }
         self.shot = 0.15;
-        if self.player.team != Team::Police {
-            self.player.team = Team::Criminal;
-            self.wanted = self.wanted.max(2);
-        }
+        self.player.team = Team::Criminal;
+        self.wanted = self.wanted.max(2);
         let p = self.player.pos;
         let victim = self
             .npcs
@@ -1203,6 +1398,10 @@ impl Game {
             (forward, side, jump)
         };
         self.clock += STEP;
+        self.tick_train();
+        if let Some(seed) = self.fleet.tick(STEP) {
+            self.refresh_fleet(seed);
+        }
         self.pistol.tick(STEP);
         self.stun = (self.stun - STEP).max(0.);
         self.blast = (self.blast - STEP).max(0.);
@@ -1254,7 +1453,7 @@ impl Game {
                 |q, r| {
                     world.blocked(q, r)
                         || world::prison::barrier(q, r, breached)
-                        || terrain::railway::occupied(q, r, self.clock)
+                        || terrain::railway::occupied(q, r, self.train.distance)
                         || doors
                             .iter()
                             .zip(&world.buildings)
@@ -2456,6 +2655,7 @@ pub fn run() -> Result<(), String> {
             "flats-new" | "apartment-new" => (110., 93., std::f32::consts::PI),
             "quiz-new" | "cuffs-new" | "customs-new" => (-95., -83., std::f32::consts::PI),
             "train-new" => (800., -12., std::f32::consts::PI / 2.),
+            "west-shore-new" => (-716., -250., 0.96),
             "armory" => (60., 240., std::f32::consts::PI),
             "housing" => (-220., 210., std::f32::consts::PI),
             "factory-bag" => (640., 215., std::f32::consts::PI),
@@ -2607,9 +2807,9 @@ pub fn run() -> Result<(), String> {
         }
         if smoke && matches!(scene.as_str(), "locomotive-new" | "train-new") {
             let (p, a) = if scene == "locomotive-new" {
-                terrain::railway::locomotive(g.clock)
+                terrain::railway::locomotive(g.train.distance)
             } else {
-                crate::heists::Heists::train(g.clock, 8)
+                crate::heists::Heists::train(g.train.distance, 8)
             };
             g.player.pos = Vec3::new(p.x + a.cos() * 14., p.y + 3., p.z - a.sin() * 14.);
             let dx = p.x - g.player.pos.x;
@@ -2866,6 +3066,63 @@ pub fn run() -> Result<(), String> {
     Ok(())
 }
 
+fn parked_cars(world: &World, save: &save_system::Save, seed: u64) -> Vec<Car> {
+    let mut candidates = Vec::new();
+    for road in world.roads.iter().filter(|road| !road.highway) {
+        if road.name.contains("Prison") || road.points.len() < 2 {
+            continue;
+        }
+        for i in (0..road.points.len() - 1).step_by(6) {
+            let a = road.points[i];
+            let b = road.points[i + 1];
+            let angle = (b.x - a.x).atan2(b.z - a.z);
+            let (nx, nz) = road.normal(i);
+            for side in [-1.0, 1.0] {
+                let p = Vec3::new(
+                    a.x + nx * side * (road.width / 2.0 + 4.5),
+                    0.0,
+                    a.z + nz * side * (road.width / 2.0 + 4.5),
+                );
+                if p.x.abs() > 700.0
+                    || p.z.abs() > 500.0
+                    || world.surface(p.x, p.z) > 1.5
+                    || crate::traffic::prison_parking_zone(p)
+                    || world.blocked(p, 2.0)
+                    || world::prison::barrier(p, 2.0, false)
+                    || terrain::railway::occupied(p, 7.0, 0.0)
+                    || candidates
+                        .iter()
+                        .any(|(q, _): &(Vec3, f32)| p.distance(*q) < 9.0)
+                {
+                    continue;
+                }
+                candidates.push((p, angle));
+            }
+        }
+    }
+
+    let mut cars = Vec::with_capacity(CATALOG.len());
+    if candidates.is_empty() {
+        return cars;
+    }
+    let first = seed as usize % candidates.len();
+    for kind in 0..CATALOG.len() {
+        let candidate = (0..candidates.len()).find_map(|offset| {
+            let (p, angle) = candidates[(first + offset) % candidates.len()];
+            (!cars.iter().any(|car: &Car| car.pos.distance(p) < 9.0)).then_some((p, angle))
+        });
+        let Some((mut p, angle)) = candidate else {
+            break;
+        };
+        p.y = world.surface(p.x, p.z) + 0.65;
+        let mut car = Car::new(kind, p);
+        car.angle = angle;
+        configure_car(&mut car, save);
+        cars.push(car);
+    }
+    cars
+}
+
 fn configure_car(c: &mut Car, s: &save_system::Save) {
     c.engine_level = if s.car_engine_selected[c.kind] == u32::MAX {
         s.car_engine[c.kind]
@@ -2897,6 +3154,163 @@ mod tests {
             }
         }
         g.holding = true;
+    }
+
+    #[test]
+    fn legacy_police_team_loads_as_prisoner_without_resetting_progress() {
+        let save = save_system::Save {
+            team: Team::Police,
+            balance: 732,
+            owned: vec![3, 7],
+            ..Default::default()
+        };
+        let g = Game::from_save(save).unwrap();
+        assert_eq!(g.player.team, Team::Prisoner);
+        assert_eq!(g.save.team, Team::Prisoner);
+        assert_eq!(g.save.balance, 732);
+        assert_eq!(g.save.owned, vec![3, 7]);
+    }
+
+    #[test]
+    fn menu_has_only_prisoner_and_criminal_player_choices() {
+        let mut g = Game::from_save(save_system::Save::default()).unwrap();
+        g.key_action(51);
+        assert!(g.menu);
+        assert_eq!(g.player.team, Team::Prisoner);
+        g.key_action(50);
+        assert!(!g.menu);
+        assert_eq!(g.player.team, Team::Criminal);
+    }
+
+    #[test]
+    fn active_play_timer_rebuilds_fleet_and_keeps_robbery_progress() {
+        let mut g = Game::from_save(save_system::Save::default()).unwrap();
+        assert!(g.cars.len() >= 24);
+        g.fleet.tick(449.99);
+        let old_positions: Vec<_> = g.cars.iter().map(|c| (c.pos.x, c.pos.z)).collect();
+        g.menu = true;
+        g.simulate(0.0, 0.0, false, false, false);
+        assert!((g.fleet.elapsed() - 449.99).abs() < 0.01);
+
+        g.menu = false;
+        g.driving = Some(0);
+        g.player.pos = g.cars[0].pos;
+        g.camera = Some([1.0, 2.0, 3.0]);
+        g.save.balance = 1234;
+        g.save.owned = vec![1, 7];
+        g.save.car_engine[0] = 2;
+        g.save.car_engine_selected[0] = 2;
+        g.save.car_brakes[0] = 1;
+        g.save.car_paint[0] = [0.7, 0.2, 0.1];
+        g.alarm.site = Some(1);
+        g.alarm.dispatched = true;
+        g.alarm.remaining = 0.0;
+        g.wanted = 3;
+        g.prepare_response(1);
+
+        let driver = g.traffic.drivers.iter().position(|d| d.police).unwrap();
+        let car_id = g.traffic.drivers[driver].car;
+        let npc_id = g.npcs.len();
+        let mut officer = Npc::new(Role::Police, g.cars[car_id].pos.x, g.cars[car_id].pos.z);
+        officer.aboard = true;
+        g.npcs.push(officer);
+        g.traffic.drivers[driver].crew.push(npc_id);
+
+        g.simulate(0.0, 0.0, false, false, false);
+
+        assert!(g.driving.is_none());
+        assert!(g.camera.is_none());
+        assert!(!g.world.blocked(g.player.pos, 0.5));
+        assert!(!terrain::railway::occupied(
+            g.player.pos,
+            0.5,
+            g.train.distance
+        ));
+        assert!(!g.cars.iter().any(|car| {
+            g.player.pos.distance(car.pos) < 3.7 && (g.player.pos.y - car.pos.y).abs() < 2.0
+        }));
+        assert!(g.cars.len() >= 24);
+        assert!(
+            g.cars
+                .iter()
+                .map(|c| (c.pos.x, c.pos.z))
+                .collect::<Vec<_>>()
+                .as_slice()
+                != old_positions.as_slice()
+        );
+        assert_eq!(g.save.balance, 1234);
+        assert_eq!(g.save.owned, vec![1, 7]);
+        let tuned = g.cars.iter().find(|c| c.kind == 0).unwrap();
+        assert_eq!(tuned.engine_level, 2);
+        assert_eq!(tuned.brake_level, 1);
+        assert_eq!(tuned.color, [0.7, 0.2, 0.1]);
+        assert!(!g.npcs[npc_id].aboard);
+        assert!(!g.world.blocked(g.npcs[npc_id].pos, 0.5));
+        assert!(g.traffic.drivers.iter().all(|d| !d.crew.contains(&npc_id)));
+        assert!(
+            g.response.is_some(),
+            "patrol response should be re-dispatched"
+        );
+        assert!(g.traffic.drivers.iter().any(|d| d.police && d.incident));
+        g.workshop = Some(0);
+        g.workshop_config = true;
+        g.refresh_fleet(42);
+        assert!(g.workshop.is_none());
+        assert!(!g.workshop_config);
+    }
+
+    #[test]
+    fn parked_vehicle_slots_are_in_town_and_clear_of_obstacles() {
+        let g = Game::from_save(save_system::Save::default()).unwrap();
+        assert!(g.cars.len() >= 8);
+        for car in &g.cars[..8] {
+            assert!(!crate::traffic::prison_parking_zone(car.pos));
+            assert!(!g.world.blocked(car.pos, 2.0));
+            assert!(!terrain::railway::occupied(car.pos, 2.0, 0.0));
+        }
+    }
+
+    #[test]
+    fn moving_train_displaces_a_car_safely_and_keeps_riders_aligned() {
+        let mut g = Game::from_save(save_system::Save::default()).unwrap();
+        let track = terrain::railway::samples()
+            .iter()
+            .copied()
+            .find(|p| {
+                g.world.roads.iter().all(|road| road.distance(*p).0 > 25.0)
+                    && g.world.buildings.iter().all(|b| {
+                        (p.x - b.p.x).abs() > b.size.x / 2.0 + 20.0
+                            || (p.z - b.p.z).abs() > b.size.z / 2.0 + 20.0
+                    })
+            })
+            .unwrap();
+        let (distance, _, track, _) = terrain::railway::project(track);
+        g.cars.clear();
+        g.npcs.clear();
+        g.cars
+            .push(Car::new(0, Vec3::new(track.x, track.y + 0.65, track.z)));
+        g.train.distance = distance;
+        g.train.speed = 11.2;
+        g.player.pos = Vec3::new(400.0, 1.0, -400.0);
+
+        g.tick_train();
+
+        assert!(g.cars[0].pos.distance(track) > 4.0);
+        assert_eq!(g.cars[0].speed, 0.0);
+        assert!(!g.world.blocked(g.cars[0].pos, 1.0));
+        assert!(!terrain::railway::occupied(
+            g.cars[0].pos,
+            2.5,
+            g.train.distance
+        ));
+
+        g.cars.clear();
+        g.heists.riding = Some(2);
+        g.tick_train();
+        let (wagon, _) = crate::heists::Heists::train(g.train.distance, 2);
+        assert!((g.player.pos.x - wagon.x).abs() < 0.001);
+        assert!((g.player.pos.y - (wagon.y + 2.8)).abs() < 0.001);
+        assert!((g.player.pos.z - wagon.z).abs() < 0.001);
     }
 
     #[test]
@@ -3245,7 +3659,19 @@ mod tests {
         for _ in 0..361 {
             g.simulate(0., 0., false, false, false);
         }
-        assert_eq!(g.alarm.loot, 280);
+        assert_eq!(
+            g.alarm.loot,
+            280,
+            "site {:?} hits {:?} progress {} collecting {} player {:?} case {:?} remaining {} dispatched {}",
+            g.alarm.site,
+            g.alarm.hits,
+            g.alarm.progress,
+            g.alarm.collecting,
+            g.player.pos,
+            Alarm::case(0),
+            g.alarm.remaining,
+            g.alarm.dispatched
+        );
         g.alarm.cancel();
         g.alarm.cooldown[0] = 0.;
         g.save.carry_level = 2;
@@ -3253,7 +3679,19 @@ mod tests {
         for _ in 0..361 {
             g.simulate(0., 0., false, false, false);
         }
-        assert_eq!(g.alarm.loot, 420);
+        assert_eq!(
+            g.alarm.loot,
+            420,
+            "site {:?} hits {:?} progress {} collecting {} player {:?} case {:?} remaining {} dispatched {}",
+            g.alarm.site,
+            g.alarm.hits,
+            g.alarm.progress,
+            g.alarm.collecting,
+            g.player.pos,
+            Alarm::case(0),
+            g.alarm.remaining,
+            g.alarm.dispatched
+        );
     }
     #[test]
     fn gym_charges_increasing_cost_and_caps_levels() {

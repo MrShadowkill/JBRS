@@ -18,13 +18,24 @@ pub struct Traffic {
     serial: usize,
 }
 impl Traffic {
-    pub fn new(world: &World, cars: &mut Vec<Car>) -> Self {
+    pub fn with_seed(world: &World, cars: &mut Vec<Car>, seed: u64) -> Self {
         let graph = roads::routing::Network::new(&world.roads);
+        let initial_serial = (seed % graph.nodes.len().max(1) as u64) as usize;
+        let spawn_nodes: Vec<_> = graph
+            .nodes
+            .iter()
+            .copied()
+            .filter(|p| !prison_parking_zone(*p))
+            .collect();
         let mut drivers = Vec::new();
-        for i in 0..24 {
+        for i in 0..24usize {
+            if spawn_nodes.is_empty() {
+                break;
+            }
             let police = i % 4 == 0;
-            let from = graph.nodes[(i * 97 + 32) % graph.nodes.len()];
-            let to = graph.nodes[(i * 173 + 240) % graph.nodes.len()];
+            let offset = (seed % spawn_nodes.len() as u64) as usize;
+            let from = spawn_nodes[(i * 97 + 32 + offset) % spawn_nodes.len()];
+            let to = spawn_nodes[(i * 173 + 240 + offset / 7) % spawn_nodes.len()];
             let Some((_, route)) = graph.route(from, to) else {
                 continue;
             };
@@ -67,7 +78,7 @@ impl Traffic {
         Self {
             drivers,
             graph,
-            serial: 0,
+            serial: initial_serial,
         }
     }
     pub fn dispatch(
@@ -111,7 +122,7 @@ impl Traffic {
         world: &World,
         cars: &mut [Car],
         player: Option<usize>,
-        clock: f32,
+        train_distance: f32,
         dt: f32,
         blocked: impl Fn(Vec3, f32) -> bool,
     ) -> Vec<usize> {
@@ -182,7 +193,7 @@ impl Traffic {
                 |x, z| world.surface(x, z),
                 |p, r| {
                     blocked(p, r)
-                        || terrain::railway::occupied(p, r, clock)
+                        || terrain::railway::occupied(p, r, train_distance)
                         || snapshot.iter().enumerate().any(|(i, (q, _))| {
                             i != d.car && p.distance(*q) < r + 1.65 && (p.y - q.y).abs() < 2.
                         })
@@ -205,6 +216,12 @@ impl Traffic {
         arrived
     }
 }
+
+pub(crate) fn prison_parking_zone(p: Vec3) -> bool {
+    p.distance(Vec3::new(-116.0, 0.0, -110.0)) < 100.0
+        || ((-180.0..=-20.0).contains(&p.x) && (-240.0..=-55.0).contains(&p.z))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -212,16 +229,21 @@ mod tests {
     fn patrol_physically_reaches_store() {
         let w = World::new();
         let mut cars = Vec::new();
-        let mut t = Traffic::new(&w, &mut cars);
+        let mut t = Traffic::with_seed(&w, &mut cars, 0);
         assert!(t.drivers.iter().filter(|d| d.police).count() >= 3);
         let target = Vec3::new(110., 0., 240.);
         let sent = t.dispatch(&cars, target, 1, None);
         assert_eq!(sent.len(), 1);
         let id = sent[0].1;
         for i in 0..9000 {
-            let arrived = t.tick(&w, &mut cars, None, i as f32 / 60., 1. / 60., |p, r| {
-                w.blocked(p, r) || world::prison::barrier(p, r, false)
-            });
+            let arrived = t.tick(
+                &w,
+                &mut cars,
+                None,
+                i as f32 / 60. * 11.2,
+                1. / 60.,
+                |p, r| w.blocked(p, r) || world::prison::barrier(p, r, false),
+            );
             if arrived.contains(&id) {
                 return;
             }
@@ -235,6 +257,26 @@ mod tests {
             d.next,
             d.route.get(d.next),
             d.route.last()
+        );
+    }
+
+    #[test]
+    fn regenerated_traffic_uses_new_non_prison_spawn_points() {
+        let w = World::new();
+        let mut first = Vec::new();
+        let mut second = Vec::new();
+        let a = Traffic::with_seed(&w, &mut first, 1);
+        let b = Traffic::with_seed(&w, &mut second, 2);
+        assert!(a.drivers.iter().filter(|d| d.police).count() >= 3);
+        assert!(b.drivers.iter().filter(|d| d.police).count() >= 3);
+        assert!(first.iter().all(|c| !prison_parking_zone(c.pos)));
+        assert!(second.iter().all(|c| !prison_parking_zone(c.pos)));
+        assert_ne!(
+            first.iter().map(|c| (c.pos.x, c.pos.z)).collect::<Vec<_>>(),
+            second
+                .iter()
+                .map(|c| (c.pos.x, c.pos.z))
+                .collect::<Vec<_>>()
         );
     }
 }

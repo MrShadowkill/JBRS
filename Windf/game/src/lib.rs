@@ -2,6 +2,7 @@
 extern crate renderer_gles2 as renderer_gl21;
 mod doors;
 mod escape;
+mod fleet;
 mod game;
 mod heists;
 mod mobile;

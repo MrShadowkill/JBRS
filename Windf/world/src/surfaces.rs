@@ -7,11 +7,14 @@ pub(crate) fn ground_sample<'a>(
     buildings: impl Iterator<Item = &'a Building>,
 ) -> f32 {
     let raw = terrain::height(x, z);
-    if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. {
+    let track = terrain::railway::nearest(Vec3::new(x, 0., z));
+    if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. && track.0 > 14. {
         return 0.;
     }
+    let road_list: Vec<_> = roads.collect();
+    let building_list: Vec<_> = buildings.collect();
     let mut ground = raw;
-    for b in buildings {
+    for b in &building_list {
         if b.name == "Penthouse" {
             continue;
         }
@@ -23,7 +26,8 @@ pub(crate) fn ground_sample<'a>(
         }
     }
     let p = Vec3::new(x, 0., z);
-    if let Some((d, y, width, tunnel)) = roads
+    if let Some((d, y, width, tunnel)) = road_list
+        .iter()
         .map(|r| {
             let (d, y) = r.ground_cut(p);
             (d, y, r.width, r.name == "Mountain tunnel")
@@ -43,6 +47,25 @@ pub(crate) fn ground_sample<'a>(
         if !(tunnel && raw > y + 6. || raw < -0.2 && y > 0.5) {
             let t = ((d - width / 2. - 10.) / 10.).clamp(0., 1.);
             ground = y * (1. - t) + ground * t;
+        }
+    }
+
+    // Bring an earthwork embankment up to the sleeper bed on land. Keep road
+    // crossings, building footprints, and water spans free of fill.
+    let rail_distance = terrain::railway::nearest(p).0;
+    if rail_distance < 12.0
+        && raw >= -0.35
+        && !road_list
+            .iter()
+            .any(|r| r.distance(p).0 < r.width / 2.0 + 2.0)
+        && !building_list.iter().any(|b| {
+            (x - b.p.x).abs() < b.size.x / 2.0 + 2.0 && (z - b.p.z).abs() < b.size.z / 2.0 + 2.0
+        })
+    {
+        let bed = terrain::railway::nearest(Vec3::new(x, 0.0, z)).1.y - 0.10;
+        if bed > ground {
+            let t = ((rail_distance - 2.7) / (12.0 - 2.7)).clamp(0.0, 1.0);
+            ground = ground * t + bed * (1.0 - t);
         }
     }
     ground
@@ -116,9 +139,14 @@ mod tests {
     fn traffic_lanes_and_train_envelope_are_clear() {
         let w = World::new();
         for p in terrain::railway::samples() {
+            let above = Vec3::new(p.x, p.y + 2., p.z);
             assert!(
-                !w.blocked(Vec3::new(p.x, p.y + 2., p.z), 2.),
-                "rail obstruction {p:?}"
+                !w.blocked(above, 2.),
+                "rail obstruction {p:?} collider {:?}",
+                w.colliders
+                    .iter()
+                    .find(|c| c.contains(above, 2.))
+                    .map(|c| (c.p, c.size))
             );
             for b in &w.buildings {
                 assert!(
@@ -187,5 +215,29 @@ mod tests {
             assert!((v.position[1] + 0.2).abs() < 0.001);
         }
         assert!(!w.blocked(Vec3::new(x, -0.1, z), 0.5));
+    }
+
+    #[test]
+    fn rail_embankment_supports_sleepers_but_stays_out_of_roads_and_water() {
+        let w = World::new();
+        let mut land = None;
+        let mut water = None;
+        for p in terrain::railway::samples() {
+            if terrain::height(p.x, p.z) >= 0.0 && land.is_none() {
+                land = Some(*p);
+            }
+            if terrain::height(p.x, p.z) < -0.35 && water.is_none() {
+                water = Some(*p);
+            }
+        }
+        let land = land.expect("alignment has a land section");
+        let (distance, _) = terrain::railway::nearest(land);
+        assert!(distance < 0.1);
+        assert!(w.ground_height(land.x, land.z) >= land.y - 0.14);
+
+        let water = water.expect("alignment has a water span");
+        assert!(
+            (w.ground_height(water.x, water.z) - terrain::height(water.x, water.z)).abs() < 0.01
+        );
     }
 }

@@ -592,6 +592,36 @@ impl World {
             let len = (b.x - a.x).hypot(b.z - a.z).max(0.001);
             let nx = -(b.z - a.z) / len;
             let nz = (b.x - a.x) / len;
+            let middle = Vec3::new((a.x + b.x) * 0.5, 0.0, (a.z + b.z) * 0.5);
+            let crossing = self
+                .roads
+                .iter()
+                .any(|road| road.distance(middle).0 < road.width / 2.0 + 5.0);
+            let ground_a = terrain::height(a.x, a.z);
+            let ground_b = terrain::height(b.x, b.z);
+            if !crossing && ground_a >= -0.35 && ground_b >= -0.35 {
+                for side in [-1.0, 1.0] {
+                    let top_y = a.y - 0.32;
+                    let other_top_y = b.y - 0.32;
+                    let base_a = ground_a.min(top_y - 0.05);
+                    let base_b = ground_b.min(other_top_y - 0.05);
+                    if top_y > base_a + 0.15 || other_top_y > base_b + 0.15 {
+                        let inner = 2.7 * side;
+                        let outer = 8.0 * side;
+                        m.quad(
+                            [
+                                [a.x + nx * inner, top_y, a.z + nz * inner],
+                                [b.x + nx * inner, other_top_y, b.z + nz * inner],
+                                [b.x + nx * outer, base_b, b.z + nz * outer],
+                                [a.x + nx * outer, base_a, a.z + nz * outer],
+                            ],
+                            [0.42, 0.35, 0.27],
+                            1,
+                            0.0,
+                        );
+                    }
+                }
+            }
             let strip = |offset: f32, width: f32, dy: f32| {
                 [
                     [

@@ -1,5 +1,6 @@
 use engine_core::Vec3;
 use vehicles::{Car, CATALOG};
+pub mod train;
 pub fn step(car: &mut Car, throttle: f32, steer: f32, brake: bool, dt: f32) -> Vec3 {
     let dt = dt.clamp(0., 0.1);
     let s = &CATALOG[car.kind];

@@ -59,6 +59,7 @@ pub struct Save {
     pub owned: Vec<usize>,
     pub color: [f32; 3],
     pub position: Vec3,
+    #[serde(deserialize_with = "read_team")]
     pub team: Team,
     pub robberies: u32,
     pub sensitivity: f32,
@@ -260,6 +261,15 @@ fn default_shadows() -> bool {
     true
 }
 
+fn read_team<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Team, D::Error> {
+    let team = Team::deserialize(d)?;
+    Ok(if team == Team::Police {
+        Team::Prisoner
+    } else {
+        team
+    })
+}
+
 fn default_selected_engine() -> [u32; VEHICLE_SLOTS] {
     [u32::MAX; VEHICLE_SLOTS]
 }
@@ -404,6 +414,27 @@ mod tests {
         assert_eq!(t.magazines, [0, 5, 20]);
         assert_eq!(t.leases[0], 800.);
         assert_eq!(t.car_engine[0], 2);
+    }
+
+    #[test]
+    fn legacy_police_player_migrates_to_prisoner_without_losing_progress() {
+        let save = Save {
+            team: Team::Police,
+            balance: 731,
+            owned: vec![2, 7],
+            car_engine: [2, 0, 0, 0, 0, 0, 0, 4],
+            run_level: 3,
+            ..Default::default()
+        };
+        let mut json = serde_json::to_value(save).unwrap();
+        json["team"] = serde_json::Value::String("Police".into());
+        let loaded: Save = serde_json::from_value(json).unwrap();
+        assert_eq!(loaded.team, Team::Prisoner);
+        assert_eq!(loaded.balance, 731);
+        assert_eq!(loaded.owned, vec![2, 7]);
+        assert_eq!(loaded.car_engine[0], 2);
+        assert_eq!(loaded.car_engine[7], 4);
+        assert_eq!(loaded.run_level, 3);
     }
     #[test]
     fn settings_and_training_persist_and_legacy_defaults_are_compatible() {
