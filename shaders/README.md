@@ -52,3 +52,11 @@ fails, JBRS logs the driver error and retains or restores the built-in pair.
 
 `packs/Golden_Hour_v2/` demonstrates desktop and GLES2 pairs with stylized
 day/night color and distance fog. It does not cast geometry shadows.
+
+## C13HPT
+
+`packs/C13HPT/` is an independent JBRS shader pack inspired by the
+performance-oriented style of the supplied Chocapic13 HighPerformance Toaster
+archive. It provides a lightweight day/night grade, twilight warmth, and fog
+on both renderers, and preserves JBRS's built-in geometry shadow pass. The
+archive's Minecraft/OptiFine shader sources are not included or used directly.
