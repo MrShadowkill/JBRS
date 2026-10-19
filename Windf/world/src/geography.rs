@@ -529,5 +529,78 @@ pub fn build() -> World {
                     || (t.z - b.p.z).abs() > b.size.z / 2. + 12.
             })
     });
+    // Low polygon street lamps on ordinary city roads. Their bulb tiles glow
+    // at night in both renderers; poles stay outside the carriageway.
+    let mut street_lamps = 0usize;
+    'roads: for road in roadnet
+        .iter()
+        .filter(|road| !road.highway && road.width <= 24.)
+    {
+        let mut next_lamp = 34.0f32;
+        let mut walked = 0.0f32;
+        for segment in road.points.windows(2) {
+            let a = segment[0];
+            let b = segment[1];
+            let dx = b.x - a.x;
+            let dz = b.z - a.z;
+            let length = dx.hypot(dz);
+            if length < 0.1 {
+                continue;
+            }
+            while next_lamp <= walked + length {
+                let t = (next_lamp - walked) / length;
+                let side = if street_lamps.is_multiple_of(2) {
+                    1.0
+                } else {
+                    -1.0
+                };
+                let nx = -dz / length * side;
+                let nz = dx / length * side;
+                let offset = road.width * 0.5 + 4.5;
+                let x = a.x + dx * t + nx * offset;
+                let z = a.z + dz * t + nz * offset;
+                let near_building = lib.buildings.iter().any(|building| {
+                    (x - building.p.x).abs() < building.size.x * 0.5 + 2.0
+                        && (z - building.p.z).abs() < building.size.z * 0.5 + 2.0
+                });
+                if !near_building
+                    && terrain::railway::nearest(Vec3::new(x, 0., z)).0 > 7.0
+                    && x.abs() < 930.0
+                    && z.abs() < 930.0
+                {
+                    let ground = terrain::height(x, z).max(0.0);
+                    let pole = Vec3::new(x, ground + 3.8, z);
+                    props.push(Prop {
+                        p: pole,
+                        size: Vec3::new(0.16, 7.6, 0.16),
+                        material: 4,
+                        color: [0.28, 0.3, 0.31],
+                        emission: 0.,
+                        roof: false,
+                    });
+                    colliders.push(Collider {
+                        p: pole,
+                        size: Vec3::new(0.16, 7.6, 0.16),
+                        movable: false,
+                        breakable: false,
+                    });
+                    props.push(Prop {
+                        p: Vec3::new(x, ground + 7.55, z),
+                        size: Vec3::new(1.15, 0.2, 0.42),
+                        material: 9,
+                        color: [1.0, 0.78, 0.46],
+                        emission: 0.95,
+                        roof: false,
+                    });
+                    street_lamps += 1;
+                    if street_lamps >= 180 {
+                        break 'roads;
+                    }
+                }
+                next_lamp += 72.0;
+            }
+            walked += length;
+        }
+    }
     World::assemble(roadnet, lib, colliders, props, pois, trees)
 }

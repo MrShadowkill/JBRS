@@ -77,6 +77,10 @@ pub struct Heists {
     pub train_gold: [usize; 3],
     pub train_count: usize,
     pub riding: Option<usize>,
+    pub train_hatch_open: bool,
+    pub train_inside: bool,
+    pub train_side_open: bool,
+    pub train_exit_side: f32,
     pub jewelry_roof_reached: bool,
     random: u64,
 }
@@ -117,6 +121,10 @@ impl Heists {
         self.dispatched = false;
         self.jewelry_roof_reached = false;
         self.opened = id != 5;
+        self.train_hatch_open = false;
+        self.train_inside = false;
+        self.train_side_open = false;
+        self.train_exit_side = 1.0;
         true
     }
     pub fn question(&mut self) {
@@ -172,9 +180,30 @@ impl Heists {
         self.progress = 0.;
         self.strikes = 0;
         self.riding = None;
+        self.train_hatch_open = false;
+        self.train_inside = false;
+        self.train_side_open = false;
+        self.train_exit_side = 1.0;
     }
     pub fn train(distance: f32, wagon: usize) -> (Vec3, f32) {
         terrain::railway::carriage(distance, wagon)
+    }
+    pub fn train_rider_position(&self, distance: f32, wagon: usize) -> Vec3 {
+        let (p, angle) = Self::train(distance, wagon);
+        if self.train_inside {
+            let lateral = if self.train_side_open {
+                self.train_exit_side * 0.95
+            } else {
+                0.0
+            };
+            Vec3::new(
+                p.x + lateral * angle.cos(),
+                p.y + 0.72,
+                p.z - lateral * angle.sin(),
+            )
+        } else {
+            Vec3::new(p.x, p.y + 2.8, p.z)
+        }
     }
     pub fn gold(&self, wagon: usize) -> bool {
         self.train_gold[..self.train_count].contains(&wagon)

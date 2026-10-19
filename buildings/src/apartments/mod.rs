@@ -31,6 +31,17 @@ impl Building {
                 1,
                 0.,
             );
+            // Warm ceiling fixtures use material emission, which the world
+            // shaders enable only after daylight fades.
+            for side in [-1., 1.] {
+                m.cuboid(
+                    [x + side * 6.8, y + 3.24, z - 1.5],
+                    [0.42, 0.07, 1.25],
+                    [1.0, 0.78, 0.48],
+                    9,
+                    0.92,
+                );
+            }
             // Lift cabin and floor indicator occupy the shared entrance hall.
             m.cuboid(
                 [x, y + 1.5, z - 9.8],

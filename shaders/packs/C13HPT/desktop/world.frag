@@ -26,15 +26,19 @@ void main() {
     float night = 1.0 - smoothstep(0.04, 0.34, day);
 
     vec3 base = col.rgb;
-    float emission = max(col.a, 0.0);
+    float emission = 0.0;
     if (mesh_mode == 1) {
         base *= texture2D(atlas, uv).rgb;
+        emission = max(col.a, 0.0);
     } else if (mesh_mode == 2) {
         base *= model_tint;
+    } else if (mesh_mode == 4) {
+        emission = 1.0;
     }
 
     // Keep bright emissive atlas colors visible after the night grade.
-    float light_level = max(mix(0.28, 1.0, day), emission);
+    float night_lights = 1.0 - smoothstep(0.16, 0.48, day);
+    float light_level = max(mix(0.28, 1.0, day), emission * night_lights);
     vec3 night_tint = vec3(0.70, 0.79, 1.0);
     vec3 sunlight = mix(night_tint, vec3(1.0, 0.99, 0.95), day);
     vec3 sunset = vec3(1.10, 0.82, 0.62);

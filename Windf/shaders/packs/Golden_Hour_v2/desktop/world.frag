@@ -29,6 +29,7 @@ void main() {
     }
     if (mesh_mode == 2) base *= model_tint;
     if (mesh_mode == 3) base = vec3(0.015, 0.02, 0.015);
+    if (mesh_mode == 4) emission = 1.0;
 
     vec3 warm = vec3(1.21, 0.94, 0.69);
     vec3 coolShadow = vec3(0.56, 0.68, 0.91);
@@ -38,7 +39,8 @@ void main() {
     // Soft, coloured evening shade; not a true geometry-cast shadow map.
     vec3 duskLight = mix(coolShadow * 0.66, warm * 1.11, shade);
     vec3 lightColor = mix(ambient, duskLight, dusk * 0.88);
-    float brightness = max(0.23 + day * 0.77, emission);
+    float night_lights = 1.0 - smoothstep(0.16, 0.48, day);
+    float brightness = max(0.23 + day * 0.77, emission * night_lights);
     vec3 lit = base * lightColor * brightness;
     if (mesh_mode == 3) lit = base;
 

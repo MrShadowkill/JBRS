@@ -1,3 +1,11 @@
+fn train_local(p: Vec3, angle: f32, lateral: f32, vertical: f32, forward: f32) -> [f32; 3] {
+    [
+        p.x + lateral * angle.cos() + forward * angle.sin(),
+        p.y + vertical,
+        p.z - lateral * angle.sin() + forward * angle.cos(),
+    ]
+}
+
 impl Game {
     fn special_interact(&mut self) -> bool {
         let p = self.player.pos;
@@ -24,20 +32,70 @@ impl Game {
             return true;
         }
         if let Some(wagon) = self.heists.riding {
-            if self.slot == 2
-                && self.explosive
-                && self.heists.gold(wagon)
-                && self.heists.site == Some(5)
-                && !self.heists.opened
-                && self.heists.bomb <= 0.
-            {
-                self.explosive = false;
-                self.heists.bomb = 3.;
-                self.notify("C4 PLANTED - VAULT OPENS IN 3S");
-                return true;
-            }
-            if self.heists.opened && self.heists.site == Some(5) && self.heists.bag == 0 {
-                self.notify("HOLD E TO LOAD GOLD");
+            if self.heists.site == Some(5) && self.heists.gold(wagon) {
+                if !self.heists.train_hatch_open {
+                    self.heists.train_hatch_open = true;
+                    self.notify("ROOF HATCH OPEN - PRESS E AGAIN TO CLIMB DOWN");
+                    return true;
+                }
+                if !self.heists.train_inside {
+                    self.heists.train_inside = true;
+                    self.player.pos = self.heists.train_rider_position(self.train.distance, wagon);
+                    self.player.vy = 0.;
+                    self.notify("INSIDE GOLD WAGON - SLOT 3: C4 AT THE SAFE");
+                    return true;
+                }
+                if !self.heists.opened {
+                    if self.heists.bomb > 0. {
+                        self.notify("C4 FUSE BURNING - MOVE AWAY FROM THE SAFE");
+                    } else if self.slot == 2 && self.explosive {
+                        self.explosive = false;
+                        self.heists.bomb = 3.;
+                        self.notify("C4 PLANTED - SAFE OPENS IN 3S");
+                    } else {
+                        self.notify("SELECT SLOT 3 C4 AND PRESS E AT THE SAFE");
+                    }
+                    return true;
+                }
+                if self.heists.progress < 8. {
+                    self.heists.progress = (self.heists.progress + 1.0).min(8.0);
+                    let capacity = (8 + self.save.carry_level * 2).min(12);
+                    let max_bag = crate::heists::SITES[5].reward * capacity / 12;
+                    self.heists.bag = (max_bag as f32 * self.heists.progress / 8.0).round() as u32;
+                    self.notify(if self.heists.progress >= 8. {
+                        "BAG FULL - PRESS E AT EITHER SIDE SHUTTER"
+                    } else {
+                        "GOLD BAR TAKEN - KEEP TAPPING E TO FILL THE BAG"
+                    });
+                    return true;
+                }
+                if !self.heists.train_side_open {
+                    let (_, angle) = crate::heists::Heists::train(self.train.distance, wagon);
+                    self.heists.train_exit_side = if (self.yaw - angle).sin() < 0. {
+                        -1.
+                    } else {
+                        1.
+                    };
+                    self.heists.train_side_open = true;
+                    self.player.pos = self.heists.train_rider_position(self.train.distance, wagon);
+                    self.notify("SIDE SHUTTER OPEN - PRESS E AGAIN TO JUMP OUT");
+                    return true;
+                }
+
+                let (q, angle) = crate::heists::Heists::train(self.train.distance, wagon);
+                let side = self.heists.train_exit_side;
+                let x = q.x + side * 2.45 * angle.cos();
+                let z = q.z - side * 2.45 * angle.sin();
+                let cash = self.heists.bag;
+                self.player.pos = Vec3::new(x, self.world.surface(x, z) + 1.0, z);
+                self.player.vy = 4.5;
+                self.player.heading = angle + side * std::f32::consts::FRAC_PI_2;
+                self.camera = None;
+                self.save.balance += cash;
+                self.heists.bag = 0;
+                self.heists.finish();
+                self.wanted = self.wanted.max(4);
+                self.notify(&format!("JUMPED FROM THE GOLD TRAIN WITH ${cash}"));
                 return true;
             }
             self.heists.riding = None;
@@ -63,7 +121,7 @@ impl Game {
                 if self.heists.gold(wagon) && self.heists.start(5) {
                     self.player.team = Team::Criminal;
                     self.wanted = self.wanted.max(3);
-                    self.notify("GOLD WAGON - SELECT C4 THEN E");
+                    self.notify("GOLD WAGON - JUMP ABOARD, PRESS E TO OPEN THE ROOF HATCH");
                 } else {
                     self.notify("BOARDED TRAIN - E TO LEAVE");
                 }
@@ -194,10 +252,13 @@ impl Game {
         true
     }
     fn tick_heists(&mut self) {
+        let bomb_was_active = self.heists.bomb > 0.0;
         self.heists.tick(STEP);
+        if bomb_was_active && self.heists.bomb == 0.0 && self.heists.site == Some(5) {
+            self.notify("C4 OPENED THE GOLD SAFE - TAP E TO TAKE THE BARS");
+        }
         if let Some(w) = self.heists.riding {
-            let (p, _) = crate::heists::Heists::train(self.train.distance, w);
-            self.player.pos = Vec3::new(p.x, p.y + 2.8, p.z);
+            self.player.pos = self.heists.train_rider_position(self.train.distance, w);
             self.player.vy = 0.;
         }
         let Some(id) = self.heists.site else {
@@ -222,7 +283,7 @@ impl Game {
         }
         let p = self.player.pos;
         let near = if id == 5 {
-            self.heists.riding.is_some()
+            self.heists.riding.is_some() && self.heists.train_inside && self.heists.opened
         } else {
             (p.x - spec.x).abs() < 12. && (p.z - spec.z).abs() < 10.
         };
@@ -242,10 +303,19 @@ impl Game {
             1 => true,
             3 => self.heists.solved >= 5 && p.y < floor + 3.,
             4 => self.heists.strikes >= 3,
-            5 => self.heists.opened,
+            5 => self.heists.opened && self.heists.train_inside,
             _ => self.heists.solved >= spec.questions,
         };
-        if self.holding && near && ready && !self.heists.quiz && self.heists.bag == 0 {
+        if id == 5 && self.holding && near && ready && self.heists.progress < 8. {
+            self.heists.progress = (self.heists.progress + STEP * 2.0).min(8.0);
+            let capacity = (8 + self.save.carry_level * 2).min(12);
+            let max_bag = spec.reward * capacity / 12;
+            self.heists.bag = (max_bag as f32 * (self.heists.progress / 8.0).clamp(0.0, 1.0))
+                .round() as u32;
+            if self.heists.progress >= 8. {
+                self.notify("BAG FULL - USE E AT A SIDE SHUTTER TO ESCAPE");
+            }
+        } else if id != 5 && self.holding && near && ready && !self.heists.quiz && self.heists.bag == 0 {
             self.heists.progress += STEP;
             if self.heists.progress >= 8. {
                 self.heists.bag = spec.reward * (8 + self.save.carry_level * 2).min(12) / 12;
@@ -358,19 +428,116 @@ impl Game {
                 0.35,
             );
             let gold = self.heists.gold(wagon);
-            if self.heists.site == Some(5)
+            let active_gold_wagon = self.heists.site == Some(5)
                 && self.heists.riding == Some(wagon)
-                && self.heists.opened
-            {
-                r.cube([p.x, p.y + 0.8, p.z], [3.2, 0.3, 7.8], [0.25, 0.3, 0.33], a);
-                r.rounded(
-                    [p.x, p.y + 1.6, p.z],
-                    [1.7, 1.4, 2.2],
-                    [0.3, 0.35, 0.38],
-                    a,
-                    8,
-                    0.3,
-                );
+                && self.heists.train_hatch_open;
+            if active_gold_wagon {
+                r.cube([p.x, p.y + 0.34, p.z], [3.1, 0.2, 7.6], [0.22, 0.25, 0.27], a);
+                for side in [-1., 1.] {
+                    let side_center = train_local(p, a, side * 1.48, 1.38, 0.0);
+                    if self.heists.train_side_open && side == self.heists.train_exit_side {
+                        for forward in [-2.45, 2.45] {
+                            r.cube(
+                                train_local(p, a, side * 1.48, 1.38, forward),
+                                [0.16, 2.1, 2.5],
+                                [0.32, 0.34, 0.35],
+                                a,
+                            );
+                        }
+                        r.cube(
+                            train_local(p, a, side * 2.35, 1.65, 0.0),
+                            [0.14, 2.35, 2.25],
+                            [0.39, 0.4, 0.39],
+                            a,
+                        );
+                    } else {
+                        r.cube(side_center, [0.16, 2.1, 7.5], [0.32, 0.34, 0.35], a);
+                    }
+                    r.cube(
+                        train_local(p, a, side * 1.08, 2.54, 0.0),
+                        [0.86, 0.13, 7.5],
+                        [0.37, 0.39, 0.4],
+                        a,
+                    );
+                }
+                for forward in [-3.68, 3.68] {
+                    r.cube(
+                        train_local(p, a, 0.0, 1.38, forward),
+                        [3.0, 2.1, 0.16],
+                        [0.32, 0.34, 0.35],
+                        a,
+                    );
+                }
+                for forward in [-2.62, 2.62] {
+                    r.cube(
+                        train_local(p, a, 0.0, 2.54, forward),
+                        [1.28, 0.13, 2.1],
+                        [0.37, 0.39, 0.4],
+                        a,
+                    );
+                }
+                if self.heists.train_hatch_open {
+                    r.cube(
+                        train_local(p, a, 0.0, 2.48, 0.0),
+                        [1.28, 0.035, 1.9],
+                        [0.035, 0.04, 0.045],
+                        a,
+                    );
+                    r.cube(
+                        train_local(p, a, 1.05, 2.9, 0.0),
+                        [1.25, 0.12, 1.9],
+                        [0.46, 0.47, 0.45],
+                        a,
+                    );
+                } else {
+                    r.cube(
+                        train_local(p, a, 0.0, 2.67, 0.0),
+                        [1.32, 0.12, 1.95],
+                        [0.48, 0.49, 0.47],
+                        a,
+                    );
+                }
+
+                let safe_position = train_local(p, a, 0.0, 1.23, -2.18);
+                r.cube(safe_position, [1.38, 1.42, 1.12], [0.2, 0.23, 0.25], a);
+                if self.heists.opened {
+                    r.cube(
+                        train_local(p, a, 0.0, 1.24, -1.59),
+                        [1.12, 1.08, 0.045],
+                        [0.025, 0.03, 0.032],
+                        a,
+                    );
+                    let bars_left = (8.0 - self.heists.progress.ceil()).clamp(0.0, 8.0) as usize;
+                    for bar in 0..bars_left {
+                        let row = bar / 4;
+                        let column = bar % 4;
+                        r.glow_cube(
+                            train_local(
+                                p,
+                                a,
+                                (column as f32 - 1.5) * 0.25,
+                                0.95 + row as f32 * 0.24,
+                                -3.08,
+                            ),
+                            [0.2, 0.16, 0.52],
+                            [0.95, 0.68, 0.18],
+                            a,
+                        );
+                    }
+                } else {
+                    r.cube(
+                        train_local(p, a, 0.0, 1.23, -1.59),
+                        [1.12, 1.08, 0.09],
+                        [0.34, 0.36, 0.37],
+                        a,
+                    );
+                    r.cube(
+                        train_local(p, a, 0.28, 1.23, -1.52),
+                        [0.12, 0.12, 0.08],
+                        [0.82, 0.61, 0.2],
+                        a,
+                    );
+                }
             } else {
                 r.cube(
                     [p.x, p.y + 1.8, p.z],
@@ -386,12 +553,9 @@ impl Game {
             thread_local! { static RUNNING_GEAR: engine_core::Mesh = vehicles::rail::running_gear(); }
             RUNNING_GEAR.with(|mesh| r.solid_model(mesh, [p.x, p.y, p.z], a, [1.; 3]));
             // The opened robbery wagon keeps its accessible deck unobstructed.
-            if !(self.heists.site == Some(5) && self.heists.riding == Some(wagon) && self.heists.opened) {
+            if !active_gold_wagon {
                 thread_local! { static EQUIPMENT: engine_core::Mesh = vehicles::rail::wagon_equipment(); }
                 EQUIPMENT.with(|mesh| r.solid_model(mesh, [p.x, p.y, p.z], a, [1.; 3]));
-            }
-            if gold {
-                r.cube([p.x, p.y + 3., p.z], [1.5, 0.3, 2.], [0.95, 0.75, 0.18], a);
             }
         }
         let (q, a) = terrain::railway::locomotive(self.train.distance);
@@ -511,7 +675,7 @@ impl Game {
             } else {
                 s.delay / (1. + self.wanted.saturating_sub(1) as f32 * 0.12)
             };
-            r.panel([720., 260., 280., 105.], INK, 0.9, 18.);
+            r.panel([720., 250., 280., 148.], INK, 0.9, 18.);
             text(r, 735., 275., 2., if id==0 {"J-STORE"} else {s.name}, GOLD);
             text(
                 r,
@@ -533,6 +697,24 @@ impl Game {
                 ),
                 WHITE,
             );
+            if id == 5 {
+                let instruction = if self.heists.riding.is_none() {
+                    "JUMP ON WAGON - USE E"
+                } else if !self.heists.train_hatch_open {
+                    "USE E: OPEN ROOF HATCH"
+                } else if !self.heists.train_inside {
+                    "USE E: CLIMB DOWN TO SAFE"
+                } else if !self.heists.opened {
+                    "SLOT 3 C4 - USE E AT SAFE"
+                } else if self.heists.progress < 8.0 {
+                    "TAP / HOLD E: TAKE GOLD BARS"
+                } else if !self.heists.train_side_open {
+                    "USE E: OPEN A SIDE SHUTTER"
+                } else {
+                    "USE E: JUMP OUT AND ESCAPE"
+                };
+                text(r, 735., 354., 1.35, instruction, [1.0, 0.83, 0.45]);
+            }
         }
         if self.heists.quiz {
             r.panel([235., 190., 560., 205.], INK, 0.98, 22.);
@@ -854,16 +1036,52 @@ mod expansion_tests {
         let w = g.heists.train_gold[0];
         g.heists.start(5);
         g.heists.riding = Some(w);
+        g.heists.train_hatch_open = true;
+        g.heists.train_inside = true;
         g.slot = 2;
+        g.explosive = true;
         assert!(g.special_interact());
         assert!(!g.heists.opened);
-        g.heists.riding = Some(w);
+        assert!(!g.explosive);
+        g.heists.tick(3.1);
+        assert!(g.heists.opened);
+    }
+
+    #[test]
+    fn gold_train_robbery_opens_hatch_safe_and_side_escape() {
+        let mut g = game();
+        let wagon = g.heists.train_gold[0];
+        let (position, _) = crate::heists::Heists::train(g.train.distance, wagon);
+        g.player.pos = position;
+
+        assert!(g.special_interact());
+        assert_eq!(g.heists.riding, Some(wagon));
+        assert_eq!(g.heists.site, Some(5));
+        assert!(g.special_interact());
+        assert!(g.heists.train_hatch_open);
+        assert!(g.special_interact());
+        assert!(g.heists.train_inside);
+
+        g.slot = 2;
         g.explosive = true;
         assert!(g.special_interact());
         assert!(!g.explosive);
-        for _ in 0..181 {
-            g.heists.tick(STEP);
-        }
+        assert!(!g.heists.opened);
+        g.heists.tick(3.1);
         assert!(g.heists.opened);
+
+        for _ in 0..8 {
+            assert!(g.special_interact());
+        }
+        assert_eq!(g.heists.progress, 8.0);
+        assert!(g.heists.bag > 0);
+        assert!(g.special_interact());
+        assert!(g.heists.train_side_open);
+        assert!(g.special_interact());
+        assert_eq!(g.heists.site, None);
+        assert_eq!(g.heists.riding, None);
+        assert_eq!(g.heists.bag, 0);
+        assert!(g.save.balance > 0);
+        assert!(g.wanted >= 4);
     }
 }

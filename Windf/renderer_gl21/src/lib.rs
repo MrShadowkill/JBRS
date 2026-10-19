@@ -812,8 +812,30 @@ impl Renderer {
         }
     }
     pub fn cube(&mut self, p: [f32; 3], s: [f32; 3], c: [f32; 3], angle: f32) {
+        self.cube_mode(p, s, c, angle, 0);
+    }
+    /// Draw a light surface that brightens as the global daylight falls.
+    pub fn glow_cube(&mut self, p: [f32; 3], s: [f32; 3], c: [f32; 3], angle: f32) {
+        self.cube_mode(p, s, c, angle, 4);
+    }
+    /// Draw a low-opacity light beam or ground pool using the same GLES/GL2 path.
+    pub fn glow_glass(&mut self, p: [f32; 3], s: [f32; 3], c: [f32; 3], angle: f32) {
         unsafe {
-            glUniform1i(self.mesh_uniform, 0);
+            glUniform1f(self.opacity_uniform, 0.12);
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
+        }
+        self.glow_cube(p, s, c, angle);
+        unsafe {
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+        }
+    }
+    fn cube_mode(&mut self, p: [f32; 3], s: [f32; 3], c: [f32; 3], angle: f32, mode: i32) {
+        unsafe {
+            glUniform1i(self.mesh_uniform, mode);
             glPushMatrix();
             glTranslatef(p[0], p[1], p[2]);
             glRotatef(angle.to_degrees(), 0., 1., 0.);

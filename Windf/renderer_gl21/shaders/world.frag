@@ -17,8 +17,10 @@ void main(){
   base*=1.+detail_amount*grain*(1.-clamp(dist/160.,0.,1.));
  }
  if(mesh_mode==2){base*=model_tint;}
+ if(mesh_mode==4){emission=1.;}
  if(mesh_mode==3){base=vec3(0.015,0.02,0.015);}
- float light=mesh_mode==3?1.:max(0.25+daylight*0.75,emission);
+ float night=1.-smoothstep(0.16,0.48,clamp(daylight,0.,1.));
+ float light=mesh_mode==3?1.:max(0.25+daylight*0.75,emission*night);
  vec3 sky=vec3(0.08+daylight*0.35,0.11+daylight*0.49,0.2+daylight*0.52);
  float fog=clamp((dist-fog_end*0.55)/(fog_end*0.45),0.,0.7);
  vec3 night_tint=mix(vec3(0.72,0.8,1.),vec3(1.),clamp(daylight,0.,1.));

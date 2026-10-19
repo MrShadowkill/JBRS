@@ -474,8 +474,7 @@ impl Game {
             }
         }
         if let Some(wagon) = self.heists.riding {
-            let (p, _) = crate::heists::Heists::train(distance, wagon);
-            self.player.pos = Vec3::new(p.x, p.y + 2.8, p.z);
+            self.player.pos = self.heists.train_rider_position(distance, wagon);
             self.player.vy = 0.0;
         }
         if !self.train.speed.is_finite() {
@@ -2039,6 +2038,23 @@ impl Game {
             );
             view.draw(r, eye, self.yaw, self.pitch);
         }
+        if daylight < 0.34 {
+            for lamp in self
+                .world
+                .props
+                .iter()
+                .filter(|prop| prop.emission > 0.5 && prop.p.distance(p) < 54.)
+                .take(5)
+            {
+                let ground = self.world.surface(lamp.p.x, lamp.p.z);
+                r.glow_glass(
+                    [lamp.p.x, ground + 0.035, lamp.p.z],
+                    [5.5, 0.025, 5.5],
+                    [1.0, 0.72, 0.38],
+                    0.,
+                );
+            }
+        }
         if self.save.object_shadows {
             let shadow_budget = [12, 22, 36, 52][self.save.shadow_quality.min(3) as usize];
             for c in self
@@ -2204,6 +2220,35 @@ impl Game {
             }
             let lod = usize::from(d < quality.detail);
             draw_car(r, c, &self.car_models[c.kind][lod], lod);
+            if daylight < 0.34 && d < 64. {
+                for side in [-0.62, 0.62] {
+                    let x = c.pos.x + c.angle.sin() * 2.0 + c.angle.cos() * side;
+                    let z = c.pos.z + c.angle.cos() * 2.0 - c.angle.sin() * side;
+                    r.glow_cube(
+                        [x, c.pos.y + 0.92, z],
+                        [0.3, 0.16, 0.08],
+                        [1.0, 0.83, 0.48],
+                        c.angle,
+                    );
+                    let rear_x = c.pos.x - c.angle.sin() * 1.9 + c.angle.cos() * side;
+                    let rear_z = c.pos.z - c.angle.cos() * 1.9 - c.angle.sin() * side;
+                    r.glow_cube(
+                        [rear_x, c.pos.y + 0.82, rear_z],
+                        [0.26, 0.14, 0.07],
+                        [1.0, 0.12, 0.06],
+                        c.angle,
+                    );
+                }
+                let x = c.pos.x + c.angle.sin() * 5.2;
+                let z = c.pos.z + c.angle.cos() * 5.2;
+                let ground = self.world.surface(x, z);
+                r.glow_glass(
+                    [x, ground + 0.035, z],
+                    [3.8, 0.025, 8.5],
+                    [1.0, 0.8, 0.48],
+                    c.angle,
+                );
+            }
         }
         self.vehicle_triangles = r.triangles - car_start;
         if self.driving.is_none() {
