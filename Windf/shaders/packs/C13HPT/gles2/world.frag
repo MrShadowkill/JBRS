@@ -15,7 +15,7 @@ varying mediump float dist;
 
 void main() {
     if (mesh_mode == 3) {
-        gl_FragColor = vec4(vec3(0.015, 0.02, 0.015), opacity);
+        gl_FragColor = vec4(vec3(0.015, 0.02, 0.015), opacity * clamp(col.a, 0.0, 1.0));
         return;
     }
 

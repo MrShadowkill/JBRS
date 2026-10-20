@@ -105,22 +105,38 @@ impl Building {
                     0.0,
                 );
             }
-            // Lift cabin and floor indicator occupy the shared entrance hall.
+            // Put the lift at the far end of the corridor, opposite the street door.
+            for side in [-1., 1.] {
+                m.cuboid(
+                    [x + side * 1.9, y + 1.5, z + 9.7],
+                    [0.16, 3., 3.8],
+                    [0.24, 0.28, 0.32],
+                    4,
+                    0.,
+                );
+                m.cuboid(
+                    [x + side * 1.45, y + 1.5, z + 7.8],
+                    [0.8, 3., 0.15],
+                    [0.28, 0.31, 0.35],
+                    4,
+                    0.,
+                );
+            }
             m.cuboid(
-                [x, y + 1.5, z - 9.8],
-                [3.8, 3., 0.15],
+                [x, y + 1.5, z + 11.6],
+                [3.8, 3., 0.16],
                 [0.24, 0.28, 0.32],
                 4,
                 0.,
             );
             m.cuboid(
-                [x + 2., y + 1.4, z - 8.],
+                [x + 2., y + 1.4, z + 7.1],
                 [0.18, 0.35, 0.25],
                 [0.15, 0.7, 0.9],
                 9,
                 0.2,
             );
-            m.price([x - 0.5, y + 3.2, z - 9.6], 0.15, floor as u32);
+            m.price([x - 0.5, y + 3.2, z + 7.7], 0.15, floor as u32);
             if floor == 0 {
                 // Lobby: mailboxes and benches, no apartments at street level.
                 for i in 0..8 {

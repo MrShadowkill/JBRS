@@ -56,5 +56,6 @@ void main() {
     sky = mix(sky, duskSky, dusk * 0.83);
     float fogRange = max(fog_end, 1.0);
     float fog = smoothstep(fogRange * 0.48, fogRange, dist) * 0.75;
-    gl_FragColor = vec4(mix(lit, sky, fog), opacity);
+    float alpha = mesh_mode == 3 ? opacity * clamp(col.a, 0.0, 1.0) : opacity;
+    gl_FragColor = vec4(mix(lit, sky, fog), alpha);
 }

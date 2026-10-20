@@ -1112,6 +1112,39 @@ impl Renderer {
         self.draws += 1;
         self.triangles += 2;
     }
+    /// Draw a compact, feathered contact shadow without a large projected quad.
+    pub fn soft_shadow(&mut self, center: [f32; 3], radii: [f32; 2], angle: f32, strength: f32) {
+        const SEGMENTS: usize = 20;
+        let (sin, cos) = angle.sin_cos();
+        unsafe {
+            glUniform1i(self.mesh_uniform, 3);
+            glUniform1f(self.opacity_uniform, 1.);
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
+            glBegin(6);
+            glColor4f(0.015, 0.02, 0.015, strength.clamp(0.025, 0.2));
+            glVertex3f(center[0], center[1], center[2]);
+            for i in 0..=SEGMENTS {
+                let a = i as f32 * std::f32::consts::TAU / SEGMENTS as f32;
+                let local_x = radii[0] * a.cos();
+                let local_z = radii[1] * a.sin();
+                glColor4f(0.015, 0.02, 0.015, 0.);
+                glVertex3f(
+                    center[0] + local_x * cos + local_z * sin,
+                    center[1],
+                    center[2] - local_x * sin + local_z * cos,
+                );
+            }
+            glEnd();
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+            glUniform1i(self.mesh_uniform, 0);
+        }
+        self.draws += 1;
+        self.triangles += SEGMENTS;
+    }
     pub fn ui(&mut self) {
         self.finish_ui();
         let composite = self.scene_active;

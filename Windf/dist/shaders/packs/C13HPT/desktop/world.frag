@@ -14,9 +14,9 @@ varying float dist;
 
 void main() {
     // JBRS draws its geometry shadows as a dedicated mesh pass. Keep that pass
-    // solid and dark so it is not tinted or faded by the atmosphere.
+    // softly feathered with vertex alpha so it blends into the receiving surface.
     if (mesh_mode == 3) {
-        gl_FragColor = vec4(vec3(0.015, 0.02, 0.015), opacity);
+        gl_FragColor = vec4(vec3(0.015, 0.02, 0.015), opacity * clamp(col.a, 0.0, 1.0));
         return;
     }
 

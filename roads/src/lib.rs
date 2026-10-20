@@ -72,10 +72,26 @@ impl Road {
             let (bx, bz) = self.normal(i + 1);
             let quad = |width: f32, dy: f32| {
                 [
-                    [a.x + nx * width, a.y + dy, a.z + nz * width],
-                    [b.x + bx * width, b.y + dy, b.z + bz * width],
-                    [b.x - bx * width, b.y + dy, b.z - bz * width],
-                    [a.x - nx * width, a.y + dy, a.z - nz * width],
+                    [
+                        a.x + nx * width,
+                        offset_deck_height(a, a.x + nx * width, a.z + nz * width) + dy,
+                        a.z + nz * width,
+                    ],
+                    [
+                        b.x + bx * width,
+                        offset_deck_height(b, b.x + bx * width, b.z + bz * width) + dy,
+                        b.z + bz * width,
+                    ],
+                    [
+                        b.x - bx * width,
+                        offset_deck_height(b, b.x - bx * width, b.z - bz * width) + dy,
+                        b.z - bz * width,
+                    ],
+                    [
+                        a.x - nx * width,
+                        offset_deck_height(a, a.x - nx * width, a.z - nz * width) + dy,
+                        a.z - nz * width,
+                    ],
                 ]
             };
             if shoulder {
@@ -93,8 +109,11 @@ impl Road {
                     let shift = offset;
                     let mut q = quad(0.075, 0.08);
                     for v in &mut q {
+                        let old_x = v[0];
+                        let old_z = v[2];
                         v[0] += nx * shift;
                         v[2] += nz * shift;
+                        v[1] += deck(v[0], v[2]) - deck(old_x, old_z);
                     }
                     m.quad(q, [0.9, 0.92, 0.88], 1, 0.);
                 }
@@ -145,6 +164,10 @@ impl Road {
             }
         }
     }
+}
+
+fn offset_deck_height(center: Vec3, x: f32, z: f32) -> f32 {
+    deck(x, z) + center.y - deck(center.x, center.z)
 }
 
 /// Lay every road shoulder before any asphalt. At flat intersections, a later
@@ -439,6 +462,31 @@ mod tests {
                     s[1]
                 );
             }
+        }
+    }
+
+    #[test]
+    fn intersecting_roads_follow_the_same_sloped_deck_surface() {
+        // The industrial plateau rises in both X and Z. A road parallel to
+        // either axis must still put its cross-section on the same surface.
+        let roads = network();
+        let horizontal = roads
+            .iter()
+            .find(|road| road.name == "City avenue" && (road.points[0].z - 140.).abs() < 1.)
+            .unwrap();
+        let vertical = roads
+            .iter()
+            .find(|road| road.name == "City street" && (road.points[0].x - 480.).abs() < 1.)
+            .unwrap();
+        let center = Vec3::new(480., 0., 140.);
+        let (_, horizontal_y) = horizontal.distance(center);
+        let (_, vertical_y) = vertical.distance(center);
+        let lateral_samples = [
+            (Vec3::new(center.x, horizontal_y, center.z), 485., 140.),
+            (Vec3::new(center.x, vertical_y, center.z), 480., 145.),
+        ];
+        for (line, x, z) in lateral_samples {
+            assert!((offset_deck_height(line, x, z) - deck(x, z)).abs() < 0.05);
         }
     }
     #[test]

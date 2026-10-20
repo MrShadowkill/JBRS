@@ -1,6 +1,6 @@
 {
   "apk": "JBRS-Android10-arm64.apk",
-  "sha256": "4f0c58571b2597effbc8a2940c73e9ad8d9652abdeeb3ef26370cd7396955ea8",
+  "sha256": "5c34d24aa43038bcf3fbd60cb5deebbf53f766006cbf85190f017ce77745f5ba",
   "api": 29,
   "abi": "arm64-v8a",
   "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): false\nVerified using v3 scheme (APK Signature Scheme v3): true\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1",

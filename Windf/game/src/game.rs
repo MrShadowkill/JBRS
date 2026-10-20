@@ -8,6 +8,24 @@ use vehicles::{Car, CATALOG};
 use world::World;
 const WHITE: [f32; 3] = [0.9, 0.94, 1.];
 const GOLD: [f32; 3] = [1., 0.78, 0.24];
+const ELEVATOR_DOOR_Z: f32 = 7.8;
+const ELEVATOR_CABIN_Z: f32 = 9.7;
+
+fn elevator_panel_position(building: &buildings::Building, floor: usize) -> Vec3 {
+    Vec3::new(
+        building.p.x + 2.,
+        building.p.y + floor as f32 * 4. + 1.4,
+        building.p.z + 7.1,
+    )
+}
+
+fn elevator_cabin_position(building: &buildings::Building, floor: f32) -> Vec3 {
+    Vec3::new(
+        building.p.x,
+        building.p.y + floor * 4. + 1.,
+        building.p.z + ELEVATOR_CABIN_Z,
+    )
+}
 
 #[derive(Clone, Copy)]
 struct ApartmentUnit {
@@ -532,9 +550,9 @@ impl Game {
         if !matches!(b.name, "Office" | "Westhaven") {
             return false;
         }
-        let lift_panel = Vec3::new(b.p.x + 2., b.p.y + 1.4, b.p.z - 8.);
+        let floor = b.rendered_floor(self.player.pos);
+        let lift_panel = elevator_panel_position(b, floor);
         if self.player.pos.distance(lift_panel) < 1.8 {
-            let floor = b.rendered_floor(self.player.pos);
             self.elevator_selection = Some((id, floor));
             self.notify("ELEVATOR: UP/DOWN SELECT FLOOR, ENTER TO RIDE");
             return true;
@@ -765,6 +783,26 @@ impl Game {
                     0.,
                 );
             }
+        }
+        if self
+            .elevator_ride
+            .is_some_and(|(ride_building, _, _, _)| ride_building == id)
+        {
+            let y = b.p.y + floor as f32 * 4.;
+            for side in [-0.5, 0.5] {
+                r.cube(
+                    [b.p.x + side, y + 1.5, b.p.z + ELEVATOR_DOOR_Z],
+                    [1., 3., 0.12],
+                    [0.3, 0.35, 0.4],
+                    0.,
+                );
+            }
+            r.cube(
+                [b.p.x + 2., y + 2.8, b.p.z + ELEVATOR_DOOR_Z - 0.1],
+                [0.55, 0.3, 0.08],
+                [0.12, 0.7, 0.92],
+                0.,
+            );
         }
     }
     fn safe_vehicle_exit(&self, car_id: usize, ignore_npc: Option<usize>) -> Option<Vec3> {
@@ -1046,13 +1084,15 @@ impl Game {
             match k {
                 27 => self.elevator_selection = None,
                 13 | NUMPAD_ENTER_KEY => {
-                    if floor != self.world.buildings[building].rendered_floor(self.player.pos) {
-                        self.elevator_ride = Some((
-                            building,
-                            self.world.buildings[building].rendered_floor(self.player.pos),
-                            floor,
-                            0.,
-                        ));
+                    let current_floor =
+                        self.world.buildings[building].rendered_floor(self.player.pos);
+                    if floor != current_floor {
+                        self.player.pos = elevator_cabin_position(
+                            &self.world.buildings[building],
+                            current_floor as f32,
+                        );
+                        self.player.vy = 0.;
+                        self.elevator_ride = Some((building, current_floor, floor, 0.));
                     } else {
                         self.elevator_selection = None;
                         self.notify("ALREADY ON THAT FLOOR");
@@ -2207,13 +2247,20 @@ impl Game {
             let elapsed = elapsed + STEP;
             if elapsed >= duration {
                 let b = &self.world.buildings[building];
-                self.player.pos = Vec3::new(b.p.x + 2., b.p.y + to as f32 * 4. + 1., b.p.z - 8.);
+                self.player.pos = Vec3::new(b.p.x + 2., b.p.y + to as f32 * 4. + 1., b.p.z + 6.2);
                 self.player.vy = 0.;
                 self.yaw = std::f32::consts::PI;
                 self.elevator_ride = None;
                 self.elevator_selection = None;
                 self.notify(&format!("ARRIVED - FLOOR {}", to + 1));
             } else {
+                let progress = (elapsed / duration).clamp(0., 1.);
+                let travel = ((progress - 0.2) / 0.65).clamp(0., 1.);
+                let eased = travel * travel * (3. - 2. * travel);
+                self.player.pos = elevator_cabin_position(
+                    &self.world.buildings[building],
+                    from as f32 + (to as f32 - from as f32) * eased,
+                );
                 self.elevator_ride = Some((building, from, to, elapsed));
             }
             return;
@@ -2800,38 +2847,30 @@ impl Game {
         angle: f32,
         daylight: f32,
     ) {
+        if daylight < 0.08 {
+            return;
+        }
         let altitude = (0.22 + daylight.clamp(0., 1.) * 0.73).clamp(0.22, 0.95);
         let horizontal = (1. - altitude * altitude).sqrt();
         let phase = (self.clock + self.time_offset) / 120.;
         let sun = [phase.cos() * horizontal, altitude, phase.sin() * horizontal];
-        let (sin, cos) = angle.sin_cos();
         let top = p.y + size[1] * 0.5;
-        let mut ground_points = [[0.; 3]; 4];
-        for (i, [lx, lz]) in [
-            [-size[0] * 0.5, -size[2] * 0.5],
-            [size[0] * 0.5, -size[2] * 0.5],
-            [size[0] * 0.5, size[2] * 0.5],
-            [-size[0] * 0.5, size[2] * 0.5],
-        ]
-        .into_iter()
-        .enumerate()
-        {
-            let x = p.x + lx * cos + lz * sin;
-            let z = p.z - lx * sin + lz * cos;
-            let mut t = ((top - self.world.surface(x, z)) / sun[1]).clamp(0., 24.);
-            let mut hit = [x, self.world.surface(x, z), z];
-            // Two terrain samples approximate a ray/heightfield intersection.
-            for _ in 0..2 {
-                hit[0] = x - sun[0] * t;
-                hit[2] = z - sun[2] * t;
-                hit[1] = self.world.surface(hit[0], hit[2]);
-                t = ((top - hit[1]) / sun[1]).clamp(0., 24.);
-            }
-            hit[1] += 0.045;
-            ground_points[i] = hit;
+        let mut center = [p.x, p.z];
+        let mut distance = 0.;
+        for _ in 0..4 {
+            let ground = self.world.surface(center[0], center[1]);
+            distance = ((top - ground) / sun[1]).clamp(0., 16.);
+            center = [p.x - sun[0] * distance, p.z - sun[2] * distance];
         }
-        let strength = [0.16, 0.21, 0.26, 0.31][self.save.shadow_quality.min(3) as usize];
-        r.shadow_quad(ground_points, strength);
+        let ground = self.world.surface(center[0], center[1]) + 0.06;
+        let projected = distance * horizontal;
+        let radii = [
+            (size[0] * 0.46 + projected * 0.12).clamp(0.35, 3.5),
+            (size[2] * 0.44 + projected * 0.16).clamp(0.35, 4.5),
+        ];
+        let strength = [0.055, 0.075, 0.095, 0.12][self.save.shadow_quality.min(3) as usize]
+            * daylight.clamp(0., 1.);
+        r.soft_shadow([center[0], ground, center[1]], radii, angle, strength);
     }
 
     fn draw(&mut self, r: &mut Renderer) {
@@ -3946,6 +3985,7 @@ pub fn run() -> Result<(), String> {
             "train-new" => (800., -12., std::f32::consts::PI / 2.),
             "west-shore-new" => (-716., -250., 0.96),
             "road-intersection-new" => (-22., -18., std::f32::consts::PI),
+            "industrial-ramp-new" => (480., 140., std::f32::consts::PI),
             "armory" => (60., 240., std::f32::consts::PI),
             "housing" => (-220., 210., std::f32::consts::PI),
             "factory-bag" => (640., 215., std::f32::consts::PI),
@@ -4862,9 +4902,10 @@ mod tests {
             .buildings
             .iter()
             .find(|b| b.name == "Office")
-            .unwrap();
+            .unwrap()
+            .clone();
         let id = b.id;
-        let panel = Vec3::new(b.p.x + 2., b.p.y + 1.4, b.p.z - 8.);
+        let panel = elevator_panel_position(&b, 0);
         g.player.pos = panel;
         g.interact();
         assert_eq!(g.elevator_selection, Some((id, 0)));
@@ -4872,11 +4913,17 @@ mod tests {
         assert_eq!(g.elevator_selection, Some((id, 1)));
         g.key_action(13);
         assert!(g.elevator_ride.is_some());
+        assert!((g.player.pos.z - (b.p.z + ELEVATOR_CABIN_Z)).abs() < 0.01);
+        for _ in 0..30 {
+            g.simulate(0., 0., false, false, false);
+        }
+        assert!(g.player.pos.y > b.p.y + 1.1);
         for _ in 0..100 {
             g.simulate(0., 0., false, false, false);
         }
         assert!(g.elevator_ride.is_none());
         assert_eq!(g.world.buildings[id].rendered_floor(g.player.pos), 1);
+        assert!((g.player.pos.z - (b.p.z + 6.2)).abs() < 0.01);
     }
     #[test]
     fn akari_spawns_can_be_stolen_and_uses_its_own_saved_tuning() {

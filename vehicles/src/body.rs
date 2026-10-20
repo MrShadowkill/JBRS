@@ -8,6 +8,10 @@ pub struct Model {
     pub wheels: [Mesh; 4],
     pub wheel_centers: [[f32; 3]; 4],
 }
+struct WheelTriangle {
+    vertices: Vec<Vertex>,
+    center: [f32; 3],
+}
 const ASSETS: [[&[u8]; 2]; engine_core::VEHICLE_SLOTS] = [
     [
         include_bytes!("../assets/vesper-low.jbv"),
@@ -47,7 +51,7 @@ pub fn model(kind: usize, detail: bool) -> Result<Model, String> {
     let assets = ASSETS
         .get(kind)
         .ok_or_else(|| format!("Unknown vehicle model {kind}"))?;
-    decode(assets[usize::from(detail)]).map_err(|e| format!("Vehicle model {kind}: {e}"))
+    decode(assets[usize::from(detail)], detail).map_err(|e| format!("Vehicle model {kind}: {e}"))
 }
 
 pub fn catalog() -> Result<&'static [[Model; 2]], String> {
@@ -63,7 +67,7 @@ pub fn catalog() -> Result<&'static [[Model; 2]], String> {
     }
 }
 
-fn decode(bytes: &[u8]) -> Result<Model, String> {
+fn decode(bytes: &[u8], detail: bool) -> Result<Model, String> {
     if bytes.len() < 8 || &bytes[..4] != b"JBV1" {
         return Err("Invalid JBV header".into());
     }
@@ -79,6 +83,7 @@ fn decode(bytes: &[u8]) -> Result<Model, String> {
     };
     let mut center_sums = [[0.; 3]; 4];
     let mut center_counts = [0usize; 4];
+    let mut candidate_wheels: [Vec<WheelTriangle>; 4] = std::array::from_fn(|_| Vec::new());
     for triangle in bytes[8..].chunks_exact(84) {
         let mut material = None;
         let mut vertices = Vec::with_capacity(3);
@@ -126,20 +131,63 @@ fn decode(bytes: &[u8]) -> Result<Model, String> {
             None
         };
         if let Some(index) = wheel {
-            for (sum, value) in center_sums[index].iter_mut().zip(center) {
-                *sum += value;
-            }
-            center_counts[index] += 1;
-            out.wheels[index].vertices.extend(vertices);
+            candidate_wheels[index].push(WheelTriangle { vertices, center });
         } else if material == Some(true) {
             out.paint.vertices.extend(vertices);
         } else {
             out.trim.vertices.extend(vertices);
         }
     }
+    // Centroid-only classification also catches broad fender triangles above
+    // the tires. Those were animated with the wheel and looked like pale square
+    // plates orbiting it. Keep only compact triangles inside the tire radius.
+    for (index, candidates) in candidate_wheels.into_iter().enumerate() {
+        let mut provisional = [0.; 3];
+        for candidate in &candidates {
+            let center = candidate.center;
+            for (sum, value) in provisional.iter_mut().zip(center) {
+                *sum += value;
+            }
+        }
+        if !candidates.is_empty() {
+            for value in &mut provisional {
+                *value /= candidates.len() as f32;
+            }
+        }
+        for WheelTriangle { vertices, center } in candidates {
+            let tire_radius = vertices.iter().all(|vertex| {
+                let dy = vertex.position[1] - provisional[1];
+                let dz = vertex.position[2] - provisional[2];
+                dy.hypot(dz) <= 0.56
+            });
+            let (min_x, max_x) = vertices
+                .iter()
+                .fold((f32::INFINITY, f32::NEG_INFINITY), |(lo, hi), vertex| {
+                    (lo.min(vertex.position[0]), hi.max(vertex.position[0]))
+                });
+            let compact = tire_radius && max_x - min_x <= 0.48;
+            if compact {
+                for (sum, value) in center_sums[index].iter_mut().zip(center) {
+                    *sum += value;
+                }
+                center_counts[index] += 1;
+            }
+        }
+    }
     for i in 0..4 {
         if center_counts[i] > 0 {
             out.wheel_centers[i] = center_sums[i].map(|value| value / center_counts[i] as f32);
+            wheel(
+                &mut out.wheels[i],
+                out.wheel_centers[i],
+                if out.wheel_centers[i][0] < 0. {
+                    -1.
+                } else {
+                    1.
+                },
+                if detail { 24 } else { 16 },
+                detail,
+            );
         }
     }
     Ok(out)
@@ -221,6 +269,15 @@ mod tests {
             assert!(count(&near) < 6000);
             assert!(count(&far) * 2 < count(&near));
             assert!(!near.paint.vertices.is_empty() && !near.trim.vertices.is_empty());
+            for wheel in 0..4 {
+                assert!(!near.wheels[wheel].vertices.is_empty());
+                let center = near.wheel_centers[wheel];
+                assert!(near.wheels[wheel].vertices.iter().all(|vertex| {
+                    let dy = vertex.position[1] - center[1];
+                    let dz = vertex.position[2] - center[2];
+                    dy.hypot(dz) < 0.75
+                }));
+            }
             for m in [&near, &far] {
                 for v in m.paint.vertices.iter().chain(&m.trim.vertices) {
                     assert!(
@@ -274,13 +331,13 @@ mod tests {
 
     #[test]
     fn malformed_assets_return_meaningful_errors() {
-        assert!(decode(b"JBV1").is_err());
+        assert!(decode(b"JBV1", false).is_err());
         let mut bytes = ASSETS[7][1].to_vec();
         bytes.pop();
-        assert!(decode(&bytes).is_err());
+        assert!(decode(&bytes, false).is_err());
         let mut bytes = ASSETS[7][1].to_vec();
         bytes[8..12].copy_from_slice(&f32::NAN.to_le_bytes());
-        assert!(decode(&bytes).is_err());
+        assert!(decode(&bytes, false).is_err());
         assert!(model(ASSETS.len(), true).is_err());
     }
     #[test]

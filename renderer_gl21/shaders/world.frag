@@ -35,5 +35,6 @@ void main(){
  float a3=clamp(1.-length(view_pos-point_pos3)/max(point_radius3,0.001),0.,1.); a3*=a3;
  lit+=base*(point_color0*a0+point_color1*a1+point_color2*a2+point_color3*a3)*night;
  lit=mix(lit,lit*vec3(1.035,1.01,0.98),detail_amount*4.);
- gl_FragColor=vec4(mix(lit,sky,fog),opacity);
+ float alpha=mesh_mode==3?opacity*clamp(col.a,0.,1.):opacity;
+ gl_FragColor=vec4(mix(lit,sky,fog),alpha);
 }
