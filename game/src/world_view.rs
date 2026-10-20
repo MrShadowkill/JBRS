@@ -16,6 +16,7 @@ pub struct WorldView {
     pending: HashSet<((i32, i32), u8)>,
     pub map: Texture,
     interior: Option<((usize, usize), GpuMesh)>,
+    apartment: Option<(u64, GpuMesh)>,
     pub submitted_triangles: usize,
     pub interior_triangles: usize,
     roofs: HashMap<usize, GpuMesh>,
@@ -26,7 +27,7 @@ pub struct WorldView {
     pub occluded: usize,
 }
 impl WorldView {
-    pub fn new(world: Arc<World>, r: &mut Renderer, p: Vec3, distance: f32) -> Self {
+    pub fn new(world: Arc<World>, r: &mut Renderer, p: Vec3, distance: f32, potato: bool) -> Self {
         let map = r.texture(256, 256, &world.navigation_image());
         let stream = Streamer::new(world.clone());
         let mut resident = HashMap::new();
@@ -36,7 +37,7 @@ impl WorldView {
                 let key = (center.0 + dx, center.1 + dz);
                 let d =
                     ((key.0 as f32 + 0.5) * CHUNK - p.x).hypot((key.1 as f32 + 0.5) * CHUNK - p.z);
-                let lod = chunk_lod(distance, d);
+                let lod = chunk_lod(distance, d, potato);
                 let mesh = r.upload(&world.chunk(key, lod));
                 resident.insert(key, Resident { lod, mesh });
             }
@@ -48,6 +49,7 @@ impl WorldView {
             pending: HashSet::new(),
             map,
             interior: None,
+            apartment: None,
             submitted_triangles: 0,
             interior_triangles: 0,
             roofs: HashMap::new(),
@@ -58,7 +60,7 @@ impl WorldView {
             occluded: 0,
         }
     }
-    pub fn update(&mut self, r: &mut Renderer, p: Vec3, distance: f32, fps: f32) {
+    pub fn update(&mut self, r: &mut Renderer, p: Vec3, distance: f32, fps: f32, potato: bool) {
         let target = if fps > 0. && fps < 32. {
             distance * 0.8
         } else {
@@ -121,7 +123,7 @@ impl WorldView {
                     if d > self.effective_distance + CHUNK {
                         continue;
                     }
-                    let lod = chunk_lod(distance, d);
+                    let lod = chunk_lod(distance, d, potato);
                     if self.resident.get(&key).is_some_and(|c| c.lod == lod)
                         || self.pending.iter().any(|v| v.0 == key)
                     {
@@ -167,12 +169,45 @@ impl WorldView {
             .map_or(0, |(_, m)| m.vertices as usize / 3);
         self.bytes = self.resident.values().map(|v| v.mesh.bytes).sum::<usize>()
             + self.roofs.values().map(|v| v.bytes).sum::<usize>()
-            + self.interior.as_ref().map_or(0, |i| i.1.bytes);
+            + self.interior.as_ref().map_or(0, |i| i.1.bytes)
+            + self.apartment.as_ref().map_or(0, |i| i.1.bytes);
+    }
+    pub fn set_active_apartment(&mut self, r: &mut Renderer, id: Option<u64>) {
+        if self.apartment.as_ref().map(|instance| instance.0) == id {
+            return;
+        }
+        if let Some((_, old)) = self.apartment.take() {
+            r.release(old);
+        }
+        if let Some(id) = id {
+            let mesh = buildings::apartment_rooms::instance_mesh(id);
+            self.apartment = Some((id, r.upload(&mesh)));
+        }
+        self.bytes = self
+            .resident
+            .values()
+            .map(|resident| resident.mesh.bytes)
+            .sum::<usize>()
+            + self.roofs.values().map(|mesh| mesh.bytes).sum::<usize>()
+            + self
+                .interior
+                .as_ref()
+                .map_or(0, |interior| interior.1.bytes)
+            + self
+                .apartment
+                .as_ref()
+                .map_or(0, |apartment| apartment.1.bytes);
     }
     pub fn draw(&mut self, r: &mut Renderer, eye: [f32; 3], yaw: f32, pitch: f32) {
         let triangles_before = r.triangles;
         r.fog(self.effective_distance);
         self.visible = 0;
+        if let Some((_, mesh)) = self.apartment {
+            r.mesh(mesh);
+            self.visible = 1;
+            self.submitted_triangles = r.triangles - triangles_before;
+            return;
+        }
         if self
             .interior
             .as_ref()
@@ -196,7 +231,7 @@ impl WorldView {
             ];
             if !sphere_visible(
                 center,
-                125.,
+                245.,
                 eye,
                 yaw,
                 pitch,
@@ -221,7 +256,7 @@ impl WorldView {
                         ];
                         [-64., 64.].into_iter().all(|dx| {
                             [-64., 64.].into_iter().all(|dz| {
-                                [-8., 190.].into_iter().all(|y| {
+                                [-8., 245.].into_iter().all(|y| {
                                     occluded_ray(eye, [center[0] + dx, y, center[2] + dz], min, max)
                                 })
                             })
@@ -264,8 +299,10 @@ impl WorldView {
         self.resident.len()
     }
 }
-fn chunk_lod(distance: f32, d: f32) -> u8 {
-    if distance > 180. && d < distance * 0.5 {
+fn chunk_lod(distance: f32, d: f32, potato: bool) -> u8 {
+    if potato {
+        2
+    } else if distance > 180. && d < distance * 0.5 {
         0
     } else {
         1
@@ -380,15 +417,21 @@ mod tests {
             400.
         ));
     }
+
+    #[test]
+    fn potato_quality_selects_flat_city_geometry() {
+        assert_eq!(chunk_lod(128., 0., true), 2);
+        assert_eq!(chunk_lod(180., 0., false), 1);
+    }
 }
 #[cfg(test)]
 mod interior_regressions {
     use super::*;
     #[test]
     fn low_boot_and_streaming_use_coarse_geometry() {
-        assert_eq!(chunk_lod(180., 0.), 1);
-        assert_eq!(chunk_lod(180., 90.), 1);
-        assert_eq!(chunk_lod(450., 20.), 0);
+        assert_eq!(chunk_lod(180., 0., false), 1);
+        assert_eq!(chunk_lod(180., 90., false), 1);
+        assert_eq!(chunk_lod(450., 20., false), 0);
     }
     #[test]
     fn interior_cache_changes_with_floor_and_clears_outside() {

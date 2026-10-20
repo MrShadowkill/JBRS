@@ -1,5 +1,6 @@
 #[cfg(any(target_os = "android", feature = "gles"))]
 extern crate renderer_gles2 as renderer_gl21;
+mod apartment_raid;
 mod doors;
 mod escape;
 mod fleet;

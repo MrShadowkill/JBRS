@@ -320,9 +320,6 @@ impl World {
     }
     pub fn surface(&self, x: f32, z: f32) -> f32 {
         let raw = terrain::height(x, z);
-        if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. {
-            return 0.;
-        }
         let p = Vec3::new(x, 0., z);
         if let Some((distance, y, width)) = self
             .local_roads(x, z)
@@ -336,6 +333,9 @@ impl World {
             if distance < width / 2. + 2. {
                 return y;
             }
+        }
+        if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. {
+            return 0.;
         }
         self.ground_height(x, z)
     }
@@ -377,9 +377,7 @@ impl World {
         if key == (-1, -1) {
             prison::mesh(&mut m, lod);
         }
-        for road in &self.roads {
-            road.mesh(key, lod, &mut m);
-        }
+        roads::mesh_network(&self.roads, key, lod, &mut m);
         for b in &self.buildings {
             if in_chunk(b.p) {
                 b.mesh(&mut m, lod);
@@ -844,5 +842,29 @@ mod tests {
             assert_eq!(w.surface(p.x, p.z), p.y);
             assert!(!w.blocked(Vec3::new(p.x, 1., p.z), 1.7));
         }
+    }
+
+    #[test]
+    fn collision_surface_tracks_elevated_city_roads_over_flat_ground() {
+        let w = World::new();
+        let mut checked = 0;
+        for road in &w.roads {
+            for p in &road.points {
+                if p.y > 0.5
+                    && (-380. ..500.).contains(&p.x)
+                    && (-350. ..350.).contains(&p.z)
+                    && terrain::height(p.x, p.z) == 0.
+                {
+                    assert!(
+                        (w.surface(p.x, p.z) - p.y).abs() < 0.05,
+                        "{} deck at {p:?} has collision height {}",
+                        road.name,
+                        w.surface(p.x, p.z)
+                    );
+                    checked += 1;
+                }
+            }
+        }
+        assert!(checked > 0, "expected an elevated urban bridge segment");
     }
 }

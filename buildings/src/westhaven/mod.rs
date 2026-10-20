@@ -5,7 +5,7 @@ pub fn place_0(lib: &mut Library, x: f32, z: f32) {
         "Westhaven",
         x,
         z,
-        [30., if x == -620. { 14. } else { 8. }, 30.],
+        [32., if x == -620. { 42. } else { 8. }, 32.],
         Style::Brick,
         x == -620.,
     );

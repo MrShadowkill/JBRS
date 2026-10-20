@@ -1,5 +1,5 @@
 pub mod airport;
-mod apartment_rooms;
+pub mod apartment_rooms;
 pub mod apartments;
 pub mod bank;
 pub mod barracks;
@@ -250,6 +250,24 @@ impl Building {
         );
         if self.style == Style::House {
             m.roof([x, h, z], [w + 2., 3., d + 2.], [0.48, 0.29, 0.2]);
+            // Keep low-detail homes readable as simple textured boxes: one door
+            // and two window panels remain visible without the detailed prop pass.
+            m.cuboid(
+                [x, 1.15, z - d / 2. - 0.08],
+                [1.5, 2.3, 0.12],
+                [0.62, 0.38, 0.22],
+                2,
+                0.,
+            );
+            for side in [-1., 1.] {
+                m.cuboid(
+                    [x + side * w * 0.28, 2.65, z - d / 2. - 0.08],
+                    [1.9, 1.5, 0.12],
+                    [0.55, 0.72, 0.78],
+                    3,
+                    0.,
+                );
+            }
             if lod == 0 {
                 m.cuboid(
                     [x + w * 0.25, h + 2., z],

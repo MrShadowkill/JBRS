@@ -25,6 +25,11 @@ pub struct Npc {
     pub memory: f32,
     pub aboard: bool,
     pub returning: bool,
+    /// Some apartment residents call in crimes they witness.
+    pub calls_police: bool,
+    pub has_reported: bool,
+    /// Staggers low-priority AI work while this actor is far from the player.
+    pub far_update: f32,
 }
 impl Npc {
     pub fn new(role: Role, x: f32, z: f32) -> Self {
@@ -45,6 +50,9 @@ impl Npc {
             memory: 0.,
             aboard: false,
             returning: false,
+            calls_police: false,
+            has_reported: false,
+            far_update: 3. + ((x * 0.137 + z * 0.071).sin().abs() * 5.),
         }
     }
     pub fn color(&self) -> [f32; 3] {
@@ -154,6 +162,39 @@ pub fn population() -> Vec<Npc> {
     }
     for (i, n) in out.iter_mut().enumerate() {
         n.plan = (i % 30) as f32 * 0.02;
+    }
+    out
+}
+
+/// Adds one resident to a deterministic 25% sample of apartment buildings.
+pub fn apartment_residents(world: &World, seed: u64) -> Vec<Npc> {
+    let mut state = seed ^ 0x9e3779b97f4a7c15;
+    let mut out = Vec::new();
+    for b in &world.buildings {
+        if !matches!(b.name, "Office" | "Westhaven") || b.size.y < 12. {
+            continue;
+        }
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        if !state.is_multiple_of(4) {
+            continue;
+        }
+        let floor_count = (b.size.y / 4.) as usize;
+        if floor_count < 2 {
+            continue;
+        }
+        let floor = 1 + ((state >> 8) as usize % (floor_count - 1));
+        let side = if state & 1 == 0 { -1. } else { 1. };
+        let mut resident = Npc::new(
+            Role::Resident,
+            b.p.x + side * (b.size.x / 2. - 7.),
+            b.p.z + 5.,
+        );
+        resident.pos.y = b.p.y + floor as f32 * 4. + 1.;
+        resident.home = resident.pos;
+        resident.calls_police = true;
+        out.push(resident);
     }
     out
 }

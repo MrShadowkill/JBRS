@@ -6,7 +6,7 @@ pub struct Preset {
     pub segments: usize,
     pub grain: f32,
 }
-pub const PRESETS: [Preset; 4] = [
+pub const PRESETS: [Preset; 5] = [
     Preset {
         name: "LOW",
         distance: 180.,
@@ -34,5 +34,12 @@ pub const PRESETS: [Preset; 4] = [
         detail: 130.,
         segments: 24,
         grain: 0.075,
+    },
+    Preset {
+        name: "POTATO",
+        distance: 128.,
+        detail: 10.,
+        segments: 4,
+        grain: 0.,
     },
 ];

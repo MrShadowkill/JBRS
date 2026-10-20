@@ -196,13 +196,13 @@ fn load_from(p: &std::path::Path) -> Result<Save, String> {
             .any(|n| !n.is_finite() || *n < 0. || *n > 900.)
         || s.magazines.iter().zip([12, 6, 24]).any(|(v, max)| *v > max)
         || s.ammunition.iter().any(|v| *v > 1000)
-        || s.texture_level > 3
+        || s.texture_level > 4
         || s.run_level > 5
         || s.endurance_level > 5
         || s.carry_level > 5
         || s.water > 20
         || s.food > 20
-        || s.quality > 3
+        || s.quality > 4
         || !(50..=100).contains(&s.resolution_scale)
         || s.shader_effects > 4
         || s.shadow_quality > 3
@@ -546,6 +546,18 @@ mod tests {
         let legacy: Save = serde_json::from_value(json).unwrap();
         assert!(!legacy.pistol_owned);
         assert_eq!(legacy.quality, 1);
+    }
+    #[test]
+    fn potato_quality_and_16px_texture_setting_persist() {
+        let save = Save {
+            quality: 4,
+            texture_level: 4,
+            ..Default::default()
+        };
+        let encoded = serde_json::to_vec(&save).unwrap();
+        let loaded: Save = serde_json::from_slice(&encoded).unwrap();
+        assert_eq!(loaded.quality, 4);
+        assert_eq!(loaded.texture_level, 4);
     }
     #[test]
     fn disk_roundtrip_and_version_rejection() {

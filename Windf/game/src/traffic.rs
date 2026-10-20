@@ -8,9 +8,12 @@ pub struct Driver {
     pub route: Vec<Vec3>,
     next: usize,
     pub incident: bool,
+    pub pursuing: bool,
     pub parked: bool,
     pub crew: Vec<usize>,
-    stuck: f32,
+    pub npc_ejected: bool,
+    pub stuck: f32,
+    pub incident_time: f32,
 }
 pub struct Traffic {
     pub drivers: Vec<Driver>,
@@ -70,9 +73,12 @@ impl Traffic {
                 route,
                 next: 1,
                 incident: false,
+                pursuing: false,
                 parked: false,
                 crew: Vec::new(),
+                npc_ejected: false,
                 stuck: 0.,
+                incident_time: 0.,
             });
         }
         Self {
@@ -104,6 +110,8 @@ impl Traffic {
             d.route = route.clone();
             d.next = 0;
             d.incident = true;
+            d.pursuing = true;
+            d.incident_time = 0.;
             d.parked = false;
             d.stuck = 0.;
             selected.push((route, d.car));
@@ -114,6 +122,19 @@ impl Traffic {
         if let Some(d) = self.drivers.iter_mut().find(|d| d.car == car) {
             d.parked = true;
             d.incident = false;
+            d.pursuing = false;
+        }
+    }
+    pub fn retarget_pursuit(&mut self, cars: &[Car], target: Vec3) {
+        for d in &mut self.drivers {
+            if !d.pursuing || d.parked {
+                continue;
+            }
+            if let Some((_, route)) = self.graph.route(cars[d.car].pos, target) {
+                d.route = route;
+                d.next = 0;
+                d.stuck = 0.;
+            }
         }
     }
     /// Returns cars that have actually stopped at the incident, never a timed spawn.
@@ -129,6 +150,9 @@ impl Traffic {
         let snapshot: Vec<_> = cars.iter().map(|c| (c.pos, c.angle)).collect();
         let mut arrived = Vec::new();
         for d in &mut self.drivers {
+            if d.incident {
+                d.incident_time += dt;
+            }
             if Some(d.car) == player || d.parked {
                 continue;
             }
@@ -158,7 +182,7 @@ impl Traffic {
             let error = (dx.atan2(dz) - c.angle)
                 .sin()
                 .atan2((dx.atan2(dz) - c.angle).cos());
-            let mut desired = if d.incident { 16. } else { 9. };
+            let mut desired = if d.incident { 21. } else { 14. };
             desired *= (1. - error.abs() / 2.).clamp(0.2, 1.);
             let yielding = snapshot.iter().enumerate().any(|(i, (p, heading))| {
                 if i == d.car || (p.y - c.pos.y).abs() > 2. {

@@ -108,6 +108,22 @@ pub struct GpuMesh {
 pub struct Texture {
     pub id: u32,
 }
+#[derive(Clone, Copy, Debug)]
+pub struct PointLight {
+    pub position: [f32; 3],
+    pub color: [f32; 3],
+    pub radius: f32,
+}
+#[derive(Clone, Copy)]
+pub struct WheelPose {
+    pub position: [f32; 3],
+    pub angle: f32,
+    pub tint: [f32; 3],
+    pub tilt: [f32; 2],
+    pub center: [f32; 3],
+    pub steer: f32,
+    pub spin: f32,
+}
 pub struct Renderer {
     window: *mut c_void,
     context: *mut c_void,
@@ -122,6 +138,7 @@ pub struct Renderer {
     textures: Vec<u32>,
     program: u32,
     atlas: u32,
+    material_level: usize,
     font: u32,
     day_uniform: i32,
     mesh_uniform: i32,
@@ -138,6 +155,9 @@ pub struct Renderer {
     shader_pack: String,
     resolution_scale: u8,
     wind_uniform: i32,
+    point_light_uniforms: [i32; 4],
+    point_color_uniforms: [i32; 4],
+    point_radius_uniforms: [i32; 4],
 }
 impl Renderer {
     pub fn new() -> Result<Self, String> {
@@ -184,6 +204,7 @@ impl Renderer {
                 textures: Vec::new(),
                 program: 0,
                 atlas: 0,
+                material_level: 0,
                 font: 0,
                 day_uniform: -1,
                 mesh_uniform: -1,
@@ -200,6 +221,9 @@ impl Renderer {
                 shader_pack: "builtin".into(),
                 resolution_scale: 100,
                 wind_uniform: -1,
+                point_light_uniforms: [-1; 4],
+                point_color_uniforms: [-1; 4],
+                point_radius_uniforms: [-1; 4],
             };
             renderer.setup()?;
             if cfg!(target_os = "android") || std::env::var("JBRS_TOUCH").as_deref() == Ok("1") {
@@ -283,6 +307,7 @@ impl Renderer {
             self.quality_uniform = uniform("detail_amount");
             self.opacity_uniform = uniform("opacity");
             self.wind_uniform = uniform("wind_time");
+            self.refresh_light_uniforms(uniform);
             glUseProgram(program);
             glUniform1f(self.opacity_uniform, 1.);
             glUniform1i(uniform("atlas"), 0);
@@ -409,9 +434,10 @@ impl Renderer {
         Ok(())
     }
     unsafe fn refresh_world_uniforms(&mut self) {
+        let program = self.program;
         let uniform = |name: &str| {
             let c = CString::new(name).unwrap();
-            glGetUniformLocation(self.program, c.as_ptr())
+            glGetUniformLocation(program, c.as_ptr())
         };
         self.day_uniform = uniform("daylight");
         self.mesh_uniform = uniform("mesh_mode");
@@ -420,12 +446,51 @@ impl Renderer {
         self.quality_uniform = uniform("detail_amount");
         self.opacity_uniform = uniform("opacity");
         self.wind_uniform = uniform("wind_time");
+        self.refresh_light_uniforms(uniform);
         glUseProgram(self.program);
         glUniform1f(self.opacity_uniform, 1.);
         glUniform1i(uniform("atlas"), 0);
         glUniform1f(self.fog_uniform, 450.);
     }
     /// Rounded superellipsoid: exponent 1 is an ellipsoid, 0.3 is a beveled box.
+    unsafe fn refresh_light_uniforms(&mut self, uniform: impl Fn(&str) -> i32) {
+        for i in 0..4 {
+            self.point_light_uniforms[i] = uniform(&format!("point_pos{i}"));
+            self.point_color_uniforms[i] = uniform(&format!("point_color{i}"));
+            self.point_radius_uniforms[i] = uniform(&format!("point_radius{i}"));
+        }
+    }
+    /// Update the bounded GLES2 forward-lighting list for this camera.
+    pub fn point_lights(&mut self, lights: &[PointLight], eye: [f32; 3], yaw: f32, pitch: f32) {
+        unsafe {
+            glUseProgram(self.program);
+            for i in 0..4 {
+                if let Some(light) = lights.get(i) {
+                    let d = [
+                        light.position[0] - eye[0],
+                        light.position[1] - eye[1],
+                        light.position[2] - eye[2],
+                    ];
+                    let (sy, cy) = yaw.sin_cos();
+                    let (sp, cp) = pitch.sin_cos();
+                    let x = cy * d[0] + sy * d[2];
+                    let z = -sy * d[0] + cy * d[2];
+                    let y = cp * d[1] - sp * z;
+                    let z = sp * d[1] + cp * z;
+                    glUniform3f(self.point_light_uniforms[i], x, y, z);
+                    glUniform3f(
+                        self.point_color_uniforms[i],
+                        light.color[0].clamp(0., 2.),
+                        light.color[1].clamp(0., 2.),
+                        light.color[2].clamp(0., 2.),
+                    );
+                    glUniform1f(self.point_radius_uniforms[i], light.radius.clamp(1., 80.));
+                } else {
+                    glUniform1f(self.point_radius_uniforms[i], 0.);
+                }
+            }
+        }
+    }
     pub fn rounded(
         &mut self,
         p: [f32; 3],
@@ -471,7 +536,13 @@ impl Renderer {
         self.triangles += n * rings * 2;
     }
     pub fn material_resolution(&mut self, level: usize) {
-        let tile = [64, 128, 256, 512][level.min(3)];
+        // Procedural atlas pixels are generated on startup or when the user changes
+        // texture quality, never in the frame loop.
+        let level = level.min(4);
+        if level == self.material_level {
+            return;
+        }
+        let tile = [64, 128, 256, 512, 16][level];
         let pixels = atlas_pixels(tile);
         unsafe {
             glBindTexture(0x0de1, self.atlas);
@@ -487,6 +558,7 @@ impl Renderer {
                 pixels.as_ptr().cast(),
             );
         }
+        self.material_level = level;
     }
     pub fn texture(&mut self, w: i32, h: i32, pixels: &[u8]) -> Texture {
         assert_eq!(pixels.len(), (w * h * 3) as usize);
@@ -612,6 +684,40 @@ impl Renderer {
             glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
             glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
+        }
+        self.draw_buffer(mesh, 2);
+        unsafe {
+            glPopMatrix();
+        }
+    }
+    /// Draw one immutable wheel mesh around its axle, with steer and rolling animation.
+    pub fn cached_solid_wheel(
+        &mut self,
+        key: usize,
+        cpu_mesh: &engine_core::Mesh,
+        pose: WheelPose,
+    ) {
+        if cpu_mesh.vertices.is_empty() {
+            return;
+        }
+        let mesh = if let Some(mesh) = self.solid_models.get(&key) {
+            *mesh
+        } else {
+            let mesh = self.upload(cpu_mesh);
+            self.solid_models.insert(key, mesh);
+            mesh
+        };
+        unsafe {
+            glPushMatrix();
+            glTranslatef(pose.position[0], pose.position[1], pose.position[2]);
+            glRotatef(pose.angle.to_degrees(), 0., 1., 0.);
+            glRotatef(pose.tilt[0].to_degrees(), 1., 0., 0.);
+            glRotatef(pose.tilt[1].to_degrees(), 0., 0., 1.);
+            glTranslatef(pose.center[0], pose.center[1], pose.center[2]);
+            glRotatef(pose.steer.to_degrees(), 0., 1., 0.);
+            glRotatef(pose.spin.to_degrees(), 1., 0., 0.);
+            glTranslatef(-pose.center[0], -pose.center[1], -pose.center[2]);
+            glUniform3f(self.tint_uniform, pose.tint[0], pose.tint[1], pose.tint[2]);
         }
         self.draw_buffer(mesh, 2);
         unsafe {
@@ -770,6 +876,71 @@ impl Renderer {
             glDisable(0x0be2);
             glUniform1f(self.opacity_uniform, 1.);
         }
+    }
+    /// Lightweight translucent spotlight cone for street lamps and vehicle beams.
+    pub fn light_cone(
+        &mut self,
+        origin: [f32; 3],
+        direction: [f32; 3],
+        length: f32,
+        radius: f32,
+        color: [f32; 3],
+        opacity: f32,
+    ) {
+        let normalize = |v: [f32; 3]| {
+            let n = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt().max(0.001);
+            [v[0] / n, v[1] / n, v[2] / n]
+        };
+        let dir = normalize(direction);
+        let guide = if dir[1].abs() > 0.9 {
+            [0., 0., 1.]
+        } else {
+            [0., 1., 0.]
+        };
+        let right = normalize([
+            dir[1] * guide[2] - dir[2] * guide[1],
+            dir[2] * guide[0] - dir[0] * guide[2],
+            dir[0] * guide[1] - dir[1] * guide[0],
+        ]);
+        let up = normalize([
+            right[1] * dir[2] - right[2] * dir[1],
+            right[2] * dir[0] - right[0] * dir[2],
+            right[0] * dir[1] - right[1] * dir[0],
+        ]);
+        let end = [
+            origin[0] + dir[0] * length,
+            origin[1] + dir[1] * length,
+            origin[2] + dir[2] * length,
+        ];
+        unsafe {
+            glUniform1i(self.mesh_uniform, 4);
+            glUniform1f(self.opacity_uniform, opacity.clamp(0.01, 0.2));
+            glEnable(0x0be2);
+            glBlendFunc(0x0302, 0x0303);
+            glDepthMask(0);
+            glBegin(4);
+            glColor3f(color[0], color[1], color[2]);
+            for segment in 0..16 {
+                let a = segment as f32 * std::f32::consts::TAU / 16.;
+                let b = (segment + 1) as f32 * std::f32::consts::TAU / 16.;
+                glVertex3f(origin[0], origin[1], origin[2]);
+                for angle in [a, b] {
+                    let (sin, cos) = angle.sin_cos();
+                    glVertex3f(
+                        end[0] + radius * (right[0] * cos + up[0] * sin),
+                        end[1] + radius * (right[1] * cos + up[1] * sin),
+                        end[2] + radius * (right[2] * cos + up[2] * sin),
+                    );
+                }
+            }
+            glEnd();
+            glDepthMask(1);
+            glDisable(0x0be2);
+            glUniform1f(self.opacity_uniform, 1.);
+            glUniform1i(self.mesh_uniform, 0);
+        }
+        self.draws += 1;
+        self.triangles += 16;
     }
     fn cube_mode(&mut self, p: [f32; 3], s: [f32; 3], c: [f32; 3], angle: f32, mode: i32) {
         unsafe {
@@ -1283,12 +1454,13 @@ mod material_tests {
     use super::*;
     #[test]
     fn atlas_resolutions_keep_tiles_and_add_real_texels() {
-        for tile in [64, 128, 256, 512] {
+        for tile in [16, 64, 128, 256, 512] {
             let p = atlas_pixels(tile);
             assert_eq!(p.len(), (tile * 4).pow(2) * 3);
             assert!(p.iter().any(|v| *v < 200));
         }
         assert_ne!(atlas_pixels(64)[0], atlas_pixels(512)[3]);
+        assert_eq!(atlas_pixels(16).len(), 64 * 64 * 3);
     }
 }
 

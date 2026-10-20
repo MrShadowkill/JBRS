@@ -5,6 +5,8 @@ const METAL: [f32; 3] = [0.56, 0.6, 0.63];
 pub struct Model {
     pub paint: Mesh,
     pub trim: Mesh,
+    pub wheels: [Mesh; 4],
+    pub wheel_centers: [[f32; 3]; 4],
 }
 const ASSETS: [[&[u8]; 2]; engine_core::VEHICLE_SLOTS] = [
     [
@@ -72,9 +74,14 @@ fn decode(bytes: &[u8]) -> Result<Model, String> {
     let mut out = Model {
         paint: Mesh::default(),
         trim: Mesh::default(),
+        wheels: std::array::from_fn(|_| Mesh::default()),
+        wheel_centers: [[0.; 3]; 4],
     };
+    let mut center_sums = [[0.; 3]; 4];
+    let mut center_counts = [0usize; 4];
     for triangle in bytes[8..].chunks_exact(84) {
         let mut material = None;
+        let mut vertices = Vec::with_capacity(3);
         for record in triangle.chunks_exact(28) {
             let mut values = [0f32; 7];
             for (v, b) in values.iter_mut().zip(record.chunks_exact(4)) {
@@ -92,16 +99,47 @@ fn decode(bytes: &[u8]) -> Result<Model, String> {
                 return Err("Mixed triangle materials".into());
             }
             material = Some(painted);
-            let mesh = if painted {
-                &mut out.paint
-            } else {
-                &mut out.trim
-            };
-            mesh.vertices.push(Vertex {
+            vertices.push(Vertex {
                 position: [values[0], values[1], values[2]],
                 color: [values[3], values[4], values[5], 0.],
                 uv: [0.; 2],
             });
+        }
+        let center = [0, 1, 2].map(|axis| {
+            vertices
+                .iter()
+                .map(|vertex| vertex.position[axis])
+                .sum::<f32>()
+                / 3.
+        });
+        let wheel = if center[0].abs() > 0.7
+            && (-0.75..0.05).contains(&center[1])
+            && (center[2] - 1.4).abs() < 0.65
+        {
+            Some(usize::from(center[0] > 0.))
+        } else if center[0].abs() > 0.7
+            && (-0.75..0.05).contains(&center[1])
+            && (center[2] + 1.2).abs() < 0.65
+        {
+            Some(2 + usize::from(center[0] > 0.))
+        } else {
+            None
+        };
+        if let Some(index) = wheel {
+            for (sum, value) in center_sums[index].iter_mut().zip(center) {
+                *sum += value;
+            }
+            center_counts[index] += 1;
+            out.wheels[index].vertices.extend(vertices);
+        } else if material == Some(true) {
+            out.paint.vertices.extend(vertices);
+        } else {
+            out.trim.vertices.extend(vertices);
+        }
+    }
+    for i in 0..4 {
+        if center_counts[i] > 0 {
+            out.wheel_centers[i] = center_sums[i].map(|value| value / center_counts[i] as f32);
         }
     }
     Ok(out)

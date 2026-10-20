@@ -1,4 +1,32 @@
 use super::*;
+
+#[derive(Clone, Copy, Debug)]
+pub struct InteractionPoints {
+    pub entry_door: Vec3,
+    pub room_door: Vec3,
+    pub light_switch: Vec3,
+    pub fridge: Vec3,
+    pub shelves: Vec3,
+    pub wardrobe: Vec3,
+    pub bed: Vec3,
+}
+
+pub fn interaction_points(b: &Building, floor: usize, side: f32) -> InteractionPoints {
+    let variant = (b.id * 13 + floor * 7) % 32;
+    let z_offset = (variant % 4) as f32 - 1.5;
+    let unit_x = b.p.x + side * (b.size.x / 2.0 - 7.0);
+    let y = b.p.y + floor as f32 * 4.0;
+    InteractionPoints {
+        entry_door: Vec3::new(b.p.x + side * 3.0, y + 1.5, b.p.z),
+        room_door: Vec3::new(b.p.x + side * 6.8, y + 1.5, b.p.z),
+        light_switch: Vec3::new(b.p.x + side * 4.1, y + 1.3, b.p.z - 2.2),
+        fridge: Vec3::new(b.p.x + side * (b.size.x / 2.0 - 1.2), y + 1.1, b.p.z + 2.0),
+        shelves: Vec3::new(unit_x - side * 4.0, y + 1.0, b.p.z + z_offset - 5.0),
+        wardrobe: Vec3::new(unit_x + side * 3.0, y + 1.4, b.p.z + z_offset + 6.0),
+        bed: Vec3::new(unit_x, y + 1.0, b.p.z + z_offset - 7.0),
+    }
+}
+
 impl Building {
     pub(super) fn apartments_interior(&self, m: &mut Mesh, selected: Option<usize>) {
         let x = self.p.x;
@@ -23,6 +51,41 @@ impl Building {
                         0.,
                     );
                 }
+                for fixture in apartment_rooms::room_partitions(self, floor, side) {
+                    m.cuboid(
+                        [fixture.p.x, fixture.p.y, fixture.p.z],
+                        [fixture.size.x, fixture.size.y, fixture.size.z],
+                        [0.66, 0.63, 0.57],
+                        1,
+                        0.,
+                    );
+                }
+                for fixture in apartment_rooms::room_fixtures(self, floor, side) {
+                    m.cuboid(
+                        fixture.position,
+                        fixture.size,
+                        fixture.color,
+                        fixture.material,
+                        0.,
+                    );
+                }
+                // Apartment entry door frame; the animated leaf is drawn by the game.
+                for z_offset in [-1.15, 1.15] {
+                    m.cuboid(
+                        [x + side * 3., y + 1.5, z + z_offset],
+                        [0.22, 3., 0.18],
+                        [0.39, 0.27, 0.18],
+                        10,
+                        0.,
+                    );
+                }
+                m.cuboid(
+                    [x + side * 3., y + 2.9, z],
+                    [0.22, 0.2, 2.45],
+                    [0.39, 0.27, 0.18],
+                    10,
+                    0.,
+                );
             }
             m.cuboid(
                 [x, y, z],
@@ -39,7 +102,7 @@ impl Building {
                     [0.42, 0.07, 1.25],
                     [1.0, 0.78, 0.48],
                     9,
-                    0.92,
+                    0.0,
                 );
             }
             // Lift cabin and floor indicator occupy the shared entrance hall.
@@ -84,7 +147,7 @@ impl Building {
                 m.cuboid(f.position, f.size, f.color, f.material, 0.);
             }
             for side in [-1., 1.] {
-                let rx = x + side * 8.;
+                let rx = x + side * (self.size.x / 2. - 7.);
                 let rz = z + (variant % 4) as f32 - 1.5;
                 m.cuboid(
                     [rx, y + 0.5, rz + 5.],
@@ -160,7 +223,7 @@ pub fn search_target(b: &Building, p: Vec3) -> Option<(u64, bool, &'static str)>
     let variant = (b.id * 13 + floor * 7) % 32;
     let mut candidates = Vec::new();
     for (side_id, side) in [-1., 1.].into_iter().enumerate() {
-        let rx = b.p.x + side * 8.;
+        let rx = b.p.x + side * (b.size.x / 2. - 7.);
         let rz = b.p.z + (variant % 4) as f32 - 1.5;
         for (item, (dx, dz, label)) in [
             (0., 5., "SOFA"),
@@ -195,7 +258,18 @@ pub(super) fn furniture_colliders(b: &Building) -> Vec<Collider> {
         out.extend(apartment_rooms::colliders(b, floor));
         let variant = (b.id * 13 + floor * 7) % 32;
         for side in [-1., 1.] {
-            let x = b.p.x + side * 8.;
+            out.extend(apartment_rooms::room_partitions(b, floor, side));
+            out.extend(
+                apartment_rooms::room_fixtures(b, floor, side)
+                    .into_iter()
+                    .map(|f| Collider {
+                        p: Vec3::new(f.position[0], f.position[1], f.position[2]),
+                        size: Vec3::new(f.size[0], f.size[1], f.size[2]),
+                        movable: false,
+                        breakable: false,
+                    }),
+            );
+            let x = b.p.x + side * (b.size.x / 2. - 7.);
             let z = b.p.z + (variant % 4) as f32 - 1.5;
             for (dx, y, dz, sx, sy, sz) in [
                 (0., 0.5, 5., 4., 1., 2.),

@@ -8,6 +8,44 @@ use vehicles::{Car, CATALOG};
 use world::World;
 const WHITE: [f32; 3] = [0.9, 0.94, 1.];
 const GOLD: [f32; 3] = [1., 0.78, 0.24];
+
+#[derive(Clone, Copy)]
+struct ApartmentUnit {
+    entry_open: bool,
+    entry_angle: f32,
+    room_open: bool,
+    room_angle: f32,
+    light_on: bool,
+    fridge_open: bool,
+    fridge_angle: f32,
+    wardrobe_open: bool,
+    wardrobe_angle: f32,
+    shelves_open: bool,
+    shelves_angle: f32,
+    bed_open: bool,
+    bed_drawer: f32,
+}
+
+impl Default for ApartmentUnit {
+    fn default() -> Self {
+        Self {
+            entry_open: false,
+            entry_angle: 0.,
+            room_open: false,
+            room_angle: 0.,
+            light_on: true,
+            fridge_open: false,
+            fridge_angle: 0.,
+            wardrobe_open: false,
+            wardrobe_angle: 0.,
+            shelves_open: false,
+            shelves_angle: 0.,
+            bed_open: false,
+            bed_drawer: 0.,
+        }
+    }
+}
+
 struct Game {
     world: std::sync::Arc<World>,
     view: Option<crate::world_view::WorldView>,
@@ -21,6 +59,7 @@ struct Game {
     cars: Vec<Car>,
     traffic: crate::traffic::Traffic,
     train: vehicle_physics::train::Train,
+    headlight_mode: u8,
     car_models: &'static [[vehicles::body::Model; 2]],
     driving: Option<usize>,
     save: save_system::Save,
@@ -28,15 +67,25 @@ struct Game {
     alarm: Alarm,
     npcs: Vec<Npc>,
     doors: Vec<crate::doors::Door>,
+    apartment_units: Vec<Vec<[ApartmentUnit; 2]>>,
+    active_apartment: Option<u64>,
+    apartment_return: Option<(Vec3, f32)>,
+    apartment_raid: Option<crate::apartment_raid::ApartmentRaid>,
+    elevator_selection: Option<(usize, usize)>,
+    elevator_ride: Option<(usize, usize, usize, f32)>,
     slot: usize,
     explosive: bool,
     charge_taken: bool,
     fuse: Option<f32>,
     breached: bool,
     stun: f32,
+    ragdoll: f32,
     blast: f32,
     response: Option<(Vec<Vec3>, usize)>,
     wanted: u32,
+    resident_call_cooldown: f32,
+    resident_alert: f32,
+    pursuit_replan: f32,
     cuffs: crate::escape::Cuffs,
     immunity: f32,
     bounty: u32,
@@ -48,6 +97,8 @@ struct Game {
     yaw: f32,
     pitch: f32,
     menu: bool,
+    console_open: bool,
+    console_input: String,
     map: bool,
     garage: bool,
     workshop: Option<usize>,
@@ -76,6 +127,7 @@ struct Game {
     message: String,
     message_time: f32,
     clock: f32,
+    time_offset: f32,
     stats: profiling::Stats,
     shot: f32,
     debug: bool,
@@ -118,6 +170,18 @@ impl Game {
             .iter()
             .map(|_| crate::doors::Door::new())
             .collect();
+        let apartment_units = world
+            .buildings
+            .iter()
+            .map(|building| {
+                let floors = if matches!(building.name, "Office" | "Westhaven") {
+                    (building.size.y / 4.) as usize
+                } else {
+                    0
+                };
+                vec![[ApartmentUnit::default(); 2]; floors]
+            })
+            .collect();
         let mut cars = parked_cars(&world, &save, 0);
         let traffic = crate::traffic::Traffic::with_seed(&world, &mut cars, 0);
         let mut heists = crate::heists::Heists::new(seed);
@@ -131,12 +195,19 @@ impl Game {
         Ok(Self {
             world: world.clone(),
             doors,
+            apartment_units,
+            active_apartment: None,
+            apartment_return: None,
+            apartment_raid: None,
+            elevator_selection: None,
+            elevator_ride: None,
             slot: 0,
             explosive: false,
             charge_taken: false,
             fuse: None,
             breached: false,
             stun: 0.,
+            ragdoll: 0.,
             blast: 0.,
             response: None,
             view: None,
@@ -150,6 +221,7 @@ impl Game {
             cars,
             traffic,
             train: vehicle_physics::train::Train::default(),
+            headlight_mode: 0,
             car_models: vehicles::body::catalog()?,
             driving: None,
             save,
@@ -157,6 +229,7 @@ impl Game {
             alarm,
             npcs: {
                 let mut npcs = crate::npcs::population();
+                npcs.extend(crate::npcs::apartment_residents(&world, seed));
                 for n in &mut npcs {
                     n.pos.y = world.walking_surface(n.pos) + 1.;
                     n.home.y = n.pos.y;
@@ -164,6 +237,9 @@ impl Game {
                 npcs
             },
             wanted,
+            resident_call_cooldown: 0.,
+            resident_alert: 0.,
+            pursuit_replan: 0.,
             cuffs: Default::default(),
             immunity: 0.,
             bounty,
@@ -179,6 +255,8 @@ impl Game {
             yaw: std::f32::consts::PI,
             pitch: 0.32,
             menu: true,
+            console_open: false,
+            console_input: String::new(),
             map: false,
             garage: false,
             workshop: None,
@@ -207,6 +285,7 @@ impl Game {
             message: "PRISON LOCKED - SEWER MAZE OR C4; P PARACHUTE".into(),
             message_time: 12.,
             clock: 0.,
+            time_offset: 0.,
             stats: profiling::Stats::new(),
             shot: 0.,
             debug: false,
@@ -244,10 +323,15 @@ impl Game {
                 self.save.resolution_scale =
                     (self.save.resolution_scale as i32 + step * 10).clamp(50, 100) as u8
             }
-            4 => self.save.quality = (self.save.quality as i32 + step).rem_euclid(4) as usize,
+            4 => {
+                self.save.quality = (self.save.quality as i32 + step).rem_euclid(5) as usize;
+                if self.save.quality == 4 {
+                    self.apply_potato_settings();
+                }
+            }
             5 => {
                 self.save.texture_level =
-                    (self.save.texture_level as i32 + step).rem_euclid(4) as usize
+                    (self.save.texture_level as i32 + step).rem_euclid(5) as usize
             }
             6 => self.save.object_shadows = !self.save.object_shadows,
             7 => {
@@ -256,6 +340,13 @@ impl Game {
             }
             _ => self.save.fps_counter = !self.save.fps_counter,
         }
+    }
+    fn apply_potato_settings(&mut self) {
+        self.save.texture_level = 4;
+        self.save.resolution_scale = 50;
+        self.save.shader_effects = 0;
+        self.save.object_shadows = false;
+        self.save.shadow_quality = 0;
     }
     fn save(&mut self) {
         self.save.heist_cooldown = self.heists.cooldown;
@@ -273,7 +364,9 @@ impl Game {
         self.save.ammunition[self.pistol.kind] = self.pistol.reserve;
         self.save.ammo = self.save.magazines[0];
         self.save.reserve = self.save.ammunition[0];
-        self.save.position = self.player.pos;
+        self.save.position = self
+            .apartment_return
+            .map_or(self.player.pos, |(position, _)| position);
         self.save.team = self.player.team;
         match save_system::store(&self.save) {
             Ok(()) => self.notify("PROGRESS SAVED"),
@@ -281,6 +374,9 @@ impl Game {
         }
     }
     fn blocked(&self, p: Vec3, r: f32) -> bool {
+        if let Some(id) = self.active_apartment {
+            return buildings::apartment_rooms::instance_blocked(id, p, r);
+        }
         self.world.blocked(p, r)
             || world::prison::barrier(p, r, self.breached)
             || self
@@ -288,6 +384,388 @@ impl Game {
                 .iter()
                 .zip(&self.world.buildings)
                 .any(|(door, b)| door.blocked(b, p, r))
+            || self.apartment_door_blocked(p, r)
+    }
+    fn apartment_door_blocked(&self, p: Vec3, radius: f32) -> bool {
+        self.world.interior(p).is_some_and(|id| {
+            let b = &self.world.buildings[id];
+            if !matches!(b.name, "Office" | "Westhaven") {
+                return false;
+            }
+            let floor = b.rendered_floor(p);
+            [-1., 1.].into_iter().any(|side| {
+                let pts = buildings::apartments::interaction_points(b, floor, side);
+                let unit = &self.apartment_units[id][floor][usize::from(side > 0.)];
+                (!unit.entry_open
+                    && p.distance(pts.entry_door) < radius + 0.6
+                    && (p.y - pts.entry_door.y).abs() < 1.5)
+                    || (!unit.room_open
+                        && p.distance(pts.room_door) < radius + 0.6
+                        && (p.y - pts.room_door.y).abs() < 1.5)
+            })
+        })
+    }
+
+    fn current_apartment_address(&self) -> Option<(u64, usize, usize, f32)> {
+        if let Some(apartment_id) = self.active_apartment {
+            let building_id = (apartment_id >> 32) as usize;
+            let floor = ((apartment_id >> 8) & 0x00ff_ffff) as usize;
+            let unit = (apartment_id & 0xff) as usize;
+            return Some((
+                apartment_id,
+                building_id,
+                floor,
+                if unit == 0 { -1. } else { 1. },
+            ));
+        }
+        let building_id = self.world.interior(self.player.pos)?;
+        let building = &self.world.buildings[building_id];
+        if !matches!(building.name, "Office" | "Westhaven")
+            || (self.player.pos.x - building.p.x).abs() < 4.
+        {
+            return None;
+        }
+        let floor = building.rendered_floor(self.player.pos);
+        let unit = usize::from(self.player.pos.x >= building.p.x);
+        Some((
+            buildings::apartment_rooms::apartment_id(building_id, floor, unit),
+            building_id,
+            floor,
+            if unit == 0 { -1. } else { 1. },
+        ))
+    }
+
+    fn tick_apartment_raid(&mut self) {
+        let detected = self.current_apartment_address();
+        let detected_id = detected.map(|address| address.0);
+        let pursuit = self.wanted > 0
+            && self.player.team == Team::Criminal
+            && (self.response.is_some()
+                || self.alarm.dispatched
+                || self.heists.dispatched
+                || self.resident_alert > 0.);
+        let (raid, started) =
+            crate::apartment_raid::begin_if_identified(self.apartment_raid, pursuit, detected_id);
+        self.apartment_raid = raid;
+        if started == Some(crate::apartment_raid::RaidEvent::Started) {
+            self.notify("POLICE IDENTIFIED YOUR APARTMENT - RAID IN 90 SECONDS");
+        }
+        let event = self
+            .apartment_raid
+            .as_mut()
+            .and_then(|raid| raid.tick(pursuit, detected_id, STEP));
+        match event {
+            Some(crate::apartment_raid::RaidEvent::AtDoor) => {
+                self.notify("POLICE AT YOUR FLOOR - FOOTSTEPS AND RADIO OUTSIDE");
+            }
+            Some(crate::apartment_raid::RaidEvent::Warning) => {
+                self.notify("POLICE KNOCKING - OPEN THE DOOR OR SURRENDER");
+            }
+            Some(crate::apartment_raid::RaidEvent::Breach) => {
+                self.notify("POLICE BREACHED THE APARTMENT DOOR");
+                self.portal_raid_officers();
+            }
+            _ => {}
+        }
+    }
+
+    /// Portal responding officers through the identified flat's entrance. The officers
+    /// appear at checked local entry positions, never at the player's coordinates.
+    fn portal_raid_officers(&mut self) {
+        let Some(raid) = self.apartment_raid else {
+            return;
+        };
+        if self.active_apartment != Some(raid.apartment_id) {
+            // The raid belongs to its original address; never arrest the player
+            // from a stale apartment position after they have left.
+            return;
+        }
+        let exit = buildings::apartment_rooms::instance_exit(raid.apartment_id);
+        let candidates = [
+            Vec3::new(exit.x - 2.4, 1., exit.z + 1.5),
+            Vec3::new(exit.x + 2.4, 1., exit.z + 1.5),
+        ];
+        let free_candidates: Vec<_> = candidates
+            .into_iter()
+            .filter(|pos| {
+                pos.distance(self.player.pos) > 4.
+                    && !buildings::apartment_rooms::instance_blocked(raid.apartment_id, *pos, 0.45)
+            })
+            .collect();
+        let Some((_, response_car)) = self.response.as_ref() else {
+            return;
+        };
+        let responders = self
+            .traffic
+            .drivers
+            .iter()
+            .find(|driver| driver.car == *response_car)
+            .map_or_else(Vec::new, |driver| driver.crew.clone());
+        let mut moved = 0;
+        for id in responders {
+            if moved >= 2 {
+                continue;
+            }
+            let Some(pos) = free_candidates.get(moved).copied() else {
+                continue;
+            };
+            let Some(npc) = self.npcs.get_mut(id) else {
+                continue;
+            };
+            if !npc.officer() || npc.disabled > 0. || npc.aboard {
+                continue;
+            }
+            npc.pos = pos;
+            npc.home = pos;
+            npc.last_seen = Some(self.player.pos);
+            npc.memory = 10.;
+            npc.plan = 0.;
+            moved += 1;
+        }
+    }
+
+    fn apartment_interact(&mut self) -> bool {
+        let Some(id) = self.world.interior(self.player.pos) else {
+            return false;
+        };
+        let b = &self.world.buildings[id];
+        if !matches!(b.name, "Office" | "Westhaven") {
+            return false;
+        }
+        let lift_panel = Vec3::new(b.p.x + 2., b.p.y + 1.4, b.p.z - 8.);
+        if self.player.pos.distance(lift_panel) < 1.8 {
+            let floor = b.rendered_floor(self.player.pos);
+            self.elevator_selection = Some((id, floor));
+            self.notify("ELEVATOR: UP/DOWN SELECT FLOOR, ENTER TO RIDE");
+            return true;
+        }
+        let floor = b.rendered_floor(self.player.pos);
+        let side = if self.player.pos.x < b.p.x { -1. } else { 1. };
+        let pts = buildings::apartments::interaction_points(b, floor, side);
+        let target = [
+            (pts.entry_door, 1),
+            (pts.room_door, 2),
+            (pts.light_switch, 3),
+            (pts.fridge, 4),
+            (pts.wardrobe, 5),
+            (pts.shelves, 6),
+            (pts.bed, 7),
+        ]
+        .into_iter()
+        .min_by(|a, b| {
+            self.player
+                .pos
+                .distance(a.0)
+                .total_cmp(&self.player.pos.distance(b.0))
+        });
+        let Some((_, action)) = target.filter(|(point, _)| self.player.pos.distance(*point) < 1.8)
+        else {
+            return false;
+        };
+        if action == 1 {
+            let unit_index = usize::from(side > 0.);
+            self.apartment_units[id][floor][unit_index].entry_open = true;
+            let apartment_id = buildings::apartment_rooms::apartment_id(id, floor, unit_index);
+            self.apartment_return = Some((self.player.pos, self.yaw));
+            self.active_apartment = Some(apartment_id);
+            self.player.pos = buildings::apartment_rooms::instance_spawn(apartment_id);
+            self.player.vy = 0.;
+            self.notify(&format!(
+                "ENTERED APARTMENT {} / FLOOR {}",
+                id + 1,
+                floor + 1
+            ));
+            return true;
+        }
+        let (message, handled) = {
+            let unit = &mut self.apartment_units[id][floor][usize::from(side > 0.)];
+            match action {
+                1 => {
+                    unit.entry_open = !unit.entry_open;
+                    (
+                        if unit.entry_open {
+                            "APARTMENT DOOR OPEN"
+                        } else {
+                            "APARTMENT DOOR CLOSED"
+                        },
+                        true,
+                    )
+                }
+                2 => {
+                    unit.room_open = !unit.room_open;
+                    (
+                        if unit.room_open {
+                            "ROOM DOOR OPEN"
+                        } else {
+                            "ROOM DOOR CLOSED"
+                        },
+                        true,
+                    )
+                }
+                3 => {
+                    unit.light_on = !unit.light_on;
+                    (
+                        if unit.light_on {
+                            "LIGHTS ON"
+                        } else {
+                            "LIGHTS OFF"
+                        },
+                        true,
+                    )
+                }
+                4 => {
+                    unit.fridge_open = !unit.fridge_open;
+                    (
+                        if unit.fridge_open {
+                            "FRIDGE OPEN"
+                        } else {
+                            "FRIDGE CLOSED"
+                        },
+                        true,
+                    )
+                }
+                5 => {
+                    unit.wardrobe_open = !unit.wardrobe_open;
+                    (
+                        if unit.wardrobe_open {
+                            "WARDROBE OPEN"
+                        } else {
+                            "WARDROBE CLOSED"
+                        },
+                        true,
+                    )
+                }
+                6 => {
+                    unit.shelves_open = !unit.shelves_open;
+                    ("SHELVES OPEN - PRESS E AGAIN TO SEARCH", unit.shelves_open)
+                }
+                7 => {
+                    unit.bed_open = !unit.bed_open;
+                    ("BED STORAGE OPEN - PRESS E AGAIN TO SEARCH", unit.bed_open)
+                }
+                _ => return false,
+            }
+        };
+        if handled {
+            self.notify(message);
+        }
+        handled
+    }
+
+    fn tick_apartment_animations(&mut self) {
+        let step = |value: &mut f32, target: f32| {
+            *value += (target - *value) * (STEP * 7.).min(1.);
+        };
+        for floors in &mut self.apartment_units {
+            for floor in floors {
+                for unit in floor {
+                    step(
+                        &mut unit.entry_angle,
+                        if unit.entry_open { 1.25 } else { 0. },
+                    );
+                    step(&mut unit.room_angle, if unit.room_open { 1.25 } else { 0. });
+                    step(
+                        &mut unit.fridge_angle,
+                        if unit.fridge_open { 1.15 } else { 0. },
+                    );
+                    step(
+                        &mut unit.wardrobe_angle,
+                        if unit.wardrobe_open { 1.1 } else { 0. },
+                    );
+                    step(
+                        &mut unit.shelves_angle,
+                        if unit.shelves_open { 0.65 } else { 0. },
+                    );
+                    step(&mut unit.bed_drawer, if unit.bed_open { 0.7 } else { 0. });
+                }
+            }
+        }
+    }
+
+    fn draw_apartment_dynamic(&self, r: &mut Renderer, id: usize, floor: usize, daylight: f32) {
+        let b = &self.world.buildings[id];
+        for side in [-1., 1.] {
+            let pts = buildings::apartments::interaction_points(b, floor, side);
+            let unit = &self.apartment_units[id][floor][usize::from(side > 0.)];
+            let door_color = match (b.id * 7 + floor * 3 + usize::from(side > 0.)) % 4 {
+                0 => [0.34, 0.22, 0.14],
+                1 => [0.48, 0.3, 0.18],
+                2 => [0.34, 0.38, 0.4],
+                _ => [0.55, 0.48, 0.34],
+            };
+            for (point, angle, color, width) in [
+                (pts.entry_door, unit.entry_angle, door_color, 1.9),
+                (pts.room_door, unit.room_angle, door_color, 1.65),
+            ] {
+                let a = angle * side;
+                r.cube(
+                    [
+                        point.x - side * width * 0.5 * a.sin(),
+                        point.y,
+                        point.z + width * 0.5 * a.cos(),
+                    ],
+                    [width, 2.8, 0.12],
+                    color,
+                    a,
+                );
+            }
+            let fridge_x = pts.fridge.x - side * 0.68 * unit.fridge_angle.sin();
+            let fridge_z = pts.fridge.z + 0.68 * unit.fridge_angle.cos();
+            r.cube(
+                [fridge_x, pts.fridge.y + 0.1, fridge_z],
+                [0.06, 1.75, 0.9],
+                [0.69, 0.73, 0.72],
+                unit.fridge_angle * side,
+            );
+            r.cube(
+                [
+                    pts.wardrobe.x + side * 0.8 * unit.wardrobe_angle.sin(),
+                    pts.wardrobe.y,
+                    pts.wardrobe.z,
+                ],
+                [0.08, 2.35, 1.45],
+                [0.46, 0.3, 0.19],
+                unit.wardrobe_angle * side,
+            );
+            r.cube(
+                [
+                    pts.shelves.x,
+                    pts.shelves.y - unit.shelves_angle * 0.4,
+                    pts.shelves.z + unit.shelves_angle,
+                ],
+                [0.9, 0.07, 2.4],
+                [0.53, 0.34, 0.2],
+                unit.shelves_angle * side,
+            );
+            r.cube(
+                [pts.bed.x, pts.bed.y - 0.45, pts.bed.z - unit.bed_drawer],
+                [1.9, 0.28, 0.7],
+                [0.52, 0.37, 0.26],
+                0.,
+            );
+            r.cube(
+                [pts.light_switch.x, pts.light_switch.y, pts.light_switch.z],
+                [0.12, 0.2, 0.05],
+                if unit.light_on {
+                    [0.95, 0.8, 0.42]
+                } else {
+                    [0.18, 0.18, 0.18]
+                },
+                0.,
+            );
+            if unit.light_on && daylight < 0.42 {
+                r.glow_glass(
+                    [
+                        b.p.x + side * 6.8,
+                        b.p.y + floor as f32 * 4. + 3.28,
+                        b.p.z - 1.5,
+                    ],
+                    [2.5, 0.025, 2.5],
+                    [1., 0.74, 0.4],
+                    0.,
+                );
+            }
+        }
     }
     fn safe_vehicle_exit(&self, car_id: usize, ignore_npc: Option<usize>) -> Option<Vec3> {
         self.safe_vehicle_exit_avoiding(car_id, ignore_npc, &[])
@@ -538,6 +1016,63 @@ impl Game {
         })
     }
     fn key_action(&mut self, k: i32) -> bool {
+        const INSERT_KEY: i32 = 1_073_741_897;
+        const NUMPAD_0_KEY: i32 = 1_073_741_922;
+        const NUMPAD_ENTER_KEY: i32 = 1_073_741_912;
+        if matches!(k, INSERT_KEY | NUMPAD_0_KEY) {
+            self.console_open = !self.console_open;
+            self.console_input.clear();
+            return true;
+        }
+        if self.console_open {
+            match k {
+                27 => {
+                    self.console_open = false;
+                    self.console_input.clear();
+                }
+                8 => {
+                    self.console_input.pop();
+                }
+                13 | NUMPAD_ENTER_KEY => self.submit_console_command(),
+                32..=126 if self.console_input.len() < 128 => {
+                    self.console_input.push(char::from(k as u8));
+                }
+                _ => {}
+            }
+            return true;
+        }
+        if let Some((building, floor)) = self.elevator_selection {
+            let floors = (self.world.buildings[building].size.y / 4.).floor() as usize;
+            match k {
+                27 => self.elevator_selection = None,
+                13 | NUMPAD_ENTER_KEY => {
+                    if floor != self.world.buildings[building].rendered_floor(self.player.pos) {
+                        self.elevator_ride = Some((
+                            building,
+                            self.world.buildings[building].rendered_floor(self.player.pos),
+                            floor,
+                            0.,
+                        ));
+                    } else {
+                        self.elevator_selection = None;
+                        self.notify("ALREADY ON THAT FLOOR");
+                    }
+                }
+                1073741906 | 1073741905 => {
+                    let step = if k == 1073741906 { 1 } else { -1 };
+                    let next = (floor as i32 + step).clamp(0, floors.saturating_sub(1) as i32);
+                    self.elevator_selection = Some((building, next as usize));
+                }
+                49..=57 => {
+                    let target = (k - 49) as usize;
+                    if target < floors {
+                        self.elevator_selection = Some((building, target));
+                    }
+                }
+                _ => {}
+            }
+            return true;
+        }
         if self.heists.quiz && !self.cuffs.active {
             match k {
                 48..=57 => {
@@ -564,6 +1099,14 @@ impl Game {
         match k {
             112 if !self.modal() => self.parachute = !self.parachute,
             9 => self.cursor = !self.cursor,
+            104 if self.driving.is_some() && !self.modal() => {
+                self.headlight_mode = (self.headlight_mode + 1) % 3;
+                self.notify(match self.headlight_mode {
+                    1 => "LOW BEAM ON",
+                    2 => "HIGH BEAM ON",
+                    _ => "HEADLIGHTS OFF",
+                });
+            }
             122 if !self.modal() => {
                 self.prone = !self.prone;
                 self.crouched = false;
@@ -714,12 +1257,79 @@ impl Game {
                     _ => {}
                 }
             }
-            108 => self.save.quality = (self.save.quality + 1) % 4,
+            108 => {
+                self.save.quality = (self.save.quality + 1) % 5;
+                if self.save.quality == 4 {
+                    self.apply_potato_settings();
+                }
+            }
             114 if !self.modal() && matches!(self.slot, 1 | 5 | 6) => self.pistol.reload(),
             102 if !self.modal() => self.fire(),
             _ => {}
         }
         true
+    }
+
+    fn potato_building_entry(&mut self) -> bool {
+        if self.save.quality != 4 || self.active_apartment.is_some() {
+            return false;
+        }
+        let p = self.player.pos;
+        let Some((building_id, _)) = self
+            .world
+            .buildings
+            .iter()
+            .enumerate()
+            .filter(|(_, building)| building.city_architecture())
+            .map(|(id, building)| (id, building.entrance()))
+            .filter(|(_, entrance)| p.distance(*entrance) < 4.5 && (p.y - entrance.y).abs() < 2.5)
+            .min_by(|a, b| p.distance(a.1).total_cmp(&p.distance(b.1)))
+        else {
+            return false;
+        };
+        let building = &self.world.buildings[building_id];
+        self.apartment_return = Some((p, self.yaw));
+        if matches!(building.name, "Office" | "Westhaven") {
+            // The simplified tower door opens directly into its shared elevator lobby.
+            self.player.pos = Vec3::new(
+                building.p.x,
+                building.p.y + 1.,
+                building.p.z - building.size.z / 2. + 3.5,
+            );
+            self.player.vy = 0.;
+            self.notify("POTATO BUILDING LOBBY - USE THE ELEVATOR PANEL");
+        } else {
+            let apartment_id = buildings::apartment_rooms::apartment_id(building_id, 0, 0);
+            self.active_apartment = Some(apartment_id);
+            self.player.pos = buildings::apartment_rooms::instance_spawn(apartment_id);
+            self.player.vy = 0.;
+            self.notify("ENTERED SIMPLIFIED BUILDING - E AT THE FRONT DOOR TO EXIT");
+        }
+        true
+    }
+    fn submit_console_command(&mut self) {
+        let command = self.console_input.trim().to_ascii_lowercase();
+        let time = match command.as_str() {
+            "/time set day" => Some(("DAY", std::f32::consts::FRAC_PI_3)),
+            "/time set noon" => Some(("NOON", 0.)),
+            "/time set night" => Some(("NIGHT", std::f32::consts::PI * 0.9)),
+            "/time set midnight" | "/time set mid night" | "/time set mid-night" => {
+                Some(("MIDNIGHT", std::f32::consts::PI))
+            }
+            _ => None,
+        };
+        if let Some((label, phase)) = time {
+            // Keep simulation time (AI schedules, robbery timers) untouched.
+            // This offset only changes the visual sun cycle.
+            self.time_offset = phase * 120. - self.clock;
+            self.notify(&format!("TIME SET: {label}"));
+        } else if command == "/help" || command == "help" {
+            self.notify("COMMAND: /TIME SET DAY|NOON|NIGHT|MIDNIGHT");
+        } else {
+            self.notify("UNKNOWN COMMAND - TRY /HELP");
+        }
+        self.console_open = false;
+        self.console_input.clear();
     }
     fn modal(&self) -> bool {
         self.menu
@@ -729,6 +1339,9 @@ impl Game {
             || self.training
             || self.armory
             || self.housing.is_some()
+            || self.console_open
+            || self.elevator_selection.is_some()
+            || self.elevator_ride.is_some()
     }
     fn close_panels(&mut self) {
         self.menu = false;
@@ -738,6 +1351,9 @@ impl Game {
         self.training = false;
         self.armory = false;
         self.housing = None;
+        self.console_open = false;
+        self.console_input.clear();
+        self.elevator_selection = None;
     }
     fn equip_weapon(&mut self, id: usize) {
         self.save.magazines[self.pistol.kind] = self.pistol.ammo;
@@ -811,6 +1427,9 @@ impl Game {
         if self.heists.riding.is_none() && terrain::railway::occupied(p, r, self.train.distance) {
             return true;
         }
+        if let Some(id) = self.active_apartment {
+            return buildings::apartment_rooms::instance_blocked(id, p, r);
+        }
         if self.stance == 0 {
             self.blocked(p, r)
         } else {
@@ -822,6 +1441,7 @@ impl Game {
                     .iter()
                     .zip(&self.world.buildings)
                     .any(|(d, b)| d.blocked(b, p, r))
+                || self.apartment_door_blocked(p, r)
         }
     }
     fn steal(&mut self, id: usize) {
@@ -837,7 +1457,88 @@ impl Game {
         self.yaw = std::f32::consts::PI - self.cars[id].angle;
         self.notify("VEHICLE STOLEN - YOU ARE NOW A CRIMINAL - E EXIT");
     }
+    /// Eject a car's NPC occupants before allowing the player to take its driver seat.
+    /// Returns true whenever an occupied car consumed this interaction.
+    fn eject_occupied_driver(&mut self, car_id: usize) -> bool {
+        let needs_driver = self
+            .traffic
+            .drivers
+            .iter()
+            .find(|driver| driver.car == car_id)
+            .is_some_and(|driver| !driver.police && driver.crew.is_empty() && !driver.npc_ejected);
+        if needs_driver {
+            if let Some(car) = self.cars.get(car_id) {
+                let mut occupant = Npc::new(Role::Resident, car.pos.x, car.pos.z);
+                occupant.pos = car.pos;
+                occupant.home = car.pos;
+                occupant.heading = car.angle;
+                occupant.aboard = true;
+                let id = self.npcs.len();
+                self.npcs.push(occupant);
+                if let Some(driver) = self
+                    .traffic
+                    .drivers
+                    .iter_mut()
+                    .find(|driver| driver.car == car_id)
+                {
+                    driver.crew.push(id);
+                }
+            }
+        }
+        let occupants = self
+            .traffic
+            .drivers
+            .iter()
+            .find(|driver| driver.car == car_id)
+            .map(|driver| {
+                driver
+                    .crew
+                    .iter()
+                    .copied()
+                    .filter(|&id| self.npcs.get(id).is_some_and(|npc| npc.aboard))
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        if occupants.is_empty() {
+            return false;
+        }
+        let mut ejected = Vec::new();
+        for npc_id in occupants {
+            let Some(exit) = self.safe_vehicle_exit(car_id, Some(npc_id)) else {
+                continue;
+            };
+            if let Some(npc) = self.npcs.get_mut(npc_id) {
+                npc.pos = exit;
+                npc.home = exit;
+                npc.aboard = false;
+                npc.returning = false;
+                npc.disabled = npc.disabled.max(1.5);
+                npc.far_update = 0.;
+                ejected.push(npc_id);
+            }
+        }
+        if let Some(driver) = self
+            .traffic
+            .drivers
+            .iter_mut()
+            .find(|driver| driver.car == car_id)
+        {
+            driver.crew.retain(|id| !ejected.contains(id));
+            if !ejected.is_empty() {
+                driver.npc_ejected = true;
+            }
+        }
+        self.notify(if ejected.is_empty() {
+            "CAR OCCUPIED - CLEAR SPACE BESIDE IT TO EJECT THE DRIVER"
+        } else {
+            "NPC EJECTED - PRESS E AGAIN TO TAKE THE CAR"
+        });
+        true
+    }
     fn arrest(&mut self) {
+        self.apartment_raid = None;
+        self.active_apartment = None;
+        self.apartment_return = None;
         self.cuffs.active = false;
         self.immunity = 0.;
         self.bounty = 0;
@@ -871,6 +1572,21 @@ impl Game {
         if self.stun > 0. || self.cuffs.active {
             return;
         }
+        if let Some(id) = self.active_apartment {
+            let exit = buildings::apartment_rooms::instance_exit(id);
+            if self.player.pos.distance(exit) < 2.5 {
+                if let Some((position, yaw)) = self.apartment_return.take() {
+                    self.player.pos = position;
+                    self.yaw = yaw;
+                }
+                self.active_apartment = None;
+                self.player.vy = 0.;
+                self.notify("RETURNED TO THE SAME APARTMENT DOOR");
+            } else {
+                self.notify("EXIT THROUGH THE APARTMENT FRONT DOOR");
+            }
+            return;
+        }
         if let Some(i) = self
             .drops
             .iter()
@@ -891,6 +1607,12 @@ impl Game {
             return;
         }
         let p = self.player.pos;
+        if self.potato_building_entry() {
+            return;
+        }
+        if self.apartment_interact() {
+            return;
+        }
         if self.special_interact() {
             return;
         }
@@ -981,6 +1703,9 @@ impl Game {
             .iter()
             .position(|c| p.distance(c.pos) < 4.5 && (p.y - c.pos.y).abs() < 2.)
         {
+            if self.eject_occupied_driver(id) {
+                return;
+            }
             self.steal(id);
         }
     }
@@ -994,8 +1719,45 @@ impl Game {
             if self.wanted >= 4 { 2 } else { 1 },
             self.driving,
         );
-        if let Some(primary) = sent.into_iter().next() {
-            self.response = Some(primary);
+        for (index, (_, car)) in sent.into_iter().enumerate() {
+            let c = &self.cars[car];
+            let mut officer = Npc::new(
+                Self::response_role(self.wanted, if index == 0 { 1. } else { -1. }),
+                c.pos.x,
+                c.pos.z,
+            );
+            officer.pos = c.pos;
+            officer.home = c.pos;
+            officer.aboard = true;
+            if let Some(driver) = self.traffic.drivers.iter_mut().find(|d| d.car == car) {
+                driver.crew.push(self.npcs.len());
+            }
+            self.npcs.push(officer);
+            if let Some(mut partner_pos) = self.safe_vehicle_exit(car, None) {
+                partner_pos.y = self.world.walking_surface(partner_pos) + 1.;
+                let mut partner = Npc::new(
+                    Self::response_role(self.wanted, -1.),
+                    partner_pos.x,
+                    partner_pos.z,
+                );
+                partner.pos = partner_pos;
+                partner.home = partner_pos;
+                let partner_id = self.npcs.len();
+                self.npcs.push(partner);
+                if let Some(driver) = self.traffic.drivers.iter_mut().find(|d| d.car == car) {
+                    driver.crew.push(partner_id);
+                }
+            }
+            if index == 0 {
+                self.response = Some((
+                    self.traffic
+                        .drivers
+                        .iter()
+                        .find(|d| d.car == car)
+                        .map_or(Vec::new(), |d| d.route.clone()),
+                    car,
+                ));
+            }
         }
     }
 
@@ -1007,6 +1769,14 @@ impl Game {
         }
     }
     fn tick_traffic(&mut self) {
+        if self.active_apartment.is_some() {
+            return;
+        }
+        self.pursuit_replan = (self.pursuit_replan - STEP).max(0.);
+        if self.pursuit_replan <= 0. && self.wanted > 0 && self.player.team == Team::Criminal {
+            self.traffic.retarget_pursuit(&self.cars, self.player.pos);
+            self.pursuit_replan = 1.5;
+        }
         let world = &self.world;
         let doors = &self.doors;
         let breached = self.breached;
@@ -1033,6 +1803,35 @@ impl Game {
                 continue;
             }
             let car = &self.cars[d.car];
+            if d.stuck > 8. || (d.pursuing && d.incident_time > 12.) {
+                for &id in &d.crew {
+                    let n = &mut self.npcs[id];
+                    if !n.aboard {
+                        continue;
+                    }
+                    'search: for distance in [3., 5., 8., 12., 18., 26., 36., 48.] {
+                        for direction in 0..16 {
+                            let angle = car.angle + direction as f32 * std::f32::consts::TAU / 16.;
+                            let mut p = Vec3::new(
+                                car.pos.x + angle.sin() * distance,
+                                car.pos.y,
+                                car.pos.z + angle.cos() * distance,
+                            );
+                            p.y = world.walking_surface(p) + 1.;
+                            if !world.blocked(p, 0.5)
+                                && !world::prison::barrier(p, 0.5, breached)
+                                && !terrain::railway::occupied(p, 0.5, self.train.distance)
+                            {
+                                n.pos = p;
+                                n.home = p;
+                                n.aboard = false;
+                                n.returning = false;
+                                break 'search;
+                            }
+                        }
+                    }
+                }
+            }
             for &id in &d.crew {
                 let n = &mut self.npcs[id];
                 if n.aboard {
@@ -1061,13 +1860,28 @@ impl Game {
                 for &id in &driver.crew {
                     let n = &mut self.npcs[id];
                     if n.aboard {
-                        let p = Vec3::new(
-                            c.pos.x + c.angle.cos() * 3.,
-                            c.pos.y,
-                            c.pos.z - c.angle.sin() * 3.,
-                        );
-                        if !world.blocked(p, 0.5) {
-                            n.pos = Vec3::new(p.x, world.walking_surface(p) + 1., p.z);
+                        let mut exit = None;
+                        'search: for distance in [2.8, 3.8, 5., 7., 10., 15., 20., 28.] {
+                            for direction in 0..16 {
+                                let angle =
+                                    c.angle + direction as f32 * std::f32::consts::TAU / 16.;
+                                let mut p = Vec3::new(
+                                    c.pos.x + angle.sin() * distance,
+                                    c.pos.y,
+                                    c.pos.z + angle.cos() * distance,
+                                );
+                                p.y = world.walking_surface(p) + 1.;
+                                if !world.blocked(p, 0.5)
+                                    && !world::prison::barrier(p, 0.5, breached)
+                                    && !terrain::railway::occupied(p, 0.5, self.train.distance)
+                                {
+                                    exit = Some(p);
+                                    break 'search;
+                                }
+                            }
+                        }
+                        if let Some(p) = exit {
+                            n.pos = p;
                             n.aboard = false;
                             n.returning = false;
                             n.home = n.pos;
@@ -1388,6 +2202,22 @@ impl Game {
         }
     }
     fn simulate(&mut self, forward: f32, side: f32, sprint: bool, crouch: bool, jump: bool) {
+        if let Some((building, from, to, elapsed)) = self.elevator_ride {
+            let duration = (0.9 + (to.abs_diff(from) as f32 * 0.22)).max(1.2);
+            let elapsed = elapsed + STEP;
+            if elapsed >= duration {
+                let b = &self.world.buildings[building];
+                self.player.pos = Vec3::new(b.p.x + 2., b.p.y + to as f32 * 4. + 1., b.p.z - 8.);
+                self.player.vy = 0.;
+                self.yaw = std::f32::consts::PI;
+                self.elevator_ride = None;
+                self.elevator_selection = None;
+                self.notify(&format!("ARRIVED - FLOOR {}", to + 1));
+            } else {
+                self.elevator_ride = Some((building, from, to, elapsed));
+            }
+            return;
+        }
         if self.modal() {
             return;
         }
@@ -1435,12 +2265,14 @@ impl Game {
             (forward, side, jump)
         };
         self.clock += STEP;
+        self.tick_apartment_animations();
         self.tick_train();
         if let Some(seed) = self.fleet.tick(STEP) {
             self.refresh_fleet(seed);
         }
         self.pistol.tick(STEP);
         self.stun = (self.stun - STEP).max(0.);
+        self.ragdoll = (self.ragdoll - STEP).max(0.);
         self.blast = (self.blast - STEP).max(0.);
         let (forward, side, jump) = if self.stun > 0. {
             (0., 0., false)
@@ -1538,7 +2370,11 @@ impl Game {
                     .atan2((desired - self.player.heading).cos());
                 self.player.heading += delta * (STEP * 12.).min(1.);
             }
-            let ground = self.world.walking_surface(self.player.pos) + 1.;
+            let ground = if self.active_apartment.is_some() {
+                1.
+            } else {
+                self.world.walking_surface(self.player.pos) + 1.
+            };
             if jump && self.stance == 0 && self.player.pos.y <= ground + 0.01 {
                 self.player.vy = 7.;
             }
@@ -1549,7 +2385,11 @@ impl Game {
                 self.parachute = false;
             }
             self.player.pos.y = (self.player.pos.y + self.player.vy * STEP).max(ground);
-            let ceiling = self.world.ceiling(self.player.pos) - 0.8;
+            let ceiling = if self.active_apartment.is_some() {
+                2.8
+            } else {
+                self.world.ceiling(self.player.pos) - 0.8
+            };
             if self.player.pos.y > ceiling {
                 self.player.pos.y = ceiling;
                 self.player.vy = 0.;
@@ -1579,8 +2419,10 @@ impl Game {
         let moving = self.player.pos.distance(previous) > 0.001 && self.driving.is_none();
         self.movement += ((if moving { 1. } else { 0. }) - self.movement) * STEP * 12.;
         self.player.animation += STEP * (if sprint { 1.5 } else { 1. });
-        self.player.pos.x = self.player.pos.x.clamp(-1000., 1000.);
-        self.player.pos.z = self.player.pos.z.clamp(-1000., 1000.);
+        if self.active_apartment.is_none() {
+            self.player.pos.x = self.player.pos.x.clamp(-1000., 1000.);
+            self.player.pos.z = self.player.pos.z.clamp(-1000., 1000.);
+        }
         self.alarm.collecting =
             self.holding && self.slot == 0 && self.punch_time <= 0. && self.stun <= 0.;
         self.alarm.capacity = 8 + self.save.carry_level * 2;
@@ -1620,9 +2462,12 @@ impl Game {
                 self.player.health = (self.player.health - 20. * STEP).max(0.);
             }
         }
+        self.tick_apartment_raid();
         self.tick_npcs();
     }
     fn tick_npcs(&mut self) {
+        self.resident_call_cooldown = (self.resident_call_cooldown - STEP).max(0.);
+        self.resident_alert = (self.resident_alert - STEP).max(0.);
         if self.wanted < 4 {
             for npc in &mut self.npcs {
                 if npc.role == Role::Swat {
@@ -1634,6 +2479,7 @@ impl Game {
         let pursuit = self.wanted > 0 && self.player.team == Team::Criminal;
         let dispatched = self.alarm.dispatched
             || self.heists.dispatched
+            || self.resident_alert > 0.
             || (self.alarm.site.is_none()
                 && self.heists.site.is_none()
                 && self.wanted >= 3
@@ -1642,7 +2488,7 @@ impl Game {
             for (door, b) in self.doors.iter_mut().zip(&self.world.buildings) {
                 if b.interior
                     && self.npcs.iter().any(|n| {
-                        n.officer() && n.disabled <= 0. && n.pos.distance(b.entrance()) < 3.
+                        n.officer() && n.disabled <= 0. && n.pos.distance(b.entrance()) < 40.
                     })
                 {
                     door.open = true;
@@ -1653,6 +2499,7 @@ impl Game {
         let mut damage = 0.;
         let mut arrested = false;
         let mut caught_robbers = Vec::new();
+        let mut resident_report = false;
         let robber_targets: Vec<(usize, Vec3)> = self
             .npcs
             .iter()
@@ -1664,15 +2511,60 @@ impl Game {
         let doors = &self.doors;
         let breached = self.breached;
         for (i, n) in self.npcs.iter_mut().enumerate() {
+            if n.role == Role::Resident
+                && n.calls_police
+                && !n.has_reported
+                && pursuit
+                && self.wanted > 0
+                && self.resident_call_cooldown <= 0.
+                && n.pos.distance(target) < 22.
+                && (n.pos.y - target.y).abs() < 2.5
+            {
+                let visible = (1..=12).all(|j| {
+                    let t = j as f32 / 12.;
+                    let q = Vec3::new(
+                        n.pos.x + (target.x - n.pos.x) * t,
+                        n.pos.y,
+                        n.pos.z + (target.z - n.pos.z) * t,
+                    );
+                    !world.blocked(q, 0.1)
+                });
+                if visible {
+                    n.has_reported = true;
+                    resident_report = true;
+                }
+            }
             if n.aboard || n.returning {
                 continue;
             }
-            if n.pos.distance(target) > 220. {
+            // Radio responders keep moving at full cadence so active robbery calls
+            // remain playable; ordinary distant traffic and civilians sleep for 3–8s.
+            if n.pos.distance(target) > 100. && !(n.officer() && pursuit && dispatched) {
+                n.far_update = (n.far_update - STEP).max(0.);
+                if n.far_update > 0. {
+                    continue;
+                }
+                n.far_update =
+                    3. + ((n.home.x * 0.137 + n.home.z * 0.071 + i as f32).sin().abs() * 5.);
+            } else {
+                n.far_update = 0.;
+            }
+            if n.pos.distance(target) > if pursuit && dispatched { 650. } else { 220. } {
                 continue;
+            }
+            // Dispatch radio gives officers the reported position, so walls delay
+            // line of sight but do not make a responding unit lose the suspect.
+            if n.officer()
+                && pursuit
+                && (self.alarm.dispatched || self.heists.dispatched || self.resident_alert > 0.)
+                && n.pos.distance(target) < 650.
+            {
+                n.last_seen = Some(target);
+                n.memory = 10.;
             }
             let visible_suspect = n.officer()
                 && pursuit
-                && n.pos.distance(target) < 24.
+                && n.pos.distance(target) < 50.
                 && (n.pos.y - target.y).abs() < 2.
                 && (1..=24).all(|j| {
                     let t = j as f32 / 24.;
@@ -1693,7 +2585,9 @@ impl Game {
                 n.last_seen = Some(target);
                 n.memory = 10.;
             }
-            let chasing = n.officer() && pursuit && n.memory > 0. && n.pos.distance(target) < 140.;
+            let chase_distance = 50.;
+            let chasing =
+                n.officer() && pursuit && n.memory > 0. && n.pos.distance(target) < chase_distance;
             let report = self
                 .alarm
                 .site
@@ -1750,14 +2644,13 @@ impl Game {
                     n.home.z + (self.clock * 0.12 + i as f32).cos() * 3.,
                 )
             };
-            let goal = if chasing && i % 3 != 0 {
-                if let Some(id) = world.interior(target) {
+            let goal = if chasing {
+                if let Some(id) = world
+                    .interior(target)
+                    .filter(|&id| !world.buildings[id].inside(n.pos))
+                {
                     let entry = world.buildings[id].entrance();
-                    Vec3::new(
-                        entry.x + if i % 3 == 1 { -3. } else { 3. },
-                        entry.y,
-                        entry.z - 1.,
-                    )
+                    Vec3::new(entry.x, entry.y, entry.z + 3.5)
                 } else {
                     target
                 }
@@ -1772,23 +2665,24 @@ impl Game {
                 goal
             };
             let old = n.pos;
-            n.step(
-                world,
-                goal,
-                if chasing || investigating || criminal.is_some() {
-                    6.5
-                } else if scared {
-                    4.
-                } else {
-                    1.5
-                },
-                STEP,
-            );
+            let ai_speed = if chasing && n.officer() {
+                12.
+            } else if chasing || investigating || criminal.is_some() {
+                6.5
+            } else if scared {
+                4.
+            } else {
+                1.5
+            };
+            n.step(world, goal, ai_speed, STEP);
             if world::prison::barrier(n.pos, 0.45, breached)
                 || doors
                     .iter()
                     .zip(&world.buildings)
                     .any(|(d, b)| d.blocked(b, n.pos, 0.45))
+                || self.active_apartment.is_some_and(|id| {
+                    n.officer() && buildings::apartment_rooms::instance_blocked(id, n.pos, 0.45)
+                })
             {
                 n.pos = old;
                 n.plan = 0.2;
@@ -1872,8 +2766,23 @@ impl Game {
         for id in caught_robbers {
             self.npcs[id].disabled = 60.;
         }
+        if resident_report {
+            self.resident_call_cooldown = 120.;
+            self.resident_alert = 90.;
+            self.dispatch_to(target);
+            self.notify("RESIDENT CALLED POLICE - PATROL DISPATCHED");
+        }
         if taser && self.immunity <= 0. {
             self.stun = 2.5;
+            self.ragdoll = 2.5;
+            if let Some(car) = self.driving {
+                if let Some(exit) = self.safe_vehicle_exit(car, None) {
+                    self.cars[car].speed = 0.;
+                    self.player.pos = exit;
+                    self.driving = None;
+                    self.camera = None;
+                }
+            }
         }
         self.player.health = (self.player.health - damage).max(0.);
         if self.player.health <= 0. {
@@ -1893,7 +2802,7 @@ impl Game {
     ) {
         let altitude = (0.22 + daylight.clamp(0., 1.) * 0.73).clamp(0.22, 0.95);
         let horizontal = (1. - altitude * altitude).sqrt();
-        let phase = self.clock / 120.;
+        let phase = (self.clock + self.time_offset) / 120.;
         let sun = [phase.cos() * horizontal, altitude, phase.sin() * horizontal];
         let (sin, cos) = angle.sin_cos();
         let top = p.y + size[1] * 0.5;
@@ -1928,7 +2837,9 @@ impl Game {
     fn draw(&mut self, r: &mut Renderer) {
         self.capture_frame += 1;
         let p = self.player.pos;
-        let dist = if world::prison::underground(p) {
+        let dist = if self.active_apartment.is_some() {
+            1.6
+        } else if world::prison::underground(p) {
             2.5
         } else if self.world.interior(p).is_some() {
             3.
@@ -1983,7 +2894,7 @@ impl Game {
             eye = safe;
         }
         self.camera = Some(eye);
-        let daylight = 0.55 + 0.45 * (self.clock / 120.).cos();
+        let daylight = 0.55 + 0.45 * ((self.clock + self.time_offset) / 120.).cos();
         let packs = r.available_shader_packs();
         if self.resolution_applied != self.save.resolution_scale {
             match r.set_resolution_scale(self.save.resolution_scale) {
@@ -1994,7 +2905,9 @@ impl Game {
                 }
             }
         }
-        let requested = if self.save.auto_shader_pack {
+        let requested = if self.save.quality == 4 {
+            "builtin"
+        } else if self.save.auto_shader_pack {
             if daylight < 0.42 && packs.iter().any(|id| id == "Golden_Hour_v2") {
                 "Golden_Hour_v2"
             } else {
@@ -2015,11 +2928,13 @@ impl Game {
             }
         }
         let quality = crate::quality::PRESETS[self.save.quality];
+        let point_lights = self.dynamic_point_lights(p, daylight);
         r.begin(eye, self.yaw, self.pitch, daylight);
+        r.point_lights(&point_lights, eye, self.yaw, self.pitch);
         r.wind_time(self.clock);
         let effect_amount =
             [0.0, 0.025, 0.05, 0.075, 0.1][self.save.shader_effects.min(4) as usize];
-        let quality_factor = [0.5, 0.75, 1.0, 1.0][self.save.quality];
+        let quality_factor = [0.5, 0.75, 1.0, 1.0, 0.15][self.save.quality];
         r.detail(if self.save.shader_effects == 0 {
             0.0
         } else {
@@ -2035,8 +2950,16 @@ impl Game {
                 p,
                 crate::quality::PRESETS[self.save.quality].distance,
                 self.stats.fps,
+                self.save.quality == 4,
             );
+            view.set_active_apartment(r, self.active_apartment);
             view.draw(r, eye, self.yaw, self.pitch);
+        }
+        if let Some(id) = self.world.interior(p) {
+            let b = &self.world.buildings[id];
+            if matches!(b.name, "Office" | "Westhaven") {
+                self.draw_apartment_dynamic(r, id, b.rendered_floor(p), daylight);
+            }
         }
         if daylight < 0.34 {
             for lamp in self
@@ -2053,6 +2976,11 @@ impl Game {
                     [1.0, 0.72, 0.38],
                     0.,
                 );
+                if (1..=3).contains(&self.save.quality) {
+                    let origin = [lamp.p.x, lamp.p.y, lamp.p.z];
+                    r.light_cone(origin, [0., -1., 0.], 8., 4.2, [1., 0.72, 0.4], 0.025);
+                    r.light_cone(origin, [0., -1., 0.], 7., 2.8, [1., 0.78, 0.48], 0.055);
+                }
             }
         }
         if self.save.object_shadows {
@@ -2197,7 +3125,8 @@ impl Game {
             r.cube([-140., 0.5, -135.], [0.7, 0.7, 0.7], [0.72, 0.24, 0.12], 0.);
         }
         let car_start = r.triangles;
-        for c in &self.cars {
+        let mut traffic_beams = 0usize;
+        for (car_id, c) in self.cars.iter().enumerate() {
             let d = p.distance(c.pos);
             if d > quality.distance
                 || !crate::world_view::sphere_visible(
@@ -2220,6 +3149,77 @@ impl Game {
             }
             let lod = usize::from(d < quality.detail);
             draw_car(r, c, &self.car_models[c.kind][lod], lod);
+            let is_player_car = self.driving == Some(car_id);
+            let beam_mode = if is_player_car {
+                self.headlight_mode
+            } else if daylight < 0.34 {
+                1
+            } else {
+                0
+            };
+            if beam_mode > 0
+                && (1..=3).contains(&self.save.quality)
+                && d < 58.
+                && (is_player_car || traffic_beams < 6)
+            {
+                let length = if beam_mode == 2 { 48. } else { 28. };
+                let radius = if beam_mode == 2 { 9. } else { 5. };
+                for side in [-0.55, 0.55] {
+                    let origin = [
+                        c.pos.x + c.angle.sin() * 1.75 + c.angle.cos() * side,
+                        c.pos.y + 0.55,
+                        c.pos.z + c.angle.cos() * 1.75 - c.angle.sin() * side,
+                    ];
+                    let direction = [c.angle.sin(), -0.045, c.angle.cos()];
+                    r.light_cone(origin, direction, length, radius, [0.72, 0.84, 1.], 0.025);
+                    r.light_cone(
+                        origin,
+                        direction,
+                        length * 0.78,
+                        radius * 0.64,
+                        [0.88, 0.94, 1.],
+                        0.055,
+                    );
+                }
+                if !is_player_car {
+                    traffic_beams += 1;
+                }
+            }
+            if self.traffic.drivers.iter().any(|driver| {
+                driver.car == car_id
+                    && driver.police
+                    && driver
+                        .crew
+                        .iter()
+                        .any(|&id| self.npcs.get(id).is_some_and(|n| n.aboard))
+            }) {
+                let head = Vec3::new(
+                    c.pos.x + c.angle.sin() * 0.55 + c.angle.cos() * 0.25,
+                    c.pos.y + 1.1,
+                    c.pos.z + c.angle.cos() * 0.55 - c.angle.sin() * 0.25,
+                );
+                r.rounded(
+                    [head.x, head.y, head.z],
+                    [0.28, 0.34, 0.3],
+                    [0.72, 0.55, 0.39],
+                    c.angle,
+                    8,
+                    0.12,
+                );
+                if daylight < 0.45 {
+                    let color = if (self.clock * 5.).sin() > 0. {
+                        [0.95, 0.08, 0.06]
+                    } else {
+                        [0.08, 0.18, 0.95]
+                    };
+                    r.glow_cube(
+                        [c.pos.x, c.pos.y + 1.05, c.pos.z],
+                        [0.34, 0.12, 0.22],
+                        color,
+                        c.angle,
+                    );
+                }
+            }
             if daylight < 0.34 && d < 64. {
                 for side in [-0.62, 0.62] {
                     let x = c.pos.x + c.angle.sin() * 2.0 + c.angle.cos() * side;
@@ -2252,29 +3252,34 @@ impl Game {
         }
         self.vehicle_triangles = r.triangles - car_start;
         if self.driving.is_none() {
-            draw_person(
-                r,
-                p,
-                self.player.heading,
-                match self.player.team {
-                    Team::Prisoner => [1., 0.4, 0.1],
-                    Team::Criminal => [0.85, 0.17, 0.2],
-                    Team::Police => [0.18, 0.3, 0.8],
-                },
-                self.player.animation,
-                true,
-                quality.segments,
-                self.movement,
-                if self.punch_time > 0. {
-                    ((0.55 - self.punch_time) / 0.55 * std::f32::consts::PI).sin()
-                } else if self.alarm.collecting && self.alarm.site.is_some() {
-                    0.65 + 0.2 * (self.clock * 12.).sin()
-                } else {
-                    0.
-                },
-                self.training_time,
-                self.stance,
-            );
+            let player_color = match self.player.team {
+                Team::Prisoner => [1., 0.4, 0.1],
+                Team::Criminal => [0.85, 0.17, 0.2],
+                Team::Police => [0.18, 0.3, 0.8],
+            };
+            if self.ragdoll > 0. {
+                draw_ragdoll(r, p, self.player.heading, player_color);
+            } else {
+                draw_person(
+                    r,
+                    p,
+                    self.player.heading,
+                    player_color,
+                    self.player.animation,
+                    true,
+                    quality.segments,
+                    self.movement,
+                    if self.punch_time > 0. {
+                        ((0.55 - self.punch_time) / 0.55 * std::f32::consts::PI).sin()
+                    } else if self.alarm.collecting && self.alarm.site.is_some() {
+                        0.65 + 0.2 * (self.clock * 12.).sin()
+                    } else {
+                        0.
+                    },
+                    self.training_time,
+                    self.stance,
+                );
+            }
             if self.alarm.site.is_some() && self.alarm.progress > 0.2 {
                 let a = self.player.heading;
                 let prone = self.stance == 2;
@@ -2518,6 +3523,78 @@ impl Game {
         r.end();
         self.stats.frame();
     }
+
+    fn dynamic_point_lights(&self, p: Vec3, daylight: f32) -> Vec<renderer_gl21::PointLight> {
+        if daylight >= 0.48 {
+            return Vec::new();
+        }
+        let mut lights: Vec<_> = self
+            .world
+            .props
+            .iter()
+            .filter(|prop| prop.emission > 0.5 && prop.p.distance(p) < 72.)
+            .map(|prop| renderer_gl21::PointLight {
+                position: [prop.p.x, prop.p.y + 3.5, prop.p.z],
+                color: [1.0, 0.66, 0.32],
+                radius: 28.,
+            })
+            .collect();
+        lights.extend(
+            self.cars
+                .iter()
+                .filter(|car| car.pos.distance(p) < 54.)
+                .map(|car| renderer_gl21::PointLight {
+                    position: [
+                        car.pos.x + car.angle.sin() * 1.8,
+                        car.pos.y + 0.7,
+                        car.pos.z + car.angle.cos() * 1.8,
+                    ],
+                    color: [0.68, 0.78, 1.0],
+                    radius: 22.,
+                }),
+        );
+        if let Some(id) = self.active_apartment {
+            let building = (id >> 32) as usize;
+            let floor = ((id >> 8) & 0x00ff_ffff) as usize;
+            let unit = (id & 0xff) as usize;
+            if self
+                .apartment_units
+                .get(building)
+                .and_then(|floors| floors.get(floor))
+                .and_then(|units| units.get(unit))
+                .is_some_and(|unit| unit.light_on)
+            {
+                let origin = buildings::apartment_rooms::instance_origin(id);
+                lights.push(renderer_gl21::PointLight {
+                    position: [origin.x, 2.9, origin.z + 2.8],
+                    color: [1.0, 0.58, 0.24],
+                    radius: 18.,
+                });
+            }
+        } else if let Some(id) = self.world.interior(p) {
+            let building = &self.world.buildings[id];
+            if matches!(building.name, "Office" | "Westhaven") {
+                let floor = building.rendered_floor(p);
+                let side = if p.x < building.p.x { -1. } else { 1. };
+                let unit = &self.apartment_units[id][floor][usize::from(side > 0.)];
+                if unit.light_on {
+                    let points = buildings::apartments::interaction_points(building, floor, side);
+                    lights.push(renderer_gl21::PointLight {
+                        position: [points.bed.x, points.bed.y + 2.2, points.bed.z],
+                        color: [1.0, 0.58, 0.24],
+                        radius: 18.,
+                    });
+                }
+            }
+        }
+        lights.sort_by(|a, b| {
+            let da = (a.position[0] - p.x).hypot(a.position[2] - p.z);
+            let db = (b.position[0] - p.x).hypot(b.position[2] - p.z);
+            da.total_cmp(&db)
+        });
+        lights.truncate(4);
+        lights
+    }
     fn draw_map(&self, r: &mut Renderer, rect: [f32; 4]) {
         r.rect(rect[0], rect[1], rect[2], rect[3], [0.14, 0.27, 0.21]);
         if let Some(view) = &self.view {
@@ -2745,14 +3822,51 @@ fn draw_person(
         );
     }
 }
+
+fn draw_ragdoll(r: &mut Renderer, p: Vec3, a: f32, color: [f32; 3]) {
+    let local = |x: f32, y: f32, z: f32| {
+        [
+            p.x + x * a.cos() + z * a.sin(),
+            p.y + y,
+            p.z - x * a.sin() + z * a.cos(),
+        ]
+    };
+    let torso = local(0., -0.35, 0.);
+    let head = local(0., -0.1, 0.9);
+    r.rounded(torso, [0.5, 0.35, 1.2], color, a + 0.35, 10, 0.12);
+    r.rounded(head, [0.38, 0.38, 0.4], [0.76, 0.59, 0.42], a, 10, 0.16);
+    for side in [-1., 1.] {
+        let shoulder = local(side * 0.2, -0.15, 0.35);
+        let hand = local(side * 0.55, -0.42, -0.35);
+        r.bone(shoulder, hand, 0.11, 0.08, a, color);
+        let hip = local(side * 0.15, -0.48, -0.45);
+        let foot = local(side * 0.24, -0.52, -1.1);
+        r.bone(hip, foot, 0.14, 0.1, a, [0.14, 0.16, 0.19]);
+    }
+}
 fn draw_weapon(r: &mut Renderer, p: Vec3, a: f32, swat: bool) {
     draw_weapon_model(r, p, a, if swat { 2 } else { 0 });
 }
 fn draw_car(r: &mut Renderer, c: &Car, model: &vehicles::body::Model, lod: usize) {
     let p = [c.pos.x, c.pos.y, c.pos.z];
-    let key = c.kind * 4 + lod * 2;
+    let key = c.kind * 16 + lod * 8;
     r.cached_solid_model_tilted(key, &model.paint, p, c.angle, c.color, c.tilt);
     r.cached_solid_model_tilted(key + 1, &model.trim, p, c.angle, [1.; 3], c.tilt);
+    for (index, wheel) in model.wheels.iter().enumerate() {
+        r.cached_solid_wheel(
+            key + 2 + index,
+            wheel,
+            renderer_gl21::WheelPose {
+                position: p,
+                angle: c.angle,
+                tint: [1.; 3],
+                tilt: c.tilt,
+                center: model.wheel_centers[index],
+                steer: if index < 2 { c.steering * 0.45 } else { 0. },
+                spin: c.wheel_rotation,
+            },
+        );
+    }
 }
 pub fn run() -> Result<(), String> {
     if std::env::args().any(|a| a == "--credits") {
@@ -2778,10 +3892,13 @@ pub fn run() -> Result<(), String> {
         Game::new()?
     };
     if let Ok(value) = std::env::var("JBRS_QUALITY") {
-        g.save.quality = value.parse::<usize>().unwrap_or(1).min(3);
+        g.save.quality = value.parse::<usize>().unwrap_or(1).min(4);
+    }
+    if let Ok(value) = std::env::var("JBRS_HEADLIGHT_MODE") {
+        g.headlight_mode = value.parse::<u8>().unwrap_or(0).min(2);
     }
     if let Ok(v) = std::env::var("JBRS_TEXTURE_LEVEL") {
-        g.save.texture_level = v.parse::<usize>().unwrap_or(0).min(3);
+        g.save.texture_level = v.parse::<usize>().unwrap_or(0).min(4);
     }
     if let Ok(v) = std::env::var("JBRS_SHADOWS") {
         g.save.object_shadows = v != "0";
@@ -2793,6 +3910,9 @@ pub fn run() -> Result<(), String> {
         if let Ok(scale) = value.parse::<u8>() {
             g.save.resolution_scale = scale.clamp(50, 100);
         }
+    }
+    if g.save.quality == 4 {
+        g.apply_potato_settings();
     }
     let mut r = Renderer::new()?;
     if let Err(error) = r.set_resolution_scale(g.save.resolution_scale) {
@@ -2806,6 +3926,7 @@ pub fn run() -> Result<(), String> {
         &mut r,
         g.player.pos,
         crate::quality::PRESETS[g.save.quality].distance,
+        g.save.quality == 4,
     ));
     let smoke = std::env::args().any(|x| x == "--smoke-test");
     if let Ok(scene) = std::env::var("JBRS_SCENE") {
@@ -2824,6 +3945,7 @@ pub fn run() -> Result<(), String> {
             "quiz-new" | "cuffs-new" | "customs-new" => (-95., -83., std::f32::consts::PI),
             "train-new" => (800., -12., std::f32::consts::PI / 2.),
             "west-shore-new" => (-716., -250., 0.96),
+            "road-intersection-new" => (-22., -18., std::f32::consts::PI),
             "armory" => (60., 240., std::f32::consts::PI),
             "housing" => (-220., 210., std::f32::consts::PI),
             "factory-bag" => (640., 215., std::f32::consts::PI),
@@ -3001,6 +4123,20 @@ pub fn run() -> Result<(), String> {
             g.player.pos.x += 5.;
             g.player.pos.y += 4.;
             g.player.pos.z += 7.;
+        }
+        if smoke && scene == "apartment-instance-new" {
+            let building = g
+                .world
+                .buildings
+                .iter()
+                .find(|building| building.name == "Office")
+                .ok_or("Apartment instance showcase building missing")?;
+            let id = buildings::apartment_rooms::apartment_id(building.id, 1, 0);
+            let return_door =
+                buildings::apartments::interaction_points(building, 1, -1.).entry_door;
+            g.apartment_return = Some((return_door, g.yaw));
+            g.active_apartment = Some(id);
+            g.player.pos = buildings::apartment_rooms::instance_spawn(id);
         }
         if scene == "quiz-new" {
             g.heists.start(2);
@@ -3222,7 +4358,7 @@ pub fn run() -> Result<(), String> {
                 "GEOMETRY scene_triangles={} world_triangles={} interior_triangles={} quality={} vehicles={} actors_and_effects={}",
                 g.scene_triangles, v.submitted_triangles, v.interior_triangles, g.save.quality, g.vehicle_triangles, g.npc_triangles
             );
-            println!("PROFILE scene={} frames={} mean_ms={:.2} p95_ms={:.2} max_ms={:.2} rss_mb={:.1} gpu_mb={:.1} active_chunks={} visible_chunks={} effective_distance={:.0}",std::env::var("JBRS_SCENE").unwrap_or_else(|_|"prison".into()),frames,mean,p95,maximum,profiling::rss_mb(),v.bytes as f32/1048576.,v.active(),v.visible,v.effective_distance);
+            println!("PROFILE scene={} frames={} mean_ms={:.2} p95_ms={:.2} max_ms={:.2} rss_mb={:.1} gpu_mb={:.3} active_chunks={} visible_chunks={} effective_distance={:.0}",std::env::var("JBRS_SCENE").unwrap_or_else(|_|"prison".into()),frames,mean,p95,maximum,profiling::rss_mb(),v.bytes as f32/1048576.,v.active(),v.visible,v.effective_distance);
         }
     }
     g.view.take();
@@ -3312,6 +4448,71 @@ include!("expansion.rs");
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn insert_and_numpad_zero_toggle_the_console() {
+        let mut game = Game::from_save(Default::default()).unwrap();
+        assert!(game.key_action(1_073_741_897));
+        assert!(game.console_open);
+        assert!(game.modal());
+        assert!(game.key_action(27));
+        assert!(!game.console_open);
+        assert!(game.key_action(1_073_741_922));
+        assert!(game.console_open);
+        assert!(game.key_action(1_073_741_922));
+        assert!(!game.console_open);
+    }
+
+    #[test]
+    fn console_time_commands_change_visual_time_without_changing_simulation_clock() {
+        let mut game = Game::from_save(Default::default()).unwrap();
+        game.clock = 75.;
+        game.key_action(1_073_741_897);
+        game.console_input = "/time set noon".into();
+        game.key_action(13);
+        assert!(!game.console_open);
+        assert_eq!(game.clock, 75.);
+        assert!((game.time_offset + 75.).abs() < f32::EPSILON);
+        let noon = 0.55 + 0.45 * ((game.clock + game.time_offset) / 120.).cos();
+        assert!((noon - 1.).abs() < f32::EPSILON);
+
+        game.key_action(1_073_741_897);
+        game.console_input = "/time set day".into();
+        game.key_action(13);
+        let day = 0.55 + 0.45 * ((game.clock + game.time_offset) / 120.).cos();
+        assert!((day - 0.775).abs() < 0.001);
+
+        game.key_action(1_073_741_897);
+        game.console_input = "/time set night".into();
+        game.key_action(13);
+        let night = 0.55 + 0.45 * ((game.clock + game.time_offset) / 120.).cos();
+        assert!(night < 0.13);
+
+        game.key_action(1_073_741_922);
+        game.console_input = "/time set mid night".into();
+        game.key_action(1_073_741_912);
+        let midnight = 0.55 + 0.45 * ((game.clock + game.time_offset) / 120.).cos();
+        assert!(midnight < 0.11);
+        assert!(!game.console_open);
+    }
+
+    #[test]
+    fn potato_quality_uses_16px_atlas_and_low_render_budgets() {
+        let mut game = Game::from_save(Default::default()).unwrap();
+        game.save.resolution_scale = 100;
+        game.save.object_shadows = true;
+        game.save.shadow_quality = 3;
+        game.save.shader_effects = 4;
+        game.apply_potato_settings();
+        assert_eq!(game.save.texture_level, 4);
+        assert_eq!(game.save.resolution_scale, 50);
+        assert!(!game.save.object_shadows);
+        assert_eq!(game.save.shadow_quality, 0);
+        assert_eq!(game.save.shader_effects, 0);
+        assert_eq!(crate::quality::PRESETS[4].distance, 128.);
+        assert_eq!(crate::quality::PRESETS[4].detail, 10.);
+        assert_eq!(crate::quality::PRESETS[4].segments, 4);
+    }
+
     fn break_case(g: &mut Game, id: usize) {
         let case = Alarm::case(id);
         g.player.pos = Vec3::new(case.x, case.y, case.z - 2.);
@@ -3611,6 +4812,73 @@ mod tests {
         assert_eq!(g.wanted, 1);
     }
     #[test]
+    fn traffic_car_driver_must_be_ejected_before_stealing() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        let id = g
+            .traffic
+            .drivers
+            .iter()
+            .find(|driver| !driver.police)
+            .unwrap()
+            .car;
+        g.player.pos = g.cars[id].pos;
+        assert!(g.eject_occupied_driver(id));
+        assert!(g.driving.is_none());
+        assert!(
+            g.traffic
+                .drivers
+                .iter()
+                .find(|d| d.car == id)
+                .unwrap()
+                .npc_ejected
+        );
+        assert!(g
+            .npcs
+            .iter()
+            .any(|npc| !npc.aboard && npc.disabled > 0. && npc.pos.distance(g.cars[id].pos) < 30.));
+        assert!(!g.eject_occupied_driver(id));
+        g.steal(id);
+        assert_eq!(g.driving, Some(id));
+    }
+
+    #[test]
+    fn headlight_key_cycles_off_low_and_high_beams_while_driving() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        g.driving = Some(0);
+        for expected in [1, 2, 0] {
+            g.key_action(104);
+            assert_eq!(g.headlight_mode, expected);
+        }
+    }
+
+    #[test]
+    fn tower_elevator_selects_a_floor_and_animates_before_arrival() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        let b = g
+            .world
+            .buildings
+            .iter()
+            .find(|b| b.name == "Office")
+            .unwrap();
+        let id = b.id;
+        let panel = Vec3::new(b.p.x + 2., b.p.y + 1.4, b.p.z - 8.);
+        g.player.pos = panel;
+        g.interact();
+        assert_eq!(g.elevator_selection, Some((id, 0)));
+        g.key_action(1_073_741_906);
+        assert_eq!(g.elevator_selection, Some((id, 1)));
+        g.key_action(13);
+        assert!(g.elevator_ride.is_some());
+        for _ in 0..100 {
+            g.simulate(0., 0., false, false, false);
+        }
+        assert!(g.elevator_ride.is_none());
+        assert_eq!(g.world.buildings[id].rendered_floor(g.player.pos), 1);
+    }
+    #[test]
     fn akari_spawns_can_be_stolen_and_uses_its_own_saved_tuning() {
         let mut save = save_system::Save::default();
         save.car_engine[7] = 2;
@@ -3813,6 +5081,29 @@ mod tests {
         let health = g.player.health;
         g.simulate(0., 0., false, false, false);
         assert!(g.player.health < health);
+    }
+    #[test]
+    fn apartment_portal_uses_off_map_zone_and_returns_to_the_exact_door() {
+        let mut game = Game::from_save(Default::default()).unwrap();
+        let building = game
+            .world
+            .buildings
+            .iter()
+            .find(|building| building.name == "Office")
+            .unwrap();
+        let return_point = buildings::apartments::interaction_points(building, 1, -1.).entry_door;
+        game.player.pos = return_point;
+        assert!(game.apartment_interact());
+        let apartment_id = game.active_apartment.expect("door enters an instance");
+        let origin = buildings::apartment_rooms::instance_origin(apartment_id);
+        assert!(origin.x.abs() > 10_000. && origin.z.abs() > 10_000.);
+        assert_eq!(game.apartment_return.unwrap().0.x, return_point.x);
+        game.player.pos = buildings::apartment_rooms::instance_exit(apartment_id);
+        game.interact();
+        assert_eq!(game.active_apartment, None);
+        assert_eq!(game.player.pos.x, return_point.x);
+        assert_eq!(game.player.pos.y, return_point.y);
+        assert_eq!(game.player.pos.z, return_point.z);
     }
     #[test]
     fn interaction_spam_cannot_rob_and_impacts_are_cooldown_limited() {

@@ -42,6 +42,8 @@ pub fn drive(
     let dt = dt.clamp(0., 0.1);
     let old_angle = car.angle;
     let target = step(car, input.0, input.1, input.2, dt);
+    car.wheel_rotation =
+        (car.wheel_rotation + car.speed * dt / 0.35).rem_euclid(std::f32::consts::TAU);
     let clear = |p: Vec3, angle: f32| {
         [-1.5, 0., 1.5].into_iter().all(|offset| {
             !blocked(

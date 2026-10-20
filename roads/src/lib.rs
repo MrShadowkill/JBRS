@@ -51,6 +51,10 @@ impl Road {
         (distance, height)
     }
     pub fn mesh(&self, key: (i32, i32), lod: u8, m: &mut Mesh) {
+        self.mesh_pass(key, lod, m, true, true);
+    }
+
+    fn mesh_pass(&self, key: (i32, i32), lod: u8, m: &mut Mesh, shoulder: bool, roadway: bool) {
         let x0 = key.0 as f32 * 128.;
         let z0 = key.1 as f32 * 128.;
         for (i, s) in self.points.windows(2).enumerate() {
@@ -74,7 +78,12 @@ impl Road {
                     [a.x - nx * width, a.y + dy, a.z - nz * width],
                 ]
             };
-            m.quad(quad(self.width / 2. + 2., 0.025), [0.52, 0.54, 0.52], 1, 0.);
+            if shoulder {
+                m.quad(quad(self.width / 2. + 2., 0.025), [0.52, 0.54, 0.52], 1, 0.);
+            }
+            if !roadway {
+                continue;
+            }
             m.quad(quad(self.width / 2., 0.05), [0.32, 0.34, 0.37], 0, 0.);
             if i % 2 == 0 {
                 m.quad(quad(0.1, 0.07), [0.97, 0.81, 0.31], 1, 0.);
@@ -135,6 +144,17 @@ impl Road {
                 }
             }
         }
+    }
+}
+
+/// Lay every road shoulder before any asphalt. At flat intersections, a later
+/// road's pale shoulder must not paint over the dark deck of an earlier road.
+pub fn mesh_network(roads: &[Road], key: (i32, i32), lod: u8, m: &mut Mesh) {
+    for road in roads {
+        road.mesh_pass(key, lod, m, true, false);
+    }
+    for road in roads {
+        road.mesh_pass(key, lod, m, false, true);
     }
 }
 fn spline(name: &'static str, control: &[(f32, f32)], width: f32, highway: bool) -> Road {
@@ -374,6 +394,38 @@ pub fn connected(roads: &[Road], start: Vec3, end: Vec3) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn road_intersection_meshes_all_shoulders_below_all_road_decks() {
+        let roads = [
+            Road {
+                name: "east west",
+                points: vec![Vec3::new(-20., 0., 0.), Vec3::new(20., 0., 0.)],
+                width: 8.,
+                highway: false,
+            },
+            Road {
+                name: "north south",
+                points: vec![Vec3::new(0., 0., -20.), Vec3::new(0., 0., 20.)],
+                width: 8.,
+                highway: false,
+            },
+        ];
+        let mut mesh = Mesh::default();
+        mesh_network(&roads, (0, 0), 1, &mut mesh);
+        assert_eq!(mesh.vertices.len(), 36);
+        assert!(mesh.vertices[..12]
+            .iter()
+            .all(|v| v.color[..3] == [0.52, 0.54, 0.52]));
+        assert!(mesh.vertices[12..18]
+            .iter()
+            .all(|v| v.color[..3] == [0.32, 0.34, 0.37]));
+        assert!(mesh.vertices[18..24]
+            .iter()
+            .all(|v| v.color[..3] == [0.97, 0.81, 0.31]));
+        assert!(mesh.vertices[24..30]
+            .iter()
+            .all(|v| v.color[..3] == [0.32, 0.34, 0.37]));
+    }
     #[test]
     fn bridge_grade() {
         let r = network();

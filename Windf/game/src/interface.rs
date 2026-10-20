@@ -197,6 +197,16 @@ impl Game {
             );
         }
         if let Some(car) = self.driving {
+            gui::button(
+                r,
+                [18., 394., 186., 32.],
+                match self.headlight_mode {
+                    1 => "LIGHTS: LOW  H",
+                    2 => "LIGHTS: HIGH H",
+                    _ => "LIGHTS: OFF  H",
+                },
+                [0.12, 0.16, 0.21],
+            );
             r.panel([18., 435., 186., 96.], INK, 0.9, 22.);
             text(
                 r,
@@ -248,7 +258,7 @@ impl Game {
                 format!("SHADER EFFECTS   {}", ["OFF", "LOW", "MEDIUM", "HIGH", "ULTRA"][self.save.shader_effects.min(4) as usize]),
                 format!("WORLD RESOLUTION   {}%", self.save.resolution_scale),
                 format!("QUALITY   {}", crate::quality::PRESETS[self.save.quality].name),
-                format!("TEXTURES   {} X {}", [64, 128, 256, 512][self.save.texture_level], [64, 128, 256, 512][self.save.texture_level]),
+                format!("TEXTURES   {} X {}", [64, 128, 256, 512, 16][self.save.texture_level], [64, 128, 256, 512, 16][self.save.texture_level]),
                 format!(
                     "OBJECT SHADOWS   {}",
                     if self.save.object_shadows {
@@ -464,6 +474,77 @@ impl Game {
             modal_title(r, "WORLD MAP / CLICK A DESTINATION");
             self.draw_map(r, [205., 195., 610., 280.]);
         }
+        if self.console_open {
+            r.panel([148., 176., 708., 218.], INK, 0.97, 16.);
+            text(r, 172., 194., 2.2, "JBRS CONSOLE  |  INSERT / NUMPAD 0 TO CLOSE", WHITE);
+            text(
+                r,
+                172.,
+                232.,
+                1.7,
+                "/TIME SET DAY | NOON | NIGHT | MIDNIGHT",
+                [0.7, 0.78, 0.9],
+            );
+            text(
+                r,
+                172.,
+                282.,
+                2.2,
+                &format!("> {}_", self.console_input),
+                ORANGE,
+            );
+            text(r, 172., 326., 1.5, "ENTER TO RUN  |  ESC TO CLOSE  |  /HELP", WHITE);
+        }
+        if let Some((building, floor)) = self.elevator_selection {
+            let building = &self.world.buildings[building];
+            let floors = (building.size.y / 4.).floor() as usize;
+            r.panel([270., 162., 540., 230.], INK, 0.97, 22.);
+            text(r, 318., 184., 2.5, "ELEVATOR", WHITE);
+            text(
+                r,
+                318.,
+                228.,
+                2.,
+                &format!("FLOOR {} / {}", floor + 1, floors),
+                ORANGE,
+            );
+            text(r, 318., 270., 1.6, "UP / DOWN OR NUMBER KEYS TO SELECT", WHITE);
+            text(r, 318., 314., 1.6, "ENTER: CLOSE DOORS AND RIDE   ESC: CANCEL", [0.7, 0.78, 0.9]);
+            gui::button(r, [318., 342., 112., 38.], "DOWN", [0.13, 0.17, 0.23]);
+            gui::button(r, [440., 342., 112., 38.], "UP", [0.13, 0.17, 0.23]);
+            gui::button(r, [562., 342., 178., 38.], "RIDE", BLUE);
+        }
+        if let Some((building, from, to, elapsed)) = self.elevator_ride {
+            let duration = (0.9 + to.abs_diff(from) as f32 * 0.22).max(1.2);
+            let progress = (elapsed / duration).clamp(0., 1.);
+            let displayed = if progress < 0.2 {
+                from
+            } else {
+                let t = ((progress - 0.2) / 0.65).clamp(0., 1.);
+                (from as f32 + (to as f32 - from as f32) * t).round() as usize
+            };
+            r.panel([330., 140., 420., 286.], INK, 0.98, 24.);
+            text(r, 391., 163., 2., "ELEVATOR", WHITE);
+            text(
+                r,
+                480.,
+                218.,
+                6.,
+                &format!("{:02}", displayed + 1),
+                ORANGE,
+            );
+            text(
+                r,
+                378.,
+                315.,
+                1.7,
+                if progress < 0.2 { "DOORS CLOSING" } else if progress < 0.85 { "MOVING" } else { "ARRIVING" },
+                WHITE,
+            );
+            r.panel([378., 355., 324., 10.], [0.16, 0.19, 0.23], 1., 5.);
+            r.panel([378., 355., 324. * progress, 10.], BLUE, 1., 5.);
+            let _ = building;
+        }
     }
     fn ui_click(&mut self, x: f32, y: f32) {
         if self.customs_click(x, y) {
@@ -471,6 +552,22 @@ impl Game {
         }
 
         let hit = |rect| gui::contains(rect, x, y);
+        if self.elevator_selection.is_some() {
+            for (rect, key) in [
+                ([318., 342., 112., 38.], 1073741905),
+                ([440., 342., 112., 38.], 1073741906),
+                ([562., 342., 178., 38.], 13),
+            ] {
+                if hit(rect) {
+                    self.key_action(key);
+                    return;
+                }
+            }
+        }
+        if self.driving.is_some() && hit([18., 394., 186., 32.]) {
+            self.key_action(104);
+            return;
+        }
         if hit([378., 14., 94., 58.]) || hit([820., 14., 186., 211.]) {
             self.key_action(109);
             return;
