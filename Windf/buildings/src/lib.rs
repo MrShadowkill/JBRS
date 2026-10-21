@@ -218,6 +218,43 @@ impl Building {
         let w = self.size.x;
         let d = self.size.z;
         let h = self.size.y;
+        if lod == 2 && !self.interior {
+            let (material, color) = match self.style {
+                Style::Glass => (3, [0.38, 0.63, 0.73]),
+                Style::Brick => (2, [0.74, 0.5, 0.37]),
+                Style::House => (12, [0.8, 0.75, 0.58]),
+                Style::Warehouse => (4, [0.57, 0.62, 0.6]),
+                Style::Civic => (1, [0.81, 0.8, 0.7]),
+                Style::Neon => (1, [0.28, 0.3, 0.46]),
+            };
+            m.cuboid([x, h / 2., z], [w, h, d], color, material, 0.);
+            m.cuboid(
+                [x, h + 0.3, z],
+                [w + 0.8, 0.6, d + 0.8],
+                [0.38, 0.4, 0.39],
+                1,
+                0.,
+            );
+            let columns = 3.min((w / 5.).floor() as usize).max(1);
+            for column in 0..columns {
+                let wx = x - w * 0.3 + column as f32 * w * 0.3;
+                m.cuboid(
+                    [wx, (h * 0.48).max(1.5), z - d / 2. - 0.035],
+                    [1.4, 1.2, 0.07],
+                    [0.22, 0.3, 0.34],
+                    3,
+                    0.,
+                );
+            }
+            m.cuboid(
+                [x + w * 0.32, 1.2, z - d / 2. - 0.06],
+                [1.2, 2.4, 0.12],
+                [0.28, 0.25, 0.2],
+                4,
+                0.,
+            );
+            return;
+        }
         let (mat, c) = match self.style {
             Style::Glass => (3, [0.38, 0.63, 0.73]),
             Style::Brick => (2, [0.74, 0.5, 0.37]),

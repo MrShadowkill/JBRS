@@ -304,8 +304,10 @@ fn chunk_lod(distance: f32, d: f32, potato: bool) -> u8 {
         2
     } else if distance > 180. && d < distance * 0.5 {
         0
-    } else {
+    } else if d < distance * 0.75 {
         1
+    } else {
+        2
     }
 }
 fn interior_key(world: &World, p: Vec3) -> Option<(usize, usize)> {

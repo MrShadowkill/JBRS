@@ -111,12 +111,63 @@ impl Building {
         let z = self.p.z;
         if lod == 2 {
             let start = m.vertices.len();
-            m.cuboid([x, h / 2., z], [w, h, d], palette.wall, 12, 0.);
-            // Nine flat square windows are enough to read as a block in Potato mode.
+            if self.interior {
+                // Coarse geometry still leaves the entrance open for enterable buildings.
+                let wall = 0.7_f32.min(w * 0.08).min(d * 0.08);
+                m.cuboid(
+                    [x - w / 2. + wall / 2., h / 2., z],
+                    [wall, h, d],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+                m.cuboid(
+                    [x + w / 2. - wall / 2., h / 2., z],
+                    [wall, h, d],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+                m.cuboid(
+                    [x, h / 2., z + d / 2. - wall / 2.],
+                    [w, h, wall],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+                m.cuboid(
+                    [x - (w + 3.) / 4., h / 2., z - d / 2. + wall / 2.],
+                    [(w - 3.) / 2., h, wall],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+                m.cuboid(
+                    [x + (w + 3.) / 4., h / 2., z - d / 2. + wall / 2.],
+                    [(w - 3.) / 2., h, wall],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+                m.cuboid(
+                    [x, (h + 3.) / 2., z - d / 2. + wall / 2.],
+                    [3., (h - 3.).max(wall), wall],
+                    palette.wall,
+                    12,
+                    0.,
+                );
+            } else {
+                // Closed buildings collapse to a few boxes at the coarsest LOD.
+                m.cuboid([x, h / 2., z], [w, h, d], palette.wall, 12, 0.);
+            }
+            // Nine flat square windows are enough to read as a distant block.
             for row in 0..3 {
                 for column in 0..3 {
                     let wx = x - w * 0.34 + column as f32 * w * 0.34;
                     let wy = (h * 0.22 + row as f32 * h * 0.24).min(h - 1.2);
+                    if self.interior && row == 0 && column == 1 {
+                        continue;
+                    }
                     m.cuboid(
                         [wx, wy, z - d / 2. - 0.035],
                         [1.15, 1.05, 0.07],
@@ -127,15 +178,16 @@ impl Building {
                 }
             }
             let door_z = z - d / 2. - 0.06;
-            // A simple frame and slab; Potato mode has no animated facade doors.
-            m.cuboid([x, 1.4, door_z], [2.2, 2.8, 0.12], palette.trim, 4, 0.);
-            m.cuboid(
-                [x, 1.35, door_z - 0.08],
-                [1.45, 2.5, 0.1],
-                [0.28, 0.2, 0.14],
-                4,
-                0.,
-            );
+            if !self.interior {
+                m.cuboid([x, 1.4, door_z], [2.2, 2.8, 0.12], palette.trim, 4, 0.);
+                m.cuboid(
+                    [x, 1.35, door_z - 0.08],
+                    [1.45, 2.5, 0.1],
+                    [0.28, 0.2, 0.14],
+                    4,
+                    0.,
+                );
+            }
             for crown in self.crown() {
                 m.cuboid(
                     [crown.p.x, crown.p.y, crown.p.z],
