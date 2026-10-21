@@ -1,4 +1,4 @@
-# JBRS 0.7.4 — процедурний звук
+# JBRS 0.7.5 — процедурний звук
 
 Збережено нижчий тон процедурної основи та сирени з 0.7.3. Нові записи використовують власні effects із JSON; попереднє зниження кроків повторно до них не застосовується.
 
@@ -30,4 +30,4 @@
 
 Результати перевірок: [verification/audio/README.md](https://github.com/MrShadowkill/JBRS/blob/main/verification/audio/README.md).
 
-Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.4-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.4-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).
+Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.5-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.5-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).

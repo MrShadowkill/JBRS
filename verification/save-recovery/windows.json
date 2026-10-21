@@ -1,0 +1,14 @@
+[
+  {
+    "case": "invalid",
+    "exit": 0,
+    "normal_menu_quit": true,
+    "original_backup_byte_exact": true
+  },
+  {
+    "case": "broken",
+    "exit": 0,
+    "normal_menu_quit": true,
+    "original_backup_byte_exact": true
+  }
+]

@@ -1,0 +1,4 @@
+JBRS: save Z:\tmp\jbrs-save-recovery\broken\save.json could not be loaded: key must be a string at line 1 column 2. Starting a fresh session; the original save is preserved. Backup: Z:\tmp\jbrs-save-recovery\broken\save.recovery-1.json
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+AUDIO SDL stereo 22050 Hz procedural synthesis
+Rendered 89 frames; observed 43.4 FPS (host only)

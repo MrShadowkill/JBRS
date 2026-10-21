@@ -1,0 +1,5 @@
+JBRS: save Z:\tmp\jbrs-save-recovery\invalid\save.json could not be loaded: Invalid save. Recovered compatible progress and reset invalid values. Backup: Z:\tmp\jbrs-save-recovery\invalid\save.recovery-1.json
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+AUDIO SDL stereo 22050 Hz procedural synthesis
+Rendered 58 frames; observed 24.8 FPS (host only)
+X connection to :99 broken (explicit kill or server shutdown).

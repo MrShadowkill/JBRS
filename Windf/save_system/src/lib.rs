@@ -160,18 +160,153 @@ pub fn load() -> Result<Save, String> {
         if let Some(base) = current.parent().and_then(|p| p.parent()) {
             let legacy = base.join("jailbreak-rs/save.json");
             if legacy.is_file() {
-                return load_from(&legacy);
+                return load_recovering(&legacy);
             }
         }
     }
-    load_from(&current)
+    load_recovering(&current)
 }
+/// Keep the exact original bytes before recovering any invalid document.
+fn backup_invalid(p: &std::path::Path, bytes: &[u8]) -> Result<PathBuf, String> {
+    use std::io::Write;
+    for number in 1..=1000 {
+        let backup = p.with_extension(format!("recovery-{number}.json"));
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&backup)
+        {
+            Ok(mut file) => {
+                file.write_all(bytes)
+                    .and_then(|()| file.sync_all())
+                    .map_err(|e| {
+                        format!(
+                            "Cannot preserve save at {}: {e}. Original left untouched.",
+                            backup.display()
+                        )
+                    })?;
+                return Ok(backup);
+            }
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => continue,
+            Err(e) => {
+                return Err(format!(
+                    "Cannot back up {}: {e}. Original left untouched.",
+                    p.display()
+                ))
+            }
+        }
+    }
+    Err(format!(
+        "Too many recovery backups for {}; original left untouched",
+        p.display()
+    ))
+}
+fn load_recovering(p: &std::path::Path) -> Result<Save, String> {
+    // I/O failures are not evidence of corruption and must never trigger a reset.
+    let bytes = match std::fs::read(p) {
+        Ok(bytes) => bytes,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(Save::default()),
+        Err(e) => return Err(format!("Cannot read save {}: {e}", p.display())),
+    };
+    match decode(&bytes) {
+        Ok(save) => Ok(save),
+        Err(error) => {
+            let backup = backup_invalid(p, &bytes)?;
+            let (save, message) = match serde_json::from_slice::<Save>(&bytes) {
+                Ok(mut save) if save.version == 1 => {
+                    repair(&mut save);
+                    // Recheck every invariant before returning the repaired state.
+                    let encoded = serde_json::to_vec(&save).map_err(|e| e.to_string())?;
+                    (
+                        decode(&encoded)?,
+                        "Recovered compatible progress and reset invalid values",
+                    )
+                }
+                _ => (
+                    Save::default(),
+                    "Starting a fresh session; the original save is preserved",
+                ),
+            };
+            eprintln!(
+                "JBRS: save {} could not be loaded: {error}. {message}. Backup: {}",
+                p.display(),
+                backup.display()
+            );
+            Ok(save)
+        }
+    }
+}
+fn repair(s: &mut Save) {
+    fn bounded(v: &mut f32, low: f32, high: f32, fallback: f32) {
+        *v = if v.is_finite() {
+            v.clamp(low, high)
+        } else {
+            fallback
+        };
+    }
+    for v in s
+        .heist_cooldown
+        .iter_mut()
+        .chain(s.robbery_cooldown.iter_mut())
+        .chain(s.leases.iter_mut())
+    {
+        bounded(v, 0., 900., 0.);
+    }
+    s.wanted = s.wanted.min(5);
+    for (selected, maximum) in s
+        .car_engine_selected
+        .iter_mut()
+        .zip(s.car_engine.iter_mut())
+    {
+        *maximum = (*maximum).min(5);
+        if *selected != u32::MAX {
+            *selected = (*selected).min(*maximum);
+        }
+    }
+    for v in &mut s.car_brakes {
+        *v = (*v).min(3);
+    }
+    for v in &mut s.car_suspension {
+        *v = (*v).min(2);
+    }
+    for v in s.car_paint.iter_mut().flatten().chain(s.color.iter_mut()) {
+        bounded(v, 0., 1., 0.);
+    }
+    for (v, maximum) in s.magazines.iter_mut().zip([12, 6, 24]) {
+        *v = (*v).min(maximum);
+    }
+    for v in &mut s.ammunition {
+        *v = (*v).min(1000);
+    }
+    s.texture_level = s.texture_level.min(3);
+    s.quality = s.quality.min(3);
+    s.run_level = s.run_level.min(5);
+    s.endurance_level = s.endurance_level.min(5);
+    s.carry_level = s.carry_level.min(5);
+    s.water = s.water.min(20);
+    s.food = s.food.min(20);
+    s.resolution_scale = s.resolution_scale.clamp(50, 100);
+    s.shader_effects = s.shader_effects.min(4);
+    s.shadow_quality = s.shadow_quality.min(3);
+    s.owned.retain(|i| *i < VEHICLE_SLOTS);
+    if !s.position.x.is_finite() || !s.position.y.is_finite() || !s.position.z.is_finite() {
+        s.position = Save::default().position;
+    }
+    bounded(&mut s.render_distance, 80., 650., 450.);
+    s.ammo = s.ammo.min(12);
+    if !s.sensitivity.is_finite() || s.sensitivity <= 0. {
+        s.sensitivity = 0.003;
+    }
+}
+#[cfg(test)]
 fn load_from(p: &std::path::Path) -> Result<Save, String> {
     if !p.exists() {
         return Ok(Save::default());
     }
-    let s: Save = serde_json::from_slice(&std::fs::read(p).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    decode(&std::fs::read(p).map_err(|e| e.to_string())?)
+}
+fn decode(bytes: &[u8]) -> Result<Save, String> {
+    let s: Save = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
     if s.version != 1 {
         return Err("Unsupported save version".into());
     }
@@ -583,5 +718,81 @@ mod tests {
         assert_eq!(t.owned, vec![3]);
         assert_eq!(t.team, Team::Criminal);
         assert_eq!(t.color, s.color);
+    }
+}
+
+#[cfg(test)]
+mod recovery_tests {
+    use super::*;
+    fn directory(label: &str) -> PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("jbrs-recovery-{label}-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+    #[test]
+    fn invalid_settings_preserve_progress_and_exact_original_before_store() {
+        let dir = directory("settings");
+        let p = dir.join("save.json");
+        let original = Save {
+            balance: 91234,
+            owned: vec![0, 7],
+            quality: 99,
+            render_distance: 1000.,
+            car_engine: [3; VEHICLE_SLOTS],
+            ..Default::default()
+        };
+        let bytes = serde_json::to_vec(&original).unwrap();
+        std::fs::write(&p, &bytes).unwrap();
+        let recovered = load_recovering(&p).unwrap();
+        assert_eq!(recovered.balance, 91234);
+        assert_eq!(recovered.owned, vec![0, 7]);
+        assert_eq!(recovered.car_engine, [3; VEHICLE_SLOTS]);
+        assert_eq!(recovered.quality, 3);
+        assert_eq!(recovered.render_distance, 650.);
+        assert_eq!(std::fs::read(&p).unwrap(), bytes);
+        assert_eq!(
+            std::fs::read(p.with_extension("recovery-1.json")).unwrap(),
+            bytes
+        );
+        store_at(&p, &recovered).unwrap();
+        assert_eq!(load_from(&p).unwrap().balance, 91234);
+        assert_eq!(
+            std::fs::read(p.with_extension("recovery-1.json")).unwrap(),
+            bytes
+        );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn malformed_save_starts_fresh_without_overwriting_any_backup() {
+        let dir = directory("malformed");
+        let p = dir.join("save.json");
+        std::fs::write(&p, b"{broken").unwrap();
+        std::fs::write(p.with_extension("recovery-1.json"), b"previous backup").unwrap();
+        assert_eq!(load_recovering(&p).unwrap().balance, 0);
+        assert_eq!(
+            std::fs::read(p.with_extension("recovery-1.json")).unwrap(),
+            b"previous backup"
+        );
+        assert_eq!(
+            std::fs::read(p.with_extension("recovery-2.json")).unwrap(),
+            b"{broken"
+        );
+        assert_eq!(std::fs::read(&p).unwrap(), b"{broken");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn valid_save_is_loaded_without_backup_and_io_errors_are_not_reset() {
+        let dir = directory("valid");
+        let p = dir.join("save.json");
+        let save = Save {
+            balance: 533,
+            ..Default::default()
+        };
+        store_at(&p, &save).unwrap();
+        assert_eq!(load_recovering(&p).unwrap().balance, 533);
+        assert!(!p.with_extension("recovery-1.json").exists());
+        assert!(load_recovering(&dir).is_err());
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }
