@@ -1,8 +1,10 @@
-# JBRS 0.7.3 — процедурний звук
+# JBRS 0.7.4 — процедурний звук
 
-Тон двигунів і сирени знижено до 70% попередньої частоти. Частоти кроків знижено до 30%, амплітуду — до 25% (−12 dB до лімітера).
+Збережено нижчий тон процедурної основи та сирени з 0.7.3. Нові записи використовують власні effects із JSON; попереднє зниження кроків повторно до них не застосовується.
 
-Звуки генеруються під час гри з синусоїд, зсувів фаз, гармонік і огинаючих. Для відтворення не потрібні WAV/MP3 чи зовнішні семпли.
+Вісім наданих користувачем JSON із функціями синусоїд відновлюються офлайн й вбудовуються у виконуваний файл як PCM16. Оригінали та відтворюваний компілятор: `procedural_audio/assets/`. Під час гри немає парсингу JSON, FFT або завантаження аудіофайлів. Сирена, вода й електромотор залишаються процедурними.
+
+1/2 — тверді поверхні; «мет шаг»/«метшаг» — метал; «трава» — трава. Кроки чергуються з варіацією швидкості ±3% та амплітуди ±6%; чотири голоси зберігають хвости. Параметри effects з JSON застосовані один раз. Метал додатково приглушений для балансу. Три автомобільні записи розподілені за профілями, змішуються з тихою синтезованою основою, змінюють швидкість від обертів і зациклюються з перехресним затуханням.
 
 | Автомобіль | Характер звучання |
 |---|---|
@@ -28,4 +30,4 @@
 
 Результати перевірок: [verification/audio/README.md](https://github.com/MrShadowkill/JBRS/blob/main/verification/audio/README.md).
 
-Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.3-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.3-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).
+Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.4-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.4-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).

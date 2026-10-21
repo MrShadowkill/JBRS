@@ -1,0 +1,6 @@
+OpenGL 4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+AUDIO SDL stereo 22050 Hz procedural synthesis
+VEHICLE_CACHE parts=20 bytes=3003264
+GEOMETRY scene_triangles=64596 world_triangles=43014 interior_triangles=0 quality=1 vehicles=21486 actors_and_effects=96
+PROFILE scene=driving frames=60 mean_ms=20.38 p95_ms=38.06 max_ms=42.56 rss_mb=125.2 gpu_mb=6.2 active_chunks=37 visible_chunks=16 effective_distance=307
+Rendered 60 frames; observed 46.2 FPS (host only)

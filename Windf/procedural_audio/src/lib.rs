@@ -1,4 +1,5 @@
-//! Bounded, sample-free synthesizer: phase-shifted sine harmonics, no render API.
+//! Bounded hybrid audio: uploaded sine-function clips and procedural voices.
+mod clips;
 mod device;
 pub use device::Audio;
 use std::f32::consts::{FRAC_PI_2, TAU};
@@ -53,6 +54,8 @@ struct Voice {
     gain: f32,
     pan: f32,
     siren_gain: f32,
+    clip_position: f32,
+    clip_rate: f32,
 }
 impl Default for Voice {
     fn default() -> Self {
@@ -67,6 +70,8 @@ impl Default for Voice {
             gain: 0.,
             pan: 0.,
             siren_gain: 0.,
+            clip_position: 0.,
+            clip_rate: 0.7,
         }
     }
 }
@@ -77,6 +82,7 @@ pub struct Synth {
     foot_phase: f32,
     foot_surface: Surface,
     foot_side: f32,
+    steps: clips::Steps,
 }
 impl Default for Synth {
     fn default() -> Self {
@@ -87,6 +93,7 @@ impl Default for Synth {
             foot_phase: 0.,
             foot_surface: Surface::Pavement,
             foot_side: 1.,
+            steps: clips::Steps::default(),
         }
     }
 }
@@ -108,7 +115,12 @@ fn safe(v: f32, min: f32, max: f32) -> f32 {
 }
 impl Synth {
     pub fn step(&mut self, surface: Surface) {
-        self.foot = 0.;
+        self.steps.trigger(surface);
+        self.foot = if matches!(surface, Surface::Water) {
+            0.
+        } else {
+            10.
+        };
         self.foot_phase = 0.;
         self.foot_surface = surface;
         self.foot_side = -self.foot_side;
@@ -190,7 +202,16 @@ impl Synth {
                 advance(&mut v.siren_phase, sweep);
                 let siren =
                     wave(table, v.siren_phase) + 0.2 * wave(table, v.siren_phase * 2. + FRAC_PI_2);
-                let sample = engine * v.gain * 0.65 + siren * v.siren_gain * 0.65;
+                let target_rate = 0.6 + (rpm - idle) / (redline - idle) * 0.85;
+                v.clip_rate += (target_rate - v.clip_rate) * 0.0008;
+                let recorded =
+                    clips::engine(e.kind.min(7), e.id, &mut v.clip_position, v.clip_rate);
+                let motor = if electric {
+                    engine * 0.65
+                } else {
+                    recorded * (0.75 + load * 0.35) + engine * 0.12
+                };
+                let sample = motor * v.gain + siren * v.siren_gain * 0.65;
                 left += sample * (0.7 - 0.3 * v.pan);
                 right += sample * (0.7 + 0.3 * v.pan);
             }
@@ -216,6 +237,9 @@ impl Synth {
                 right += s * (0.7 - self.foot_side * 0.08);
                 self.foot += 1. / RATE as f32;
             }
+            let (step_left, step_right) = self.steps.render();
+            left += step_left;
+            right += step_right;
             // Fixed headroom and a soft limiter protect mixed emergency scenes.
             frame[0] = left / (1. + left.abs());
             frame[1] = right / (1. + right.abs());
@@ -268,7 +292,7 @@ mod tests {
     fn steps_decay_and_silence_stays_silent() {
         let mut s = Synth::default();
         let scene = Scene::default();
-        let mut out = vec![0.; RATE as usize];
+        let mut out = vec![0.; RATE as usize * 4];
         s.render(&scene, &mut out);
         assert!(out.iter().all(|v| *v == 0.));
         s.step(Surface::Pavement);

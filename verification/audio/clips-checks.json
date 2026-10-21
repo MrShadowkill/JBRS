@@ -1,0 +1,6 @@
+{
+  "workspace_tests_passed": 157,
+  "linux": "60 frames; SDL initialized",
+  "gles": "60 frames; SDL initialized",
+  "synchronized_windows_source": true
+}

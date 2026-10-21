@@ -1,0 +1,82 @@
+{
+  "engine_aggressive": {
+    "source_name": "freesound_community-car-about-to-pass-by-aggressive-103226",
+    "effects": {
+      "semitones": -3,
+      "gain": 1
+    },
+    "samples": 47168,
+    "peak": 0.28409584167149327,
+    "rms": 0.06984641280428708
+  },
+  "engine_low": {
+    "source_name": "freesound_community-080136_v8-supercar-acceleration-82900-edited",
+    "effects": {
+      "semitones": -4,
+      "gain": 1
+    },
+    "samples": 55964,
+    "peak": 0.6369503529397856,
+    "rms": 0.21718463257372544
+  },
+  "engine_v8": {
+    "source_name": "freesound_community-080136_v8-supercar-acceleration-82900",
+    "effects": {
+      "semitones": 0,
+      "gain": 1
+    },
+    "samples": 44441,
+    "peak": 0.637352324256871,
+    "rms": 0.21765751397580088
+  },
+  "grass": {
+    "source_name": "5970fb309ef151d",
+    "effects": {
+      "semitones": -6,
+      "gain": 0.1
+    },
+    "samples": 7641,
+    "peak": 0.013648017078377185,
+    "rms": 0.0007603838600911182
+  },
+  "metal_a": {
+    "source_name": "3e99fe70b76058f",
+    "effects": {
+      "semitones": -6,
+      "gain": 1
+    },
+    "samples": 11255,
+    "peak": 0.714539993814023,
+    "rms": 0.07319203059921577
+  },
+  "metal_b": {
+    "source_name": "6a371044071ac0e",
+    "effects": {
+      "semitones": -6,
+      "gain": 0.52
+    },
+    "samples": 10324,
+    "peak": 0.3022918505728845,
+    "rms": 0.030386741783019942
+  },
+  "pavement_a": {
+    "source_name": "yarzur_ofc-st2-footstep-sfx-323055",
+    "effects": {
+      "semitones": -21,
+      "gain": 0.25
+    },
+    "samples": 26326,
+    "peak": 0.12210718581712221,
+    "rms": 0.008891400233674277
+  },
+  "pavement_b": {
+    "source_name": "yarzur_ofc-st1-footstep-sfx-323053",
+    "effects": {
+      "semitones": -21,
+      "gain": 0.25
+    },
+    "samples": 27420,
+    "peak": 0.09655100773980932,
+    "rms": 0.008263947782480071
+  }
+}

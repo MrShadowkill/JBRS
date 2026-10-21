@@ -1,0 +1,5 @@
+    Checking renderer_gl21 v0.1.0 (/workspace/JBRS/renderer_gl21)
+    Checking procedural_audio v0.1.0 (/workspace/JBRS/procedural_audio)
+    Checking gui v0.1.0 (/workspace/JBRS/gui)
+    Checking jbrs v0.7.4 (/workspace/JBRS/game)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.31s
