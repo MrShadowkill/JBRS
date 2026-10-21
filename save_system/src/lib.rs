@@ -56,6 +56,8 @@ pub struct Save {
     pub quality: usize,
     #[serde(default = "default_shader_pack")]
     pub shader_pack: String,
+    #[serde(default = "default_texture_pack")]
+    pub texture_pack: String,
     #[serde(default)]
     pub auto_shader_pack: bool,
     #[serde(default = "default_resolution")]
@@ -109,6 +111,7 @@ impl Default for Save {
             pistol_owned: false,
             quality: 1,
             shader_pack: "builtin".into(),
+            texture_pack: "builtin".into(),
             auto_shader_pack: false,
             resolution_scale: 100,
             fps_counter: false,
@@ -206,6 +209,7 @@ fn load_from(p: &std::path::Path) -> Result<Save, String> {
         || !(50..=100).contains(&s.resolution_scale)
         || s.shader_effects > 4
         || s.shadow_quality > 3
+        || !valid_pack_id(&s.texture_pack)
         || s.owned.iter().any(|i| *i >= VEHICLE_SLOTS)
         || !s.position.x.is_finite()
         || !s.position.z.is_finite()
@@ -276,6 +280,16 @@ fn default_shadow_quality() -> u8 {
 }
 fn default_shader_pack() -> String {
     "builtin".into()
+}
+fn default_texture_pack() -> String {
+    "builtin".into()
+}
+fn valid_pack_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 80
+        && id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
 }
 fn default_shader_effects() -> u8 {
     4
@@ -475,6 +489,7 @@ mod tests {
             texture_level: 3,
             object_shadows: false,
             shader_pack: "Golden_Hour_v2".into(),
+            texture_pack: "C13HPT-Template".into(),
             auto_shader_pack: true,
             resolution_scale: 70,
             fps_counter: true,
@@ -492,6 +507,7 @@ mod tests {
         assert_eq!(loaded.texture_level, 3);
         assert!(!loaded.object_shadows);
         assert_eq!(loaded.shader_pack, "Golden_Hour_v2");
+        assert_eq!(loaded.texture_pack, "C13HPT-Template");
         assert!(loaded.auto_shader_pack);
         assert_eq!(loaded.resolution_scale, 70);
         assert!(loaded.fps_counter);
@@ -503,6 +519,7 @@ mod tests {
             "texture_level",
             "object_shadows",
             "shader_pack",
+            "texture_pack",
             "auto_shader_pack",
             "resolution_scale",
             "fps_counter",
@@ -520,6 +537,7 @@ mod tests {
         assert_eq!(legacy.texture_level, 0);
         assert!(legacy.object_shadows);
         assert_eq!(legacy.shader_pack, "builtin");
+        assert_eq!(legacy.texture_pack, "builtin");
         assert!(!legacy.auto_shader_pack);
         assert_eq!(legacy.resolution_scale, 100);
         assert!(!legacy.fps_counter);

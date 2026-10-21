@@ -111,7 +111,7 @@ impl Building {
         let z = self.p.z;
         if lod == 2 {
             let start = m.vertices.len();
-            m.cuboid([x, h / 2., z], [w, h, d], palette.wall, 0, 0.);
+            m.cuboid([x, h / 2., z], [w, h, d], palette.wall, 12, 0.);
             // Nine flat square windows are enough to read as a block in Potato mode.
             for row in 0..3 {
                 for column in 0..3 {
@@ -120,24 +120,20 @@ impl Building {
                     m.cuboid(
                         [wx, wy, z - d / 2. - 0.035],
                         [1.15, 1.05, 0.07],
-                        if (row + column + self.id).is_multiple_of(4) {
-                            [0.72, 0.61, 0.36]
-                        } else {
-                            palette.glass
-                        },
-                        0,
+                        [1., 1., 1.],
+                        3,
                         0.,
                     );
                 }
             }
             let door_z = z - d / 2. - 0.06;
             // A simple frame and slab; Potato mode has no animated facade doors.
-            m.cuboid([x, 1.4, door_z], [2.2, 2.8, 0.12], palette.trim, 0, 0.);
+            m.cuboid([x, 1.4, door_z], [2.2, 2.8, 0.12], palette.trim, 4, 0.);
             m.cuboid(
                 [x, 1.35, door_z - 0.08],
                 [1.45, 2.5, 0.1],
                 [0.28, 0.2, 0.14],
-                0,
+                4,
                 0.,
             );
             for crown in self.crown() {
@@ -145,14 +141,13 @@ impl Building {
                     [crown.p.x, crown.p.y, crown.p.z],
                     [crown.size.x, crown.size.y, crown.size.z],
                     palette.wall,
-                    0,
+                    11,
                     0.,
                 );
             }
-            for vertex in &mut m.vertices[start..] {
-                // A low alpha tag bypasses atlas sampling without triggering grass sway.
-                vertex.color[3] = -0.6;
-            }
+            debug_assert!(m.vertices[start..]
+                .iter()
+                .all(|vertex| vertex.color[3] >= 0.));
             return;
         }
         for wall in self.shell_colliders() {
@@ -160,7 +155,7 @@ impl Building {
                 [wall.p.x, wall.p.y, wall.p.z],
                 [wall.size.x, wall.size.y, wall.size.z],
                 palette.wall,
-                1,
+                12,
                 0.,
             );
         }
@@ -376,10 +371,9 @@ mod tests {
         b.mesh(&mut far, 2);
         assert!(near.vertices.len() < 18000);
         assert!(far.vertices.len() * 2 < near.vertices.len());
-        assert!(far
-            .vertices
-            .iter()
-            .all(|v| (v.color[3] + 0.6).abs() < 0.001));
+        assert!(far.vertices.iter().all(|v| v.color[3] >= 0.));
+        assert!(far.vertices.iter().any(|v| v.uv[0] > 0.75 && v.uv[0] < 1.));
+        assert!(far.vertices.iter().any(|v| (v.uv[0] - 0.005).abs() < 0.001));
         let top = |m: &Mesh| m.vertices.iter().map(|v| v.position[1]).fold(0., f32::max);
         assert_eq!(top(&near), top(&far));
         assert!(top(&near) > b.p.y + b.size.y);

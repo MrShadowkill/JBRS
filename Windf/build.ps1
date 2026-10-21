@@ -34,6 +34,9 @@ try {
     Copy-Item 'vendor/SDL2/LICENSE.txt' 'dist/SDL2-LICENSE.txt' -Force
     Copy-Item 'vehicles/assets/ATTRIBUTION.md' 'dist/VEHICLE_ATTRIBUTION.md' -Force
     Copy-Item 'shaders' 'dist/shaders' -Recurse -Force
+    New-Item -ItemType Directory -Force 'dist/assets' | Out-Null
+    New-Item -ItemType Directory -Force 'dist/assets/texture-packs' | Out-Null
+    Copy-Item 'assets/texture-packs/*' 'dist/assets/texture-packs' -Recurse -Force
     Compress-Archive -Path 'dist/*' -DestinationPath 'JBRS-Windows11-x64.zip' -Force
     Write-Host 'Ready: dist/Start.cmd and JBRS-Windows11-x64.zip'
 } finally {

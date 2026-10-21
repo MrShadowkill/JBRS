@@ -252,6 +252,11 @@ impl Game {
             modal_title(r, "GRAPHICS SETTINGS");
             let packs = r.available_shader_packs();
             let pack = packs.iter().position(|name| name == &self.save.shader_pack).unwrap_or(0);
+            let texture_packs = r.available_texture_packs();
+            let texture_pack = texture_packs
+                .iter()
+                .position(|name| name == &self.save.texture_pack)
+                .unwrap_or(0);
             let names = [
                 format!("SHADER PACK   {} / {}", packs.get(pack).map(String::as_str).unwrap_or("builtin"), packs.len()),
                 format!("AUTO PACK BY TIME   {}", if self.save.auto_shader_pack { "ON" } else { "OFF" }),
@@ -269,12 +274,17 @@ impl Game {
                 ),
                 format!("SHADOW QUALITY   {}", ["LOW", "MEDIUM", "HIGH", "ULTRA"][self.save.shadow_quality.min(3) as usize]),
                 format!("FPS COUNTER   {}", if self.save.fps_counter { "ON" } else { "OFF" }),
+                format!(
+                    "TEXTURE PACK   {} / {}",
+                    texture_packs.get(texture_pack).map(String::as_str).unwrap_or("builtin"),
+                    texture_packs.len()
+                ),
             ];
             for (i, n) in names.iter().enumerate() {
-                let y = 174. + i as f32 * 30.;
+                let y = 164. + i as f32 * 27.;
                 gui::button(
                     r,
-                    [206., y, 612., 27.],
+                    [206., y, 612., 25.],
                     n,
                     if self.graphics_row == i {
                         BLUE
@@ -597,8 +607,8 @@ impl Game {
                 }
             }
         } else if self.garage {
-            for i in 0..9 {
-                let row = [206., 174. + i as f32 * 30., 612., 27.];
+            for i in 0..10 {
+                let row = [206., 164. + i as f32 * 27., 612., 25.];
                 if hit(row) {
                     self.graphics_row = i;
                     if (i == 2 || i == 3 || i == 7) && (686. ..=798.).contains(&x) {

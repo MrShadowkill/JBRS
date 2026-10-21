@@ -45,8 +45,10 @@ to redistribute. Alpha channels are not part of this RGB template.
 стиль матеріалів. Не додавайте файли, які не маєте права поширювати. Цей
 RGB-шаблон не використовує канал прозорості.
 
-Note: the current game does not yet load these external texture packs. See the
-parent `assets/texture-packs/README.md` for details.
+To use this pack, copy this folder or its ZIP into the game's `texture-packs`
+directory, restart JBRS, then select `C13HPT-Template` in graphics settings.
+See the parent `assets/texture-packs/README.md` for platform-specific paths.
 
-Примітка: поточна гра ще не завантажує зовнішні текстурпаки. Деталі є в
-`assets/texture-packs/README.md`.
+Щоб використати пак, скопіюйте цю папку або ZIP у `texture-packs` біля гри,
+перезапустіть JBRS та виберіть `C13HPT-Template` у графічних налаштуваннях.
+Шляхи для кожної платформи наведено в батьківському README.

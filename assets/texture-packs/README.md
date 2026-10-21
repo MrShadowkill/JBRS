@@ -16,15 +16,24 @@ C13HPT-Template/
     └── metal.png
 ```
 
-Замініть PNG власними зображеннями, зберігши назви та шляхи. Для найкращого
-результату використовуйте квадратні безшовні текстури RGB розміром 64×64,
-128×128 або 256×256. `windows.png` у шаблоні вже має темні рами; окремі
-світлі вікна й нічне свічення гра відтворює своїм освітленням.
+Скопіюйте папку паку або ZIP у директорію текстурпаків і виберіть його у
+`SET → GRAPHICS → TEXTURE PACK`. Підтримуються папки та ZIP з PNG у
+`assets/textures/` або `textures/`; читання ZIP відбувається без розпакування.
+Зображення декодуються при запуску й перебудові атласу, а не щокадру.
 
-Зараз це **редакторський шаблон**, а не активний завантажувач: рендерер JBRS
-ще генерує власний атлас матеріалів і не імпортує сторонні PNG або ZIP у гру.
-Тому цей архів можна редагувати та поширювати як заготовку, але заміна файлів
-поки не змінить графіку гри.
+Розташування паків:
+
+- Windows: `C:\JBRS\texture-packs\` або поруч із грою в `texture-packs/`.
+- Linux: `~/JBRS/texture-packs/` або поруч із грою в `texture-packs/`.
+- Android: `/storage/emulated/0/JBRS/texture-packs/`.
+- Для розробки можна задати `JBRS_TEXTURE_DIR` як каталог із папками/ZIP.
+
+Перезапустіть гру після додавання паку: список паків читається під час запуску.
+У налаштуваннях виберіть його клавішами вліво/вправо. Невалідні або завеликі
+PNG показують помилку в журналі, а гра повертається до вбудованих текстур.
+Для найкращого результату використовуйте квадратні RGB/RGBA PNG до 2048×2048;
+атлас зменшує їх до поточного рівня текстур. На LOW і POTATO текстура стіни,
+вікна, дверей і даху також використовується на спрощених фасадах будинків.
 
 ## English
 
@@ -42,12 +51,21 @@ C13HPT-Template/
     └── metal.png
 ```
 
-Replace the PNG files with your own images while keeping their names and paths.
-For best results, use seamless square RGB textures at 64×64, 128×128, or
-256×256. The sample `windows.png` includes dark frames; JBRS handles lit
-windows and their night glow through its lighting.
+Copy the pack folder or ZIP into a texture-pack directory and select it under
+`SET → GRAPHICS → TEXTURE PACK`. Folders and ZIPs containing PNGs under
+`assets/textures/` or `textures/` are supported. ZIPs are read without extracting
+them. Images are decoded when the game starts or rebuilds the atlas, never per
+frame.
 
-This is currently an **authoring template**, not a runtime loader: JBRS still
-generates its material atlas internally and does not import third-party PNG or
-ZIP texture packs into the game. You can edit and share this starter archive,
-but replacing these files will not change the game's visuals yet.
+Pack directories:
+
+- Windows: `C:\JBRS\texture-packs\` or `texture-packs/` beside the game.
+- Linux: `~/JBRS/texture-packs/` or `texture-packs/` beside the game.
+- Android: `/storage/emulated/0/JBRS/texture-packs/`.
+- Developers can set `JBRS_TEXTURE_DIR` to a folder containing pack folders/ZIPs.
+
+Restart after adding a pack; the pack list is read at startup. Select it with
+left/right in graphics settings. Invalid or oversized PNGs are logged and the
+game falls back to its built-in atlas. Square RGB/RGBA PNGs up to 2048×2048 are
+supported. The atlas scales them to the current texture quality. LOW and POTATO
+building facades use the wall, window, door, and roof materials as well.

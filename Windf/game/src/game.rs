@@ -125,6 +125,7 @@ struct Game {
     graphics_row: usize,
     texture_applied: usize,
     active_shader_pack: String,
+    active_texture_pack: String,
     resolution_applied: u8,
     stamina: f32,
     holding: bool,
@@ -283,6 +284,7 @@ impl Game {
             graphics_row: 0,
             texture_applied: usize::MAX,
             active_shader_pack: String::new(),
+            active_texture_pack: String::new(),
             resolution_applied: 100,
             stamina: 100.,
             holding: false,
@@ -356,7 +358,18 @@ impl Game {
                 self.save.shadow_quality =
                     (self.save.shadow_quality as i32 + step).rem_euclid(4) as u8
             }
-            _ => self.save.fps_counter = !self.save.fps_counter,
+            8 => self.save.fps_counter = !self.save.fps_counter,
+            _ => {
+                let packs = shader_pack::available_texture_packs();
+                let current = packs
+                    .iter()
+                    .position(|name| name == &self.save.texture_pack)
+                    .unwrap_or(0);
+                let next = (current as i32 + step).rem_euclid(packs.len().max(1) as i32) as usize;
+                self.save.texture_pack =
+                    packs.get(next).cloned().unwrap_or_else(|| "builtin".into());
+                self.texture_applied = usize::MAX;
+            }
         }
     }
     fn apply_potato_settings(&mut self) {
@@ -1280,8 +1293,8 @@ impl Game {
                 }
             }
 
-            1073741906 if self.garage => self.graphics_row = (self.graphics_row + 8) % 9,
-            1073741905 if self.garage => self.graphics_row = (self.graphics_row + 1) % 9,
+            1073741906 if self.garage => self.graphics_row = (self.graphics_row + 9) % 10,
+            1073741905 if self.garage => self.graphics_row = (self.graphics_row + 1) % 10,
             1073741904 | 1073741903 if self.garage => {
                 self.adjust_graphics_setting(if k == 1073741904 { -1 } else { 1 });
             }
@@ -2983,6 +2996,20 @@ impl Game {
             r.material_resolution(self.save.texture_level);
             self.texture_applied = self.save.texture_level;
         }
+        if self.active_texture_pack != self.save.texture_pack {
+            match r.set_texture_pack(&self.save.texture_pack) {
+                Ok(()) => self.active_texture_pack = self.save.texture_pack.clone(),
+                Err(error) => {
+                    eprintln!(
+                        "JBRS: texture pack {} could not be loaded: {error}",
+                        self.save.texture_pack
+                    );
+                    self.save.texture_pack = "builtin".into();
+                    self.active_texture_pack = "builtin".into();
+                    let _ = r.set_texture_pack("builtin");
+                }
+            }
+        }
         if let Some(view) = &mut self.view {
             view.update(
                 r,
@@ -3944,6 +3971,9 @@ pub fn run() -> Result<(), String> {
     }
     if let Ok(value) = std::env::var("JBRS_SHADER_PACK") {
         g.save.shader_pack = value;
+    }
+    if let Ok(value) = std::env::var("JBRS_TEXTURE_PACK") {
+        g.save.texture_pack = value;
     }
     if let Ok(value) = std::env::var("JBRS_RESOLUTION_SCALE") {
         if let Ok(scale) = value.parse::<u8>() {

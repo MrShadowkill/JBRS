@@ -153,6 +153,7 @@ pub struct Renderer {
     scene_height: i32,
     scene_active: bool,
     shader_pack: String,
+    texture_pack: String,
     resolution_scale: u8,
     wind_uniform: i32,
     point_light_uniforms: [i32; 4],
@@ -219,6 +220,7 @@ impl Renderer {
                 scene_height: 360,
                 scene_active: false,
                 shader_pack: "builtin".into(),
+                texture_pack: "builtin".into(),
                 resolution_scale: 100,
                 wind_uniform: -1,
                 point_light_uniforms: [-1; 4],
@@ -369,6 +371,68 @@ impl Renderer {
     }
     pub fn active_shader_pack(&self) -> &str {
         &self.shader_pack
+    }
+    pub fn available_texture_packs(&self) -> Vec<String> {
+        #[cfg(target_os = "android")]
+        {
+            let mut packs = shader_pack::available_texture_packs();
+            if read_android_asset("texture-packs/C13HPT-Template/assets/textures/walls.png")
+                .is_some()
+                && !packs.iter().any(|pack| pack == "C13HPT-Template")
+            {
+                packs.push("C13HPT-Template".into());
+            }
+            return packs;
+        }
+        #[cfg(not(target_os = "android"))]
+        shader_pack::available_texture_packs()
+    }
+    pub fn active_texture_pack(&self) -> &str {
+        &self.texture_pack
+    }
+    pub fn set_texture_pack(&mut self, id: &str) -> Result<(), String> {
+        let tile = [64, 128, 256, 512, 16][self.material_level.min(4)];
+        let fallback = atlas_pixels(tile);
+        let pixels = match shader_pack::load_texture_atlas(id, tile, &fallback) {
+            Ok(pixels) => pixels,
+            Err(external_error) => {
+                #[cfg(target_os = "android")]
+                if id == "C13HPT-Template" {
+                    let files = [
+                        "roads.png",
+                        "floors.png",
+                        "walls.png",
+                        "windows.png",
+                        "metal.png",
+                        "roofs.png",
+                    ]
+                    .into_iter()
+                    .filter_map(|name| {
+                        read_android_asset(&format!(
+                            "texture-packs/C13HPT-Template/assets/textures/{name}"
+                        ))
+                        .map(|bytes| (name.to_owned(), bytes))
+                    })
+                    .collect::<Vec<_>>();
+                    if !files.is_empty() {
+                        shader_pack::texture_atlas_from_files(tile, &fallback, files)?
+                    } else {
+                        return Err(external_error);
+                    }
+                } else {
+                    return Err(external_error);
+                }
+                #[cfg(not(target_os = "android"))]
+                return Err(external_error);
+            }
+        };
+        self.upload_atlas(tile, &pixels);
+        self.texture_pack = id.to_owned();
+        println!(
+            "JBRS: loaded texture pack {} ({tile}px atlas tiles)",
+            self.texture_pack
+        );
+        Ok(())
     }
     pub fn set_resolution_scale(&mut self, scale: u8) -> Result<(), String> {
         let scale = scale.clamp(50, 100);
@@ -543,7 +607,21 @@ impl Renderer {
             return;
         }
         let tile = [64, 128, 256, 512, 16][level];
-        let pixels = atlas_pixels(tile);
+        let fallback = atlas_pixels(tile);
+        let pixels = match shader_pack::load_texture_atlas(&self.texture_pack, tile, &fallback) {
+            Ok(pixels) => pixels,
+            Err(error) => {
+                eprintln!(
+                    "JBRS: texture pack {} could not be applied: {error}",
+                    self.texture_pack
+                );
+                fallback
+            }
+        };
+        self.upload_atlas(tile, &pixels);
+        self.material_level = level;
+    }
+    fn upload_atlas(&mut self, tile: usize, pixels: &[u8]) {
         unsafe {
             glBindTexture(0x0de1, self.atlas);
             glTexImage2D(
@@ -558,7 +636,6 @@ impl Renderer {
                 pixels.as_ptr().cast(),
             );
         }
-        self.material_level = level;
     }
     pub fn texture(&mut self, w: i32, h: i32, pixels: &[u8]) -> Texture {
         assert_eq!(pixels.len(), (w * h * 3) as usize);

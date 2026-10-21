@@ -112,6 +112,11 @@ def main():
             for path in sorted(shader_root.rglob('*')):
                 if path.is_file():
                     z.write(path, 'assets/shaders/' + path.relative_to(shader_root).as_posix())
+        texture_pack_root = ROOT / 'assets/texture-packs'
+        if texture_pack_root.is_dir():
+            for path in sorted(texture_pack_root.rglob('*')):
+                if path.is_file():
+                    z.write(path, 'assets/texture-packs/' + path.relative_to(texture_pack_root).as_posix())
         for path, name in [(ROOT / 'LICENSE', 'LICENSE'), (ROOT / 'THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md'),
                            (ROOT / 'vehicles/assets/ATTRIBUTION.md', 'VEHICLE_ATTRIBUTION.md'),
                            (ROOT / 'renderer_gles2/assets/FONT-LICENSE.txt', 'FONT-LICENSE.txt'),

@@ -221,7 +221,7 @@ impl Building {
         let (mat, c) = match self.style {
             Style::Glass => (3, [0.38, 0.63, 0.73]),
             Style::Brick => (2, [0.74, 0.5, 0.37]),
-            Style::House => (2, [0.8, 0.75, 0.58]),
+            Style::House => (12, [0.8, 0.75, 0.58]),
             Style::Warehouse => (4, [0.57, 0.62, 0.6]),
             Style::Civic => (1, [0.81, 0.8, 0.7]),
             Style::Neon => (1, [0.28, 0.3, 0.46]),
