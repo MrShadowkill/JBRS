@@ -1,4 +1,6 @@
-Поточний APK: `0.6.2-transport-preview2`, versionCode 2. Оновлення трафіку, поліції, річок і фізики спільне з PC: [опис](../TRANSPORT_UPDATE.md).
+Поточна збірка: **JBRS 0.7.1**. [Опис](../UPDATE_0_7_1.md).
+
+Поточний APK: `0.7.1`, versionCode 3. Оновлення трафіку, поліції, річок і фізики спільне з PC: [опис](../TRANSPORT_UPDATE.md).
 
 # JBRS Mobile — Android 10 ARM64 (preview)
 

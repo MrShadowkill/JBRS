@@ -1,0 +1,38 @@
+    Checking cfg-if v1.0.5
+    Checking memchr v2.8.3
+    Checking simd-adler32 v0.3.10
+    Checking engine_core v0.1.0 (/workspace/JBRS/engine_core)
+    Checking crc32fast v1.5.2
+    Checking adler2 v2.0.1
+    Checking log v0.4.34
+    Checking equivalent v1.0.3
+    Checking miniz_oxide v0.9.1
+    Checking bumpalo v3.20.3
+    Checking hashbrown v0.17.1
+    Checking terrain v0.2.0 (/workspace/JBRS/terrain)
+    Checking zopfli v0.8.4
+   Compiling renderer_gl21 v0.1.0 (/workspace/JBRS/renderer_gl21)
+    Checking flate2 v1.1.10
+    Checking serde_json v1.0.154
+    Checking roads v0.2.0 (/workspace/JBRS/roads)
+    Checking indexmap v2.14.2
+    Checking buildings v0.2.0 (/workspace/JBRS/buildings)
+    Checking vehicles v0.1.0 (/workspace/JBRS/vehicles)
+    Checking vehicle_physics v0.1.0 (/workspace/JBRS/vehicle_physics)
+    Checking robberies v0.1.0 (/workspace/JBRS/robberies)
+    Checking world v0.1.0 (/workspace/JBRS/world)
+    Checking criminals v0.1.0 (/workspace/JBRS/criminals)
+    Checking player v0.1.0 (/workspace/JBRS/player)
+    Checking zip v2.6.1
+    Checking weapons v0.1.0 (/workspace/JBRS/weapons)
+    Checking save_system v0.1.0 (/workspace/JBRS/save_system)
+    Checking police v0.1.0 (/workspace/JBRS/police)
+    Checking mobile_controls v0.1.0 (/workspace/JBRS/mobile_controls)
+    Checking profiling v0.1.0 (/workspace/JBRS/profiling)
+    Checking minimap v0.1.0 (/workspace/JBRS/minimap)
+    Checking economy v0.1.0 (/workspace/JBRS/economy)
+    Checking shader_pack v0.1.0 (/workspace/JBRS/shader_pack)
+    Checking renderer_gles2 v0.1.0 (/workspace/JBRS/renderer_gles2)
+    Checking gui v0.1.0 (/workspace/JBRS/gui)
+    Checking jbrs v0.7.1 (/workspace/JBRS/game)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.63s

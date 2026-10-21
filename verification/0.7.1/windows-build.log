@@ -1,0 +1,34 @@
+   Compiling engine_core v0.1.0 (/workspace/JBRS/Windf/engine_core)
+   Compiling crc32fast v1.5.2
+   Compiling simd-adler32 v0.3.10
+   Compiling cfg-if v1.0.5
+   Compiling adler2 v2.0.1
+   Compiling memchr v2.8.3
+   Compiling miniz_oxide v0.9.1
+   Compiling bumpalo v3.20.3
+   Compiling log v0.4.34
+   Compiling zip v2.6.1
+   Compiling equivalent v1.0.3
+   Compiling hashbrown v0.17.1
+   Compiling flate2 v1.1.10
+   Compiling zopfli v0.8.4
+   Compiling terrain v0.2.0 (/workspace/JBRS/Windf/terrain)
+   Compiling indexmap v2.14.2
+   Compiling serde_json v1.0.154
+   Compiling roads v0.2.0 (/workspace/JBRS/Windf/roads)
+   Compiling vehicles v0.1.0 (/workspace/JBRS/Windf/vehicles)
+   Compiling buildings v0.2.0 (/workspace/JBRS/Windf/buildings)
+   Compiling vehicle_physics v0.1.0 (/workspace/JBRS/Windf/vehicle_physics)
+   Compiling save_system v0.1.0 (/workspace/JBRS/Windf/save_system)
+   Compiling shader_pack v0.1.0 (/workspace/JBRS/Windf/shader_pack)
+   Compiling renderer_gles2 v0.1.0 (/workspace/JBRS/Windf/renderer_gles2)
+   Compiling renderer_gl21 v0.1.0 (/workspace/JBRS/Windf/renderer_gl21)
+   Compiling gui v0.1.0 (/workspace/JBRS/Windf/gui)
+   Compiling world v0.1.0 (/workspace/JBRS/Windf/world)
+   Compiling robberies v0.1.0 (/workspace/JBRS/Windf/robberies)
+   Compiling player v0.1.0 (/workspace/JBRS/Windf/player)
+   Compiling weapons v0.1.0 (/workspace/JBRS/Windf/weapons)
+   Compiling criminals v0.1.0 (/workspace/JBRS/Windf/criminals)
+   Compiling police v0.1.0 (/workspace/JBRS/Windf/police)
+   Compiling jbrs v0.7.1 (/workspace/JBRS/Windf/game)
+    Finished `release` profile [optimized] target(s) in 14.25s

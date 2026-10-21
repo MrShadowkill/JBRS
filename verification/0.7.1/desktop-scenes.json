@@ -1,0 +1,23 @@
+[
+  {
+    "scene": "menu",
+    "exit": 0,
+    "frames": 60,
+    "shader_pack": "C13HPT",
+    "time": "night"
+  },
+  {
+    "scene": "train-new",
+    "exit": 0,
+    "frames": 60,
+    "shader_pack": "C13HPT",
+    "time": "night"
+  },
+  {
+    "scene": "jstore-front-new",
+    "exit": 0,
+    "frames": 60,
+    "shader_pack": "C13HPT",
+    "time": "night"
+  }
+]

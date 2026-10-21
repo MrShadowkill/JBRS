@@ -1,0 +1,6 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+JBRS: loading desktop shader pack /workspace/JBRS/shaders/packs/C13HPT/desktop/world.vert + /workspace/JBRS/shaders/packs/C13HPT/desktop/world.frag
+VEHICLE_CACHE parts=6 bytes=409536
+GEOMETRY scene_triangles=62570 world_triangles=56896 interior_triangles=0 quality=1 vehicles=3792 actors_and_effects=1282
+PROFILE scene=jstore-front-new frames=60 mean_ms=9.78 p95_ms=22.09 max_ms=52.22 rss_mb=183.4 gpu_mb=9.8 active_chunks=43 visible_chunks=18 effective_distance=304
+Rendered 60 frames; observed 0.3 FPS (host only)

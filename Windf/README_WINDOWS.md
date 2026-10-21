@@ -1,3 +1,5 @@
+Поточна збірка: **JBRS 0.7.1**. [Опис](UPDATE_0_7_1.md).
+
 Поточне оновлення транспорту: [TRANSPORT_UPDATE.md](TRANSPORT_UPDATE.md). Стара помилка навігації виправлена; актуальні результати наведено в кореневому `verification/transport/README.md`.
 
 # JBRS — Windows 11 x64
