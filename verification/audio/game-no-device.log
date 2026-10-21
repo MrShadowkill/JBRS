@@ -1,0 +1,6 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+Audio disabled: SDL audio initialization: Audio target 'missing_jbrs_driver' not available
+VEHICLE_CACHE parts=20 bytes=3003264
+GEOMETRY scene_triangles=64596 world_triangles=43014 interior_triangles=0 quality=1 vehicles=21486 actors_and_effects=96
+PROFILE scene=driving frames=90 mean_ms=14.72 p95_ms=18.63 max_ms=88.62 rss_mb=129.2 gpu_mb=6.2 active_chunks=37 visible_chunks=16 effective_distance=304
+Rendered 90 frames; observed 65.9 FPS (host only)

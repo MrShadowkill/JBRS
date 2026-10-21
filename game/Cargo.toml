@@ -1,8 +1,9 @@
 [package]
 name="jbrs"
-version="0.7.1"
+version="0.7.2"
 edition="2021"
 [dependencies]
+procedural_audio={path="../procedural_audio"}
 roads={path="../roads"}
 vehicle_physics={path="../vehicle_physics"}
 world={path="../world"}

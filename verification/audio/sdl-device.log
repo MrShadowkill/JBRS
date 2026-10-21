@@ -1,0 +1,4 @@
+   Compiling procedural_audio v0.1.0 (/workspace/JBRS/procedural_audio)
+    Finished `release` profile [optimized] target(s) in 0.10s
+     Running `/workspace/.jbrs-tools/target/release/examples/device_check`
+SDL queue/resume check passed: 8192 queued bytes

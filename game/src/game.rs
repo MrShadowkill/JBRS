@@ -62,6 +62,9 @@ struct Game {
     punch_time: f32,
     punch_done: bool,
     movement: f32,
+    foot_distance: f32,
+    foot_events: u8,
+    sound_throttle: f32,
     camera: Option<[f32; 3]>,
     training_time: f32,
     armory: bool,
@@ -193,6 +196,9 @@ impl Game {
             punch_time: 0.,
             punch_done: false,
             movement: 0.,
+            foot_distance: 0.,
+            foot_events: 0,
+            sound_throttle: 0.,
             camera: None,
             training_time: 0.,
             armory: false,
@@ -1576,6 +1582,8 @@ impl Game {
                 }
             }
         }
+        self.sound_throttle = forward;
+        self.track_footsteps(previous, sprint);
         let moving = self.player.pos.distance(previous) > 0.001 && self.driving.is_none();
         self.movement += ((if moving { 1. } else { 0. }) - self.movement) * STEP * 12.;
         self.player.animation += STEP * (if sprint { 1.5 } else { 1. });
@@ -3109,6 +3117,20 @@ pub fn run() -> Result<(), String> {
     let mut timings = Vec::with_capacity(if smoke { frame_limit } else { 0 });
     let tour = smoke && std::env::var("JBRS_SCENE").as_deref() == Ok("tour");
     let mut frames = 0;
+    let mut audio = if std::env::var("JBRS_AUDIO").as_deref() == Ok("0") {
+        None
+    } else {
+        match procedural_audio::Audio::open() {
+            Ok(a) => {
+                println!("AUDIO SDL stereo 22050 Hz procedural synthesis");
+                Some(a)
+            }
+            Err(e) => {
+                eprintln!("Audio disabled: {e}");
+                None
+            }
+        }
+    };
     let mut running = true;
     while running {
         let frame_start = std::time::Instant::now();
@@ -3166,6 +3188,9 @@ pub fn run() -> Result<(), String> {
             }
         }
         if backgrounded {
+            if let Some(a) = audio.as_mut() {
+                let _ = a.pump(&Default::default());
+            }
             std::thread::sleep(std::time::Duration::from_millis(20));
             continue;
         }
@@ -3194,6 +3219,13 @@ pub fn run() -> Result<(), String> {
         if smoke && std::env::var("JBRS_SCENE").as_deref() == Ok("skyline-new") {
             g.player.pos = Vec3::new(260., 36., -90.);
             g.player.vy = 0.;
+        }
+        let sound_scene = g.sound_scene();
+        if let Some(a) = audio.as_mut() {
+            if let Err(e) = a.pump(&sound_scene) {
+                eprintln!("Audio disabled: {e}");
+                audio = None;
+            }
         }
         g.draw(&mut r);
         g.stats.render_ms = render_start.elapsed().as_secs_f32() * 1000.;
@@ -4262,3 +4294,5 @@ mod residential_regressions {
 }
 
 include!("touch_game.rs");
+
+include!("sound.rs");
