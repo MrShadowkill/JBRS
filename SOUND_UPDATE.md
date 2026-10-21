@@ -1,4 +1,6 @@
-# JBRS 0.7.2 — процедурний звук
+# JBRS 0.7.3 — процедурний звук
+
+Тон двигунів і сирени знижено до 70% попередньої частоти. Частоти кроків знижено до 30%, амплітуду — до 25% (−12 dB до лімітера).
 
 Звуки генеруються під час гри з синусоїд, зсувів фаз, гармонік і огинаючих. Для відтворення не потрібні WAV/MP3 чи зовнішні семпли.
 
@@ -26,4 +28,4 @@
 
 Результати перевірок: [verification/audio/README.md](https://github.com/MrShadowkill/JBRS/blob/main/verification/audio/README.md).
 
-Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.2-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.2-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).
+Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.3-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.3-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).

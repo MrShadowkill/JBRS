@@ -1,0 +1,11 @@
+{
+  "engine_and_siren_frequency_ratio": 0.7,
+  "step_frequency_ratio": 0.3,
+  "step_amplitude_ratio_before_limiter": 0.25,
+  "step_rms_ratio_after_limiter": [
+    0.3191988781081924,
+    0.26875772301258893,
+    0.27304581900737906,
+    0.27220502957378656
+  ]
+}

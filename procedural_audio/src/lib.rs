@@ -163,11 +163,13 @@ impl Synth {
                 let rpm = idle
                     + (redline - idle)
                         * ((gear.fract() * 0.65 + load * 0.23 + speed * 0.12).clamp(0., 1.));
-                let hz = if electric {
-                    120. + speed * 1400.
-                } else {
-                    rpm / 60. * pulses
-                };
+                // Lower the whole engine register while preserving each voice's harmonics.
+                let hz = 0.7
+                    * if electric {
+                        120. + speed * 1400.
+                    } else {
+                        rpm / 60. * pulses
+                    };
                 v.hz += (hz - v.hz) * 0.0008;
                 v.pan += (safe(e.pan, -1., 1.) - v.pan) * 0.002;
                 advance(&mut v.phase, v.hz);
@@ -184,7 +186,7 @@ impl Synth {
                         0.55 + load * 0.45
                     });
                 advance(&mut v.siren_sweep, 0.65);
-                let sweep = 850. + 350. * wave(table, v.siren_sweep);
+                let sweep = 0.7 * (850. + 350. * wave(table, v.siren_sweep));
                 advance(&mut v.siren_phase, sweep);
                 let siren =
                     wave(table, v.siren_phase) + 0.2 * wave(table, v.siren_phase * 2. + FRAC_PI_2);
@@ -200,9 +202,12 @@ impl Synth {
                     Surface::Metal => 340.,
                     Surface::Water => 430.,
                 };
-                advance(&mut self.foot_phase, base * (1. + (-t * 65.).exp() * 1.8));
+                advance(
+                    &mut self.foot_phase,
+                    base * 0.3 * (1. + (-t * 65.).exp() * 1.8),
+                );
                 let attack = (t * 900.).min(1.);
-                let envelope = attack * (-t * 32.).exp() * 0.3;
+                let envelope = attack * (-t * 32.).exp() * 0.075;
                 let s = (wave(table, self.foot_phase)
                     + 0.45 * wave(table, self.foot_phase * 2.73 + FRAC_PI_2)
                     + 0.18 * wave(table, self.foot_phase * 5.1 + 0.8))

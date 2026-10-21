@@ -1,6 +1,6 @@
 [package]
 name="jbrs"
-version="0.7.2"
+version="0.7.3"
 edition="2021"
 [dependencies]
 procedural_audio={path="../procedural_audio"}
