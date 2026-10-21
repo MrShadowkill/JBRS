@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="uk">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JBRS · Конвертор звуку</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#10151f;color:#edf3ff}*{box-sizing:border-box}body{margin:0;padding:32px 16px}main{max-width:740px;margin:auto}h1{font-size:30px;margin-bottom:8px}p{color:#b1bfd5;line-height:1.6}.card{background:#192231;border:1px solid #34435a;border-radius:18px;padding:24px;margin:20px 0}label{display:block;margin:20px 0 8px}input[type=range]{width:100%;accent-color:#74dabd}input[type=file]{max-width:100%}button,select{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid #50627e;background:#26374f;color:inherit}button{cursor:pointer}button.primary{background:#8ce4c8;color:#10251e;border:0}button:disabled{opacity:.4;cursor:default}.row{display:flex;gap:10px;flex-wrap:wrap}output{float:right;color:#8ce4c8}canvas{width:100%;height:100px;display:block;background:#10151f;border-radius:10px}#status{min-height:50px;overflow-wrap:anywhere}small{color:#b1bfd5}a{color:#8ce4c8}:focus-visible{outline:3px solid #8ce4c8;outline-offset:3px}
+</style>
+<main>
+<small>JBRS / AUDIO TOOLS</small><h1>Конвертор звуку → JSON</h1>
+<p>Відкрий звук, зміни тон і гучність, збережи JSON. Один HTML-файл, працює локально без завантаження звуків на сервер.</p>
+<section class="card">
+<label for="file">Аудіофайл або JSON цього конвертора</label>
+<input id="file" type="file" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac,.json">
+<p id="info">WAV, MP3, OGG та інші формати, які підтримує твій браузер. До 60 секунд і 25 МБ.</p>
+<canvas id="wave" width="1200" height="160" aria-label="Форма звукової хвилі"></canvas>
+<label for="pitch">Тон <output id="pitchValue">0 півтонів</output></label>
+<input id="pitch" type="range" min="-24" max="12" step="1" value="0">
+<small>Зниження тону також сповільнює звук і збільшує його тривалість.</small>
+<label for="volume">Гучність <output id="volumeValue">100%</output></label>
+<input id="volume" type="range" min="0" max="100" value="100">
+<div class="row" style="margin-top:20px">
+<button id="play" disabled>▶ Прослухати</button><button id="stop" disabled>■ Стоп</button><button id="reset">Скинути</button>
+<button id="low">Нижчий тон</button><button id="steps">Тихі низькі кроки</button>
+</div>
+</section>
+<section class="card">
+<label for="format">Формат JSON</label>
+<select id="format"><option value="sine">Функції синусоїд — наближення</option><option value="pcm">PCM16 — збереження звуку</option></select>
+<p>Синусоїди: звук розкладається на короткі блоки з частотами, амплітудами й фазами. Тембр може змінюватись, особливо для шумів і кроків. PCM16 зберігає моноаудіо точніше. Обидва формати містять налаштування тону й гучності.</p>
+<div class="row"><button class="primary" id="export" disabled>Зберегти .json</button><button id="wav" disabled>Зберегти змінений .wav</button></div>
+<p id="status" role="status" aria-live="polite">Завантаж звук, щоб почати.</p>
+<small>JSON — дані для функцій синтезу, а не виконуваний код. Його можна відкрити тут повторно. Імпорт цього формату в гру JBRS потребує окремого завантажувача.</small>
+</section>
+</main>
+<script>
+'use strict';
+const RATE=22050,N=1024,HOP=512,MAX=RATE*60;
+const $=id=>document.getElementById(id);
+let context, samples=null, source=null, gain=null, name='sound', busy=false, generation=0;
+const status=s=>$('status').textContent=s;
+function ctx(){if(!context)context=new(window.AudioContext||window.webkitAudioContext)();return context;}
+function settings(){return{semitones:Number($('pitch').value),gain:Number($('volume').value)/100};}
+function controls(){const s=settings();$('pitchValue').textContent=`${s.semitones} півтонів`;$('volumeValue').textContent=`${Math.round(s.gain*100)}%`;if(source)source.playbackRate.value=2**(s.semitones/12);if(gain)gain.gain.value=s.gain;}
+function buttons(){for(const id of ['play','export','wav'])$(id).disabled=busy||!samples;$('file').disabled=busy;$('stop').disabled=!source;}
+function stop(){generation++;if(source){source.onended=null;source.stop();source.disconnect();source=null;}if(gain){gain.disconnect();gain=null;}buttons();}
+function draw(){const c=$('wave'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.strokeStyle='#8ce4c8';g.beginPath();for(let x=0;x<c.width;x++){const start=Math.floor(x*samples.length/c.width),end=Math.max(start+1,Math.floor((x+1)*samples.length/c.width));let lo=0,hi=0;for(let i=start;i<end;i++){lo=Math.min(lo,samples[i]||0);hi=Math.max(hi,samples[i]||0);}g.moveTo(x,80+lo*75);g.lineTo(x,80+hi*75);}g.stroke();}
+function install(data,title){samples=data;name=title.replace(/\.[^.]+$/,'').replace(/[^\p{L}\p{N}_-]/gu,'_').slice(0,80)||'sound';$('info').textContent=`${title} · ${(data.length/RATE).toFixed(2)} с · моно · ${RATE} Гц`;draw();buttons();}
+function fft(re,im){for(let i=1,j=0;i<N;i++){let bit=N>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}}for(let len=2;len<=N;len*=2){const angle=-2*Math.PI/len;for(let start=0;start<N;start+=len){for(let j=0;j<len/2;j++){const c=Math.cos(angle*j),s=Math.sin(angle*j),a=start+j,b=a+len/2,tr=re[b]*c-im[b]*s,ti=re[b]*s+im[b]*c;re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;}}}}
+const windowAt=i=>0.5-0.5*Math.cos(2*Math.PI*i/N);
+const yieldUI=()=>new Promise(resolve=>setTimeout(resolve,0));
+async function sineEncode(data){const frames=[];for(let start=-HOP;start<data.length;start+=HOP){const re=new Float64Array(N),im=new Float64Array(N);for(let i=0;i<N;i++)re[i]=(data[start+i]||0)*windowAt(i);fft(re,im);const bins=[];for(let k=1;k<N/2;k++)bins.push([k,2*Math.hypot(re[k],im[k])/N,Math.atan2(im[k],re[k])+Math.PI/2]);bins.sort((a,b)=>b[1]-a[1]);frames.push({start,dc:re[0]/N,nyquist:re[N/2]/N,terms:bins.slice(0,32).filter(t=>t[1]>1e-7)});if(frames.length%32===0){status(`Аналіз синусоїд: ${Math.round(Math.max(0,start)/data.length*100)}%`);await yieldUI();}}return{window:'hann-periodic',fftSize:N,hop:HOP,frames};}
+function finite(x,min,max){return typeof x==='number'&&Number.isFinite(x)&&x>=min&&x<=max;}
+function validate(doc){if(!doc||doc.schema!=='jbrs.sound.v1'||doc.sampleRate!==RATE||!Number.isInteger(doc.length)||doc.length<1||doc.length>MAX)throw Error('Непідтримуваний формат JSON або довжина звуку.');const e=doc.effects;if(!e||!finite(e.semitones,-24,12)||!finite(e.gain,0,1))throw Error('Некоректні параметри тону або гучності.');}
+async function decodeJSON(doc){validate(doc);const out=new Float32Array(doc.length);if(doc.encoding==='pcm16-base64'){if(typeof doc.data!=='string'||doc.data.length!==4*Math.ceil(doc.length*2/3))throw Error('Некоректна довжина PCM.');const bytes=atob(doc.data);if(bytes.length!==doc.length*2)throw Error('Пошкоджені PCM-дані.');for(let i=0;i<out.length;i++){let v=bytes.charCodeAt(i*2)|(bytes.charCodeAt(i*2+1)<<8);if(v>=32768)v-=65536;out[i]=v/32768;}}else if(doc.encoding==='sine-frames'){const f=doc.functions;if(!f||f.fftSize!==N||f.hop!==HOP||f.window!=='hann-periodic'||!Array.isArray(f.frames)||f.frames.length!==Math.ceil(doc.length/HOP)+1)throw Error('Некоректні блоки синтезу.');const weights=new Float32Array(out.length);for(let index=0;index<f.frames.length;index++){const frame=f.frames[index];if(!frame||frame.start!==(index-1)*HOP||!finite(frame.dc,-1,1)||!finite(frame.nyquist,-1,1)||!Array.isArray(frame.terms)||frame.terms.length>32)throw Error('Пошкоджений блок синтезу.');for(const term of frame.terms)if(!Array.isArray(term)||term.length!==3||!Number.isInteger(term[0])||!finite(term[0],1,N/2-1)||!finite(term[1],0,2)||!finite(term[2],-10,10))throw Error('Некоректна синусоїда.');for(let i=0;i<N;i++){const p=frame.start+i;if(p<0||p>=out.length)continue;let v=frame.dc+frame.nyquist*(i%2?-1:1);for(const [bin,amplitude,phase] of frame.terms)v+=amplitude*Math.sin(2*Math.PI*bin*i/N+phase);const w=windowAt(i);out[p]+=v*w;weights[p]+=w*w;}if(index%32===0)await yieldUI();}for(let i=0;i<out.length;i++)out[i]=Math.max(-1,Math.min(1,out[i]/Math.max(1e-8,weights[i])));}else throw Error('Невідоме кодування JSON.');return out;}
+function pcmBytes(data){const bytes=new Uint8Array(data.length*2),v=new DataView(bytes.buffer);for(let i=0;i<data.length;i++)v.setInt16(i*2,Math.round(Math.max(-1,Math.min(1,data[i]))*32767),true);return bytes;}
+function base64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
+function download(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+async function action(fn){if(busy)return;busy=true;stop();buttons();try{await fn();}catch(e){status('Помилка: '+e.message);}finally{busy=false;buttons();}}
+$('file').onchange=()=>action(async()=>{const file=$('file').files[0];if(!file)return;if(file.size>25*1024*1024)throw Error('Файл завеликий. Максимум 25 МБ.');status('Читаю файл…');let data;if(/\.json$/i.test(file.name)){const doc=JSON.parse(await file.text());data=await decodeJSON(doc);$('pitch').value=doc.effects.semitones;$('volume').value=doc.effects.gain*100;$('format').value=doc.encoding==='sine-frames'?'sine':'pcm';}else{const audio=await ctx().decodeAudioData(await file.arrayBuffer());if(audio.duration>60)throw Error('Потрібен звук тривалістю до 60 секунд.');const length=Math.round(audio.duration*RATE);if(length<1)throw Error('Порожній звук.');const offline=new OfflineAudioContext(1,length,RATE),s=offline.createBufferSource();s.buffer=audio;s.connect(offline.destination);s.start();data=(await offline.startRendering()).getChannelData(0).slice();$('pitch').value=0;$('volume').value=100;}install(data,file.name);controls();status('Готово. Можна прослухати й експортувати.');});
+$('play').onclick=async()=>{try{stop();const token=generation;await ctx().resume();if(token!==generation)return;source=ctx().createBufferSource();const buffer=ctx().createBuffer(1,samples.length,RATE);buffer.copyToChannel(samples,0);source.buffer=buffer;gain=ctx().createGain();source.connect(gain).connect(ctx().destination);source.onended=()=>{source.disconnect();gain.disconnect();source=null;gain=null;buttons();};controls();source.start();buttons();}catch(e){stop();status('Не вдалося відтворити: '+e.message);}};
+$('stop').onclick=()=>{generation++;stop();};
+$('pitch').oninput=$('volume').oninput=controls;
+$('reset').onclick=()=>{$('pitch').value=0;$('volume').value=100;controls();};
+$('low').onclick=()=>{$('pitch').value=-6;controls();};
+$('steps').onclick=()=>{$('pitch').value=-21;$('volume').value=25;controls();};
+$('export').onclick=()=>action(async()=>{const doc={schema:'jbrs.sound.v1',name,sampleRate:RATE,length:samples.length,channels:1,effects:settings()};if($('format').value==='sine'){doc.encoding='sine-frames';doc.functions=await sineEncode(samples);}else{doc.encoding='pcm16-base64';doc.data=base64(pcmBytes(samples));}download(new Blob([JSON.stringify(doc)],{type:'application/json'}),name+'.json');status('JSON збережено. Налаштування тону й гучності застосовуються при відтворенні.');});
+$('wav').onclick=()=>action(async()=>{const s=settings(),rate=2**(s.semitones/12),length=Math.ceil(samples.length/rate),data=new Float32Array(length);for(let i=0;i<length;i++){const p=i*rate,j=Math.floor(p),f=p-j;data[i]=((samples[j]||0)*(1-f)+(samples[j+1]||0)*f)*s.gain;}const pcm=pcmBytes(data),buffer=new ArrayBuffer(44+pcm.length),v=new DataView(buffer);function text(at,t){for(let i=0;i<t.length;i++)v.setUint8(at+i,t.charCodeAt(i));}text(0,'RIFF');v.setUint32(4,36+pcm.length,true);text(8,'WAVE');text(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,RATE,true);v.setUint32(28,RATE*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);text(36,'data');v.setUint32(40,pcm.length,true);new Uint8Array(buffer,44).set(pcm);download(new Blob([buffer],{type:'audio/wav'}),name+'-edited.wav');status('Змінений WAV збережено.');});
+</script>
+</html>
