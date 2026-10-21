@@ -1,0 +1,21 @@
+{
+  "full": {
+    "vertices": 1026781,
+    "faces": 766320,
+    "groups": 521,
+    "error": "",
+    "preview": true
+  },
+  "focused": {
+    "group": "Cars/Vesper C240 0",
+    "isolated": true,
+    "vertices": 2427,
+    "faces": 766320
+  },
+  "originalPartImport": {
+    "vertices": 89997,
+    "faces": 75273,
+    "error": ""
+  },
+  "browserErrors": []
+}

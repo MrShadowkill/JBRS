@@ -1,0 +1,82 @@
+{
+  "vertices": 1026781,
+  "faces": 766320,
+  "source_triangles": 1477156,
+  "box_primitives": 48045,
+  "building_exteriors": 101,
+  "groups": 521,
+  "bytes": 111531887,
+  "parts": [
+    {
+      "file": "parts/part-000.json",
+      "vertices": 89997,
+      "faces": 75273
+    },
+    {
+      "file": "parts/part-001.json",
+      "vertices": 89997,
+      "faces": 70254
+    },
+    {
+      "file": "parts/part-002.json",
+      "vertices": 89993,
+      "faces": 68366
+    },
+    {
+      "file": "parts/part-003.json",
+      "vertices": 89994,
+      "faces": 49646
+    },
+    {
+      "file": "parts/part-004.json",
+      "vertices": 89997,
+      "faces": 49674
+    },
+    {
+      "file": "parts/part-005.json",
+      "vertices": 89999,
+      "faces": 72564
+    },
+    {
+      "file": "parts/part-006.json",
+      "vertices": 89994,
+      "faces": 73150
+    },
+    {
+      "file": "parts/part-007.json",
+      "vertices": 90000,
+      "faces": 67500
+    },
+    {
+      "file": "parts/part-008.json",
+      "vertices": 90000,
+      "faces": 67500
+    },
+    {
+      "file": "parts/part-009.json",
+      "vertices": 89993,
+      "faces": 69794
+    },
+    {
+      "file": "parts/part-010.json",
+      "vertices": 89997,
+      "faces": 73366
+    },
+    {
+      "file": "parts/part-011.json",
+      "vertices": 36919,
+      "faces": 29233
+    }
+  ],
+  "chunks": 256,
+  "building_interiors": 54,
+  "cars": 29,
+  "train_wagons": 25,
+  "source": "JBRS 0.7.5, LOD0 world + high-detail car meshes; fresh initial fleet snapshot",
+  "notes": [
+    "Quad faces retain the source triangle diagonal 0-2. No world geometry was culled.",
+    "Box primitives have separate vertex indices so the editor can select them independently. The optional primitives table identifies their vertices/faces; the editor uses the standard vertices/faces/faceMaterials fields.",
+    "Runtime physics, scripts, lighting and animations are not part of this editor format. Cars and the freight train are static snapshots.",
+    "Colors are exported; shader material IDs and UV atlas effects are not supported."
+  ]
+}

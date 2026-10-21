@@ -1,0 +1,4 @@
+   Compiling jbrs v0.7.5 (/workspace/JBRS/game)
+    Finished `release` profile [optimized] target(s) in 2.73s
+     Running `/workspace/.jbrs-tools/target/release/examples/export_editor /tmp/jbrs-map-meshes`
+Exported all 256 LOD0 chunks, 54 building interiors and sewer

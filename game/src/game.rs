@@ -4296,3 +4296,9 @@ mod residential_regressions {
 include!("touch_game.rs");
 
 include!("sound.rs");
+
+#[path = "export_editor.rs"]
+mod export_editor;
+pub fn export_editor_map(path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    export_editor::export(path)
+}

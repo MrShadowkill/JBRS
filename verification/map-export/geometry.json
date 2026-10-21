@@ -1,0 +1,9 @@
+{
+  "all_face_indices_valid": true,
+  "all_coordinates_finite": true,
+  "source_triangles_accounted_for": 1477156,
+  "independent_box_primitives": 48045,
+  "parts_cover_all_faces": true,
+  "parts_within_original_editor_limits": true,
+  "workspace_tests": 160
+}

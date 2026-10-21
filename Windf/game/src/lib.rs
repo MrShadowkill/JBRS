@@ -29,3 +29,7 @@ pub extern "C" fn SDL_main(_argc: i32, _argv: *mut *mut std::ffi::c_char) -> i32
         }
     }
 }
+
+pub fn export_editor_map(path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    game::export_editor_map(path)
+}
