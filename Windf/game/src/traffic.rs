@@ -23,9 +23,19 @@ impl Traffic {
         let initial_serial = (seed % graph.nodes.len().max(1) as u64) as usize;
         // Keep initial fleet placement on established arteries when local streets
         // are added; new streets remain available to routing and patrol targets.
-        let spawn_nodes: Vec<_> = world.roads.iter()
-            .filter(|r| !matches!(r.name, "West bank street" | "North bridge link" |
-                "South perimeter" | "South city street" | "East perimeter"))
+        let spawn_nodes: Vec<_> = world
+            .roads
+            .iter()
+            .filter(|r| {
+                !matches!(
+                    r.name,
+                    "West bank street"
+                        | "North bridge link"
+                        | "South perimeter"
+                        | "South city street"
+                        | "East perimeter"
+                )
+            })
             .flat_map(|r| r.points.iter().copied())
             .filter(|p| !prison_parking_zone(*p))
             .collect();
