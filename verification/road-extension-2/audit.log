@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running `/workspace/.jbrs-tools/target/debug/examples/audit_roads`
+land centerline samples 2305; deviations >20cm: 0

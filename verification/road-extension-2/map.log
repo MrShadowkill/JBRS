@@ -1,0 +1,6 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+AUDIO SDL stereo 22050 Hz procedural synthesis
+VEHICLE_CACHE parts=2 bytes=139968
+GEOMETRY scene_triangles=99950 world_triangles=97392 interior_triangles=60024 quality=1 vehicles=1296 actors_and_effects=598
+PROFILE scene=map frames=240 mean_ms=24.12 p95_ms=29.35 max_ms=44.36 rss_mb=134.6 gpu_mb=15.8 active_chunks=46 visible_chunks=18 effective_distance=316
+Rendered 240 frames; observed 46.7 FPS (host only)

@@ -34,6 +34,12 @@ impl Traffic {
                         | "South perimeter"
                         | "South city street"
                         | "East perimeter"
+                        | "Midtown avenue"
+                        | "Market avenue"
+                        | "Central cross street"
+                        | "South district street"
+                        | "West bank south link"
+                        | "Northwest distributor"
                 )
             })
             .flat_map(|r| r.points.iter().copied())

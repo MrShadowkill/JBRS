@@ -371,6 +371,37 @@ pub fn network() -> Vec<Road> {
             vec![(-120., 300.), (-120., 380.), (-120., 450.)],
         ),
         (
+            "Midtown avenue",
+            vec![
+                (-560., 75.),
+                (-280., 75.),
+                (0., 75.),
+                (160., 75.),
+                (320., 75.),
+                (480., 75.),
+            ],
+        ),
+        (
+            "Market avenue",
+            vec![(0., 215.), (160., 215.), (320., 215.), (480., 215.)],
+        ),
+        (
+            "Central cross street",
+            vec![(320., 75.), (320., 140.), (320., 300.), (320., 450.)],
+        ),
+        (
+            "South district street",
+            vec![(270., 300.), (270., 380.), (270., 450.)],
+        ),
+        (
+            "West bank south link",
+            vec![(-560., 300.), (-560., 380.), (-560., 450.)],
+        ),
+        (
+            "Northwest distributor",
+            vec![(-350., -280.), (-300., -140.), (-240., 0.)],
+        ),
+        (
             "East perimeter",
             vec![
                 (740., 0.),
@@ -533,6 +564,12 @@ mod tests {
                     | "South perimeter"
                     | "South city street"
                     | "East perimeter"
+                    | "Midtown avenue"
+                    | "Market avenue"
+                    | "Central cross street"
+                    | "South district street"
+                    | "West bank south link"
+                    | "Northwest distributor"
             )
         }) {
             for p in [road.points[0], *road.points.last().unwrap()] {
