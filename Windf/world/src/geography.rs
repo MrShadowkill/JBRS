@@ -599,7 +599,11 @@ pub fn build() -> World {
                     (x - building.p.x).abs() < building.size.x * 0.5 + 2.0
                         && (z - building.p.z).abs() < building.size.z * 0.5 + 2.0
                 });
+                let in_road = roadnet.iter().any(|other| {
+                    other.distance(Vec3::new(x, 0., z)).0 < other.width * 0.5 + 3.
+                });
                 if !near_building
+                    && !in_road
                     && terrain::railway::nearest(Vec3::new(x, 0., z)).0 > 7.0
                     && x.abs() < 930.0
                     && z.abs() < 930.0

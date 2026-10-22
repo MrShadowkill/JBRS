@@ -197,7 +197,7 @@ fn spline(name: &'static str, control: &[(f32, f32)], width: f32, highway: bool)
     }
 }
 pub fn deck(x: f32, z: f32) -> f32 {
-    if (x - terrain::river_center(z)).abs() < 60. && (-500. ..700.).contains(&z) {
+    let base = if (x - terrain::river_center(z)).abs() < 60. && (-500. ..700.).contains(&z) {
         let t = 1. - ((x - terrain::river_center(z)).abs() / 60.).clamp(0., 1.);
         2. * t * t * (3. - 2. * t)
     } else if x > 420. && (-260. ..500.).contains(&z) {
@@ -206,7 +206,12 @@ pub fn deck(x: f32, z: f32) -> f32 {
         2. * (1. - ((x - (-610. + 24. * (z * 0.012).sin())).abs() / 42.).clamp(0., 1.))
     } else {
         0.
-    }
+    };
+    // The south perimeter crosses the western lake as well as the river.
+    // A broad approach keeps the lake bridge above water without a step.
+    let lake_radius = ((x + 540.) / 115.).hypot((z - 430.) / 90.);
+    let t = ((1.45 - lake_radius) / 0.75).clamp(0., 1.);
+    base.max(2. * t * t * (3. - 2. * t))
 }
 pub fn network() -> Vec<Road> {
     let mut r = Vec::new();
@@ -331,6 +336,71 @@ pub fn network() -> Vec<Road> {
         7.5,
         false,
     ));
+    // Ordinary streets complete the west bank and southern perimeter from the map.
+    // Keep these after the original roads so existing spawn anchors stay stable.
+    for (name, control) in [
+        (
+            "West bank street",
+            vec![(-560., -260.), (-560., 0.), (-560., 140.), (-560., 300.)],
+        ),
+        (
+            "North bridge link",
+            vec![
+                (-680., -280.),
+                (-560., -280.),
+                (-350., -280.),
+                (-280., -260.),
+                (0., -300.),
+            ],
+        ),
+        (
+            "South perimeter",
+            vec![
+                (-700., 300.),
+                (-680., 400.),
+                (-520., 450.),
+                (-300., 450.),
+                (0., 450.),
+                (160., 450.),
+                (480., 450.),
+                (620., 430.),
+            ],
+        ),
+        (
+            "South city street",
+            vec![(-120., 300.), (-120., 380.), (-120., 450.)],
+        ),
+        (
+            "East perimeter",
+            vec![
+                (740., 0.),
+                (800., 60.),
+                (820., 120.),
+                (800., 240.),
+                (740., 300.),
+            ],
+        ),
+    ] {
+        let mut control = control;
+        // Snap new endpoints to existing samples; visual proximity alone does not
+        // guarantee a junction in the traffic graph.
+        for index in [0, control.len() - 1] {
+            let (x, z) = control[index];
+            if let Some(p) = r
+                .iter()
+                .flat_map(|road| &road.points)
+                .filter(|p| (p.x - x).hypot(p.z - z) < 20.)
+                .min_by(|a, b| {
+                    (a.x - x)
+                        .hypot(a.z - z)
+                        .total_cmp(&(b.x - x).hypot(b.z - z))
+                })
+            {
+                control[index] = (p.x, p.z);
+            }
+        }
+        r.push(spline(name, &control, 7.5, false));
+    }
     align_rail_crossings(&mut r);
     stitch_junctions(&mut r);
     r
@@ -451,6 +521,34 @@ pub fn connected(roads: &[Road], start: Vec3, end: Vec3) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn extension_routes_join_city_and_cross_water_above_the_bed() {
+        let roads = network();
+        let graph = routing::Network::new(&roads);
+        for road in roads.iter().filter(|r| {
+            matches!(
+                r.name,
+                "West bank street"
+                    | "North bridge link"
+                    | "South perimeter"
+                    | "South city street"
+                    | "East perimeter"
+            )
+        }) {
+            for p in [road.points[0], *road.points.last().unwrap()] {
+                assert!(
+                    graph.route(p, Vec3::new(0., 0., 0.)).is_some(),
+                    "{} disconnected at {p:?}",
+                    road.name
+                );
+            }
+            for p in &road.points {
+                if terrain::height(p.x, p.z) < -0.5 {
+                    assert!(p.y > 0.5, "{} submerged at {p:?}", road.name);
+                }
+            }
+        }
+    }
     #[test]
     fn bridge_grade() {
         let r = network();

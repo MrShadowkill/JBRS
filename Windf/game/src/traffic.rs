@@ -21,10 +21,12 @@ impl Traffic {
     pub fn with_seed(world: &World, cars: &mut Vec<Car>, seed: u64) -> Self {
         let graph = roads::routing::Network::new(&world.roads);
         let initial_serial = (seed % graph.nodes.len().max(1) as u64) as usize;
-        let spawn_nodes: Vec<_> = graph
-            .nodes
-            .iter()
-            .copied()
+        // Keep initial fleet placement on established arteries when local streets
+        // are added; new streets remain available to routing and patrol targets.
+        let spawn_nodes: Vec<_> = world.roads.iter()
+            .filter(|r| !matches!(r.name, "West bank street" | "North bridge link" |
+                "South perimeter" | "South city street" | "East perimeter"))
+            .flat_map(|r| r.points.iter().copied())
             .filter(|p| !prison_parking_zone(*p))
             .collect();
         let mut drivers = Vec::new();
