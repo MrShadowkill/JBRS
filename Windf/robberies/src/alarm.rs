@@ -21,11 +21,7 @@ pub const SITES: [Site; 7] = [
     },
     Site {
         name: "DONUT SHOP",
-        center: Vec3 {
-            x: 110.,
-            y: 1.,
-            z: 240.,
-        },
+        center: engine_core::locations::donut::CENTER,
         radius: 40.,
         reward: 80,
         collect: 3.,
@@ -117,6 +113,9 @@ impl Alarm {
         true
     }
     pub fn case(id: usize) -> Vec3 {
+        if id == 1 {
+            return engine_core::locations::donut::REGISTER_REACH;
+        }
         let p = SITES[id].center;
         Vec3::new(
             p.x,

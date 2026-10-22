@@ -83,6 +83,7 @@ pub struct Synth {
     foot_surface: Surface,
     foot_side: f32,
     steps: clips::Steps,
+    limiter_gain: f32,
 }
 impl Default for Synth {
     fn default() -> Self {
@@ -94,6 +95,7 @@ impl Default for Synth {
             foot_surface: Surface::Pavement,
             foot_side: 1.,
             steps: clips::Steps::default(),
+            limiter_gain: 1.,
         }
     }
 }
@@ -240,9 +242,18 @@ impl Synth {
             let (step_left, step_right) = self.steps.render();
             left += step_left;
             right += step_right;
-            // Fixed headroom and a soft limiter protect mixed emergency scenes.
-            frame[0] = left / (1. + left.abs());
-            frame[1] = right / (1. + right.abs());
+            // Linear headroom avoids coloring every sample with saturation.
+            left *= 0.65;
+            right *= 0.65;
+            let peak = left.abs().max(right.abs());
+            let target = (0.85 / peak.max(0.85)).min(1.);
+            if target < self.limiter_gain {
+                self.limiter_gain = target;
+            } else {
+                self.limiter_gain += (target - self.limiter_gain) * 0.0002;
+            }
+            frame[0] = left * self.limiter_gain;
+            frame[1] = right * self.limiter_gain;
         }
         if out.len() % 2 == 1 {
             if let Some(last) = out.last_mut() {
@@ -375,5 +386,35 @@ mod phase_boundary_tests {
             let v = wave(&s.table, p);
             assert!(v.is_finite() && v.abs() < 0.001);
         }
+    }
+}
+
+#[cfg(test)]
+mod headroom_tests {
+    use super::*;
+    #[test]
+    fn simultaneous_sirens_engines_and_steps_keep_stereo_headroom() {
+        let mut s = Synth::default();
+        let mut scene = Scene {
+            active: true,
+            ..Default::default()
+        };
+        for (i, e) in scene.engines.iter_mut().enumerate() {
+            *e = Engine {
+                id: i as u32,
+                kind: i,
+                gain: 0.3,
+                speed: 40.,
+                maximum: 72.,
+                throttle: 1.,
+                siren: true,
+                ..Default::default()
+            };
+        }
+        s.step(Surface::Metal);
+        let mut out = vec![0.; RATE as usize * 2];
+        s.render(&scene, &mut out);
+        assert!(out.iter().all(|x| x.is_finite() && x.abs() <= 0.85001));
+        assert!(out.iter().any(|x| x.abs() > 0.03));
     }
 }

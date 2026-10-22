@@ -31,24 +31,61 @@ impl Road {
         }
         best
     }
-    /// Lowest deck inside the terrain cutting envelope, including sharp joints.
-    pub fn ground_cut(&self, p: Vec3) -> (f32, f32) {
-        let (distance, mut height) = self.distance(p);
-        if distance > self.width / 2. + 10. {
-            return (distance, height);
-        }
-        for s in self.points.windows(2) {
-            let a = s[0];
-            let b = s[1];
-            let (dx, dz) = (b.x - a.x, b.z - a.z);
-            let t = (((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz).max(0.001))
-                .clamp(0., 1.);
-            let d = (p.x - a.x - dx * t).hypot(p.z - a.z - dz * t);
-            if d < self.width / 2. + 3. {
-                height = height.min(a.y + (b.y - a.y) * t);
+    fn ribbon(&self, i: usize, width: f32) -> [Vec3; 4] {
+        let a = self.points[i];
+        let b = self.points[i + 1];
+        let (nx, nz) = self.normal(i);
+        let (bx, bz) = self.normal(i + 1);
+        let edge = |p: Vec3, dx: f32, dz: f32| {
+            let cross = if self.name != "Mountain tunnel" && terrain::height(p.x, p.z) >= -0.2 {
+                deck(p.x + dx, p.z + dz) - deck(p.x, p.z)
+            } else {
+                0.
+            };
+            Vec3::new(p.x + dx, p.y + cross, p.z + dz)
+        };
+        [
+            edge(a, nx * width, nz * width),
+            edge(b, bx * width, bz * width),
+            edge(b, -bx * width, -bz * width),
+            edge(a, -nx * width, -nz * width),
+        ]
+    }
+    /// Height on the actual ribbon triangles, rather than a lower neighboring segment.
+    pub fn covered_height(&self, p: Vec3) -> Option<f32> {
+        let mut height: Option<f32> = None;
+        for i in 0..self.points.len().saturating_sub(1) {
+            let a = self.points[i];
+            let b = self.points[i + 1];
+            let margin = self.width + 4.;
+            if p.x < a.x.min(b.x) - margin
+                || p.x > a.x.max(b.x) + margin
+                || p.z < a.z.min(b.z) - margin
+                || p.z > a.z.max(b.z) + margin
+            {
+                continue;
+            }
+            let q = self.ribbon(i, self.width / 2. + 2.);
+            for indices in [[0, 1, 2], [0, 2, 3]] {
+                let [a, b, c] = indices.map(|j| q[j]);
+                let denominator = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z);
+                if denominator.abs() < 1e-6 {
+                    continue;
+                }
+                let u = ((b.z - c.z) * (p.x - c.x) + (c.x - b.x) * (p.z - c.z)) / denominator;
+                let v = ((c.z - a.z) * (p.x - c.x) + (a.x - c.x) * (p.z - c.z)) / denominator;
+                let t = 1. - u - v;
+                if u >= -0.0001 && v >= -0.0001 && t >= -0.0001 {
+                    let y = a.y * u + b.y * v + c.y * t;
+                    height = Some(height.map_or(y, |h| h.min(y)));
+                }
             }
         }
-        (distance, height)
+        height
+    }
+    pub fn ground_cut(&self, p: Vec3) -> (f32, f32) {
+        let (d, y) = self.distance(p);
+        (d, self.covered_height(p).unwrap_or(y))
     }
     pub fn mesh(&self, key: (i32, i32), lod: u8, m: &mut Mesh) {
         let x0 = key.0 as f32 * 128.;
@@ -65,15 +102,7 @@ impl Road {
                 continue;
             }
             let (nx, nz) = self.normal(i);
-            let (bx, bz) = self.normal(i + 1);
-            let quad = |width: f32, dy: f32| {
-                [
-                    [a.x + nx * width, a.y + dy, a.z + nz * width],
-                    [b.x + bx * width, b.y + dy, b.z + bz * width],
-                    [b.x - bx * width, b.y + dy, b.z - bz * width],
-                    [a.x - nx * width, a.y + dy, a.z - nz * width],
-                ]
-            };
+            let quad = |width: f32, dy: f32| self.ribbon(i, width).map(|p| [p.x, p.y + dy, p.z]);
             m.quad(quad(self.width / 2. + 2., 0.025), [0.52, 0.54, 0.52], 1, 0.);
             m.quad(quad(self.width / 2., 0.05), [0.32, 0.34, 0.37], 0, 0.);
             if i % 2 == 0 {
@@ -282,8 +311,56 @@ pub fn network() -> Vec<Road> {
         7.5,
         false,
     ));
+    // Keep the new shop's marked east entrance clear of the north/south street.
+    for road in &mut r {
+        if road.name == "City street" && (road.points[0].x - 160.).abs() < 0.1 {
+            for p in &mut road.points {
+                let t = (-p.z / 40.).clamp(0., 1.);
+                p.x = 160. + (engine_core::locations::donut::ROAD_X - 160.) * t;
+                p.y = deck(p.x, p.z);
+            }
+        }
+    }
+    r.push(spline(
+        "Donut approach",
+        &[
+            (engine_core::locations::donut::ROAD_X, -80.),
+            (216., -80.),
+            (210., -80.),
+        ],
+        7.5,
+        false,
+    ));
     align_rail_crossings(&mut r);
+    stitch_junctions(&mut r);
     r
+}
+
+/// Shared endpoints use one height, including airport ramps entering flat access roads.
+pub fn stitch_junctions(roads: &mut [Road]) {
+    let ends: Vec<_> = roads
+        .iter()
+        .flat_map(|r| [r.points[0], *r.points.last().unwrap()])
+        .collect();
+    for road in roads {
+        for end in [0, road.points.len() - 1] {
+            let p = road.points[end];
+            let target = ends
+                .iter()
+                .filter(|q| q.distance(p) < 1.)
+                .map(|q| q.y)
+                .fold(p.y, f32::max);
+            if target - p.y < 0.01 {
+                continue;
+            }
+            for i in 0..road.points.len() {
+                let distance = road.points[i].distance(p);
+                if distance < 70. {
+                    road.points[i].y = road.points[i].y.max(target - distance * 0.035);
+                }
+            }
+        }
+    }
 }
 
 fn align_rail_crossings(roads: &mut [Road]) {

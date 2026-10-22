@@ -931,9 +931,12 @@ impl Game {
             self.notify("C4 PLANTED - 3 SECONDS - STEP BACK");
             return;
         }
-        if let Some(id) = self.world.buildings.iter().position(|b| {
-            b.interior && p.distance(Vec3::new(b.p.x, 1., b.p.z - b.size.z / 2.)) < 4.5 && p.y > 0.
-        }) {
+        if let Some(id) = self
+            .world
+            .buildings
+            .iter()
+            .position(|b| b.interior && p.distance(b.entrance()) < 4.5 && p.y > 0.)
+        {
             self.doors[id].open = !self.doors[id].open;
             self.notify("DOOR OPEN / CLOSE");
             return;
@@ -1455,12 +1458,10 @@ impl Game {
         };
         for (door, b) in self.doors.iter_mut().zip(&self.world.buildings) {
             if b.interior
-                && self.npcs.iter().any(|n| {
-                    n.disabled <= 0.
-                        && n.pos
-                            .distance(Vec3::new(b.p.x, b.p.y + 1., b.p.z - b.size.z / 2.))
-                            < 5.
-                })
+                && self
+                    .npcs
+                    .iter()
+                    .any(|n| n.disabled <= 0. && n.pos.distance(b.entrance()) < 5.)
             {
                 door.open = true;
             }
@@ -2097,6 +2098,9 @@ impl Game {
             }
         }
         for id in 0..SITES.len() {
+            if id == 1 {
+                continue;
+            }
             let q = Alarm::case(id);
             if q.distance(p) > 90. {
                 continue;
@@ -2169,6 +2173,19 @@ impl Game {
         r.cube([-250., 3., 100.], [3., 6., 3.], [0.9, 0.22, 0.15], 0.);
         for (door, b) in self.doors.iter().zip(&self.world.buildings) {
             if b.interior && p.distance(b.p) < quality.distance {
+                if b.name == "Donut Shop" {
+                    for side in [-1., 1.] {
+                        let hinge = engine_core::locations::donut::hinge(side);
+                        let model = buildings::donut_shop::model();
+                        r.solid_model(
+                            if side < 0. { &model.left } else { &model.right },
+                            [hinge.x, b.p.y + 0.06, hinge.z],
+                            -side * door.angle,
+                            [1.; 3],
+                        );
+                    }
+                    continue;
+                }
                 for side in [-1., 1.] {
                     let a = side * door.angle;
                     let cx = b.p.x + side * 1.5 - side * 0.75 * a.cos();
@@ -2180,6 +2197,41 @@ impl Game {
                         [0.3, 0.48, 0.56],
                         a,
                     );
+                }
+            }
+        }
+        if let Some((id, b)) = self
+            .world
+            .buildings
+            .iter()
+            .enumerate()
+            .find(|(_, b)| b.name == "Donut Shop")
+        {
+            if p.distance(b.p) < quality.distance {
+                for &(center, size, color, part) in buildings::donut_shop::GLASS {
+                    let (position, angle) = if part == 0 {
+                        (
+                            [
+                                b.p.x + center[0],
+                                b.p.y + center[1] + 0.06,
+                                b.p.z + center[2],
+                            ],
+                            0.,
+                        )
+                    } else {
+                        let side = part as f32;
+                        let h = engine_core::locations::donut::hinge(side);
+                        let a = -side * self.doors[id].angle;
+                        (
+                            [
+                                h.x + center[0] * a.cos() + center[2] * a.sin(),
+                                b.p.y + center[1] + 0.06,
+                                h.z - center[0] * a.sin() + center[2] * a.cos(),
+                            ],
+                            a,
+                        )
+                    };
+                    r.glass(position, size, color, angle);
                 }
             }
         }
@@ -2839,8 +2891,11 @@ pub fn run() -> Result<(), String> {
             "crawl" | "crouch" => (-100., -160., std::f32::consts::PI),
             "menu" => (-95., -83., std::f32::consts::PI),
             "weapon" => (60., 240., std::f32::consts::PI),
-            "dispatch" => (110., 240., std::f32::consts::PI),
-            "donut" | "alarm" => (110., 230., std::f32::consts::PI),
+            "dispatch" => (193., -80., std::f32::consts::PI),
+            "donut" | "donut-front-new" => (220., -80., -std::f32::consts::FRAC_PI_2),
+            "donut-inside" | "donut-inside-new" | "alarm" => {
+                (189., -72.5, -std::f32::consts::FRAC_PI_2)
+            }
             "gym" => (-260., 335., std::f32::consts::PI),
             "safehouse" => (-335., 315., std::f32::consts::PI),
             "factory" => (570., 165., std::f32::consts::PI),
@@ -4183,8 +4238,21 @@ mod tests {
             assert_eq!(
                 g.player.team,
                 Team::Prisoner,
-                "site {} positions {:?}",
+                "site {} drivers {:?} positions {:?}",
                 id,
+                g.traffic
+                    .drivers
+                    .iter()
+                    .filter(|d| d.incident)
+                    .map(|d| (
+                        g.cars[d.car].pos,
+                        g.cars[d.car].speed,
+                        d.route.iter().min_by(|a, b| a
+                            .distance(g.cars[d.car].pos)
+                            .total_cmp(&b.distance(g.cars[d.car].pos))),
+                        d.route.last()
+                    ))
+                    .collect::<Vec<_>>(),
                 g.npcs.iter().map(|n| n.pos).collect::<Vec<_>>()
             );
         }
@@ -4301,4 +4369,68 @@ include!("sound.rs");
 mod export_editor;
 pub fn export_editor_map(path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
     export_editor::export(path)
+}
+
+#[cfg(test)]
+mod imported_donut_tests {
+    use super::*;
+    #[test]
+    fn east_door_opens_and_the_real_counter_can_be_robbed() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        let id = g
+            .world
+            .buildings
+            .iter()
+            .position(|b| b.name == "Donut Shop")
+            .unwrap();
+        let b = &g.world.buildings[id];
+        let door = engine_core::locations::donut::DOOR;
+        assert!(g.doors[id].blocked(b, door, 0.45));
+        g.doors[id].open = true;
+        g.doors[id].tick(1.);
+        assert!(!g.doors[id].blocked(b, door, 0.45));
+        for x in 199..211 {
+            let p = Vec3::new(x as f32, 1., door.z);
+            assert!(!g.world.blocked(p, 0.45), "door path {x}");
+        }
+        g.player.pos = Vec3::new(187.3, 1., -72.5);
+        g.player.heading = -std::f32::consts::FRAC_PI_2;
+        assert!(!g.world.blocked(g.player.pos, 0.45));
+        assert!(g.clear(g.player.pos, Alarm::case(1)));
+        for _ in 0..3 {
+            g.punch_impact();
+        }
+        assert_eq!(g.alarm.hits[1], 3);
+        g.alarm.collecting = true;
+        g.alarm.tick(g.player.pos, 3.1);
+        assert_eq!(g.alarm.loot, 80);
+    }
+}
+
+#[cfg(test)]
+mod donut_response_test {
+    use super::*;
+    #[test]
+    fn dispatched_patrol_reaches_the_imported_donut_register() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        g.npcs.clear();
+        g.player.pos = Vec3::new(187.3, 1.06, -72.5);
+        g.player.heading = -std::f32::consts::FRAC_PI_2;
+        for _ in 0..3 {
+            g.punch_impact();
+        }
+        assert_eq!(g.alarm.site, Some(1));
+        for _ in 0..6000 {
+            g.simulate(0., 0., false, false, false);
+            if g.player.team == Team::Prisoner {
+                break;
+            }
+        }
+        assert_eq!(
+            g.player.team,
+            Team::Prisoner,
+            "patrol did not enter the imported shop"
+        );
+    }
 }

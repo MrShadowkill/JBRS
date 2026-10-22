@@ -3,12 +3,26 @@ use super::*;
 pub(crate) fn ground_sample<'a>(
     x: f32,
     z: f32,
-    roads: impl Iterator<Item = &'a Road>,
-    buildings: impl Iterator<Item = &'a Building>,
+    roads: impl Iterator<Item = &'a Road> + Clone,
+    buildings: impl Iterator<Item = &'a Building> + Clone,
 ) -> f32 {
     let raw = terrain::height(x, z);
     let track = terrain::railway::nearest(Vec3::new(x, 0., z));
-    if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. && track.0 > 14. {
+    let p = Vec3::new(x, 0., z);
+    if (-380. ..500.).contains(&x)
+        && (-350. ..350.).contains(&z)
+        && raw == 0.
+        && track.0 > 14.
+        && !roads.clone().any(|r| {
+            let (d, y) = r.distance(p);
+            d < r.width / 2. + 20. && y.abs() > 0.001
+        })
+        && !buildings.clone().any(|b| {
+            b.p.y.abs() > 0.001
+                && (x - b.p.x).abs() < b.size.x / 2. + 7.
+                && (z - b.p.z).abs() < b.size.z / 2. + 7.
+        })
+    {
         return 0.;
     }
     let road_list: Vec<_> = roads.collect();
@@ -26,15 +40,22 @@ pub(crate) fn ground_sample<'a>(
         }
     }
     let p = Vec3::new(x, 0., z);
-    if let Some((d, y, width, tunnel)) = road_list
+    if let Some((d, y, width, tunnel, _)) = road_list
         .iter()
         .map(|r| {
-            let (d, y) = r.ground_cut(p);
-            (d, y, r.width, r.name == "Mountain tunnel")
+            let (d, base) = r.distance(p);
+            let covered = r.covered_height(p);
+            (
+                d,
+                covered.unwrap_or(base),
+                r.width,
+                r.name == "Mountain tunnel",
+                covered.is_some(),
+            )
         })
         .min_by(|a, b| {
-            let ac = a.0 < a.2 / 2. + 10.;
-            let bc = b.0 < b.2 / 2. + 10.;
+            let ac = a.4;
+            let bc = b.4;
             match (ac, bc) {
                 (true, true) => a.1.total_cmp(&b.1),
                 (true, false) => std::cmp::Ordering::Less,
@@ -161,11 +182,13 @@ mod tests {
             for (i, p) in r.points.iter().enumerate() {
                 let (nx, nz) = r.normal(i);
                 for side in [-1., 1.] {
-                    let q = Vec3::new(p.x + nx * side * 1.6, p.y + 0.65, p.z + nz * side * 1.6);
+                    let mut q = Vec3::new(p.x + nx * side * 1.6, p.y + 0.65, p.z + nz * side * 1.6);
+                    let deck = r.covered_height(q).unwrap_or(p.y);
+                    q.y = deck + 0.65;
                     assert!(!w.blocked(q, 1.), "lane blocked {} {q:?}", r.name);
                     if r.name != "Mountain tunnel" {
                         assert!(
-                            w.ground_height(q.x, q.z) <= p.y + 0.15,
+                            w.ground_height(q.x, q.z) <= deck + 0.15,
                             "ground covers road {} {q:?}",
                             r.name
                         );
@@ -239,5 +262,41 @@ mod tests {
         assert!(
             (w.ground_height(water.x, water.z) - terrain::height(water.x, water.z)).abs() < 0.01
         );
+    }
+}
+
+#[cfg(test)]
+mod donut_roads_tests {
+    use super::*;
+    #[test]
+    fn imported_shop_and_approach_are_grounded_and_clear() {
+        let w = World::new();
+        assert_eq!(
+            w.buildings
+                .iter()
+                .filter(|b| b.name == "Donut Shop")
+                .count(),
+            1
+        );
+        assert!(!w
+            .buildings
+            .iter()
+            .any(|b| b.name == "Donut Shop" && (b.p.z - 240.).abs() < 1.));
+        for x in 208..230 {
+            let p = Vec3::new(x as f32, 1., -80.);
+            assert!(!w.blocked(p, 0.5), "approach {x}");
+            assert!(w.ground_height(p.x, p.z).abs() < 0.01);
+            assert!(w.vehicle_surface(p).abs() < 0.01);
+        }
+        for road in w.roads.iter().filter(|r| r.name == "City street") {
+            for p in &road.points {
+                assert!(
+                    p.x < 180. || p.x > 220. || p.z > -40. || p.z < -110.,
+                    "street crosses shop at {},{}",
+                    p.x,
+                    p.z
+                );
+            }
+        }
     }
 }

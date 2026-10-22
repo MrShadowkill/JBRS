@@ -232,3 +232,5 @@ impl Mesh {
         }
     }
 }
+
+pub mod locations;

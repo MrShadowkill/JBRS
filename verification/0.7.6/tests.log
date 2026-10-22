@@ -1,0 +1,449 @@
+   Compiling jbrs v0.7.6 (/workspace/JBRS/game)
+   Compiling world v0.1.0 (/workspace/JBRS/world)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/buildings-c93e7581767c6f8f)
+
+running 10 tests
+test apartment_rooms::tests::fixtures_fit_apartments_and_never_obstruct_lift ... ok
+test apartment_rooms::tests::rental_fixtures_fit_ground_floor_without_covering_front_door ... ok
+test apartments::tests::each_apartment_has_one_stash_and_lobby_none ... ok
+test jewelry::tests::beams_hit_their_visible_positions_and_allow_avoidance ... ok
+test jewelry::tests::upper_surfaces_never_snap_to_displays_on_lower_floors ... ok
+test jewelry::tests::ramp_surfaces_reach_each_floor_continuously ... ok
+test skyline::tests::decorative_roof_matches_collision_and_stays_in_footprint ... ok
+test donut_shop::tests::imported_geometry_keeps_east_doorway_and_register_access_clear ... ok
+test skyline::tests::city_lod_keeps_roof_and_reduces_facade_geometry ... ok
+test apartments::tests::only_active_floor_is_generated ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/criminals-77f5d564cd06334d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/economy-983fe9c15cdc7a03)
+
+running 1 test
+test tests::cannot_overspend ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/engine_core-2eee0380def26d45)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/gui-023e55c2762e1c2e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/jbrs-8cd122b98db58769)
+
+running 72 tests
+test escape::tests::every_star_requires_exact_hits ... ok
+test escape::tests::misses_and_timeout ... ok
+test fleet::tests::cycle_is_measured_in_active_time_and_changes_seed_each_round ... ok
+test doors::tests::door_blocks_when_closed_and_clears_center_when_open ... ok
+test game::expansion_tests::direct_engine_upgrade_is_atomic_and_reaches_five ... ok
+test game::expansion_tests::gold_train_robbery_opens_hatch_safe_and_side_escape ... ok
+test game::expansion_tests::casino_requires_five_answers_and_first_floor_loot ... ok
+test game::expansion_tests::jewelry_has_storage_roof_and_collector_pays_once ... ok
+test game::expansion_tests::immunity_blocks_taser_and_arrest_but_expires ... ok
+test game::expansion_tests::jewelry_laser_damage_matches_jump_crouch_and_alarm_state ... ok
+test game::expansion_tests::jewelry_upper_floors_cannot_break_ground_displays_or_collect_early ... ok
+test game::expansion_tests::train_requires_c4_and_questions_dont_accept_wrong_answers ... ok
+test game::imported_donut_tests::east_door_opens_and_the_real_counter_can_be_robbed ... ok
+test game::residential_regressions::furniture_cash_is_paid_once_across_reload ... ok
+test game::residential_regressions::low_wanted_does_not_track_through_building ... ok
+test game::siren_tests::only_dispatched_police_use_sirens ... ok
+test game::sound_tests::distant_cars_are_inaudible_and_menus_mute ... ok
+test game::sound_tests::footsteps_require_grounded_motion_and_are_consumed_once ... ok
+test game::tests::active_play_timer_rebuilds_fleet_and_keeps_robbery_progress ... ok
+test game::tests::akari_spawns_can_be_stolen_and_uses_its_own_saved_tuning ... ok
+test game::tests::armory_click_selection_purchase_equipment_and_ammo_are_real ... ok
+test game::tests::bank_timeout_discards_loot ... ok
+test game::tests::bank_security_beam_damages_player_inside_bank ... ok
+test game::expansion_tests::jewelry_ramps_are_walkable_through_real_player_simulation ... ok
+test game::tests::casino_stairs_support_player ... ok
+test game::tests::car_cannot_drive_through_cell_block ... ok
+test game::tests::crouch_and_crawl_keys_have_distinct_states_and_shorter_collision ... ok
+test game::tests::closed_gate_and_bomb_escape_are_real_collisions ... ok
+test game::tests::collection_requires_holding_and_bank_capacity_upgrade ... ok
+test game::tests::engine_brake_and_suspension_upgrades_charge_and_cap ... ok
+test game::tests::factory_collects_capacity_limited_loot_and_penthouse_lift_works ... ok
+test game::tests::gym_charges_increasing_cost_and_caps_levels ... ok
+test game::donut_response_test::dispatched_patrol_reaches_the_imported_donut_register ... ok
+test game::tests::legacy_police_team_loads_as_prisoner_without_resetting_progress ... ok
+test game::tests::menu_has_only_prisoner_and_criminal_player_choices ... ok
+test game::tests::moving_train_displaces_a_car_safely_and_keeps_riders_aligned ... ok
+test game::tests::no_free_pistol_purchase_costs_exactly_350 ... ok
+test game::tests::npc_robber_is_not_arrested_through_closed_door ... ok
+test game::tests::interaction_spam_cannot_rob_and_impacts_are_cooldown_limited ... ok
+test game::tests::officers_cannot_tase_through_closed_door_or_other_floor ... ok
+test game::tests::paid_vehicle_plans_survive_restart ... ok
+test game::tests::parked_vehicle_slots_are_in_town_and_clear_of_obstacles ... ok
+test game::tests::physical_sdl_keys_dispatch_cyrillic_and_modal_navigation ... ok
+test game::tests::police_patrol_the_city_and_swat_waits_for_high_wanted_levels ... ok
+test game::tests::parked_car_blocks_driving ... ok
+test game::tests::sedan_traverses_bridge ... ok
+test game::tests::rent_expires_and_own_apartment_cannot_be_robbed ... ok
+test game::tests::sewer_side_walls_prevent_surface_teleport ... ok
+test game::tests::sprint_drains_stamina_and_idle_recovers_it ... ok
+test game::tests::stealing_any_car_changes_role_and_no_garage_purchase_is_needed ... ok
+test game::tests::stealing_response_car_cancels_scripted_movement ... ok
+test game::tests::dispatched_police_walk_to_store_and_arrest_staying_player ... ok
+test game::tests::supplies_require_vendor_and_are_consumed_from_hotbar ... ok
+test game::tests::swat_reinforcements_return_to_regular_police_below_four_stars ... ok
+test game::tests::updated_tower_lift_reaches_furnished_floors_without_obstructions ... ok
+test game::tests::workshop_requires_location_and_charges_real_car_changes ... ok
+test game::touch_tests::android_back_closes_panels_and_clears_held_contacts ... ok
+test game::touch_tests::hotbar_last_slot_and_crouch_are_available_without_keyboard ... ok
+test game::tests::sewer_escape_walks_below_perimeter_and_uses_exit_ladder ... ok
+test game::touch_tests::mobile_event_routes_menu_tap_then_owns_and_releases_movement ... ok
+test game::touch_tests::quick_fire_tap_consumes_one_item_and_shop_buttons_preserve_crouch ... ok
+test heists::tests::cooldown_and_gold ... ok
+test heists::tests::questions_are_solvable_and_gate_completion ... ok
+test game::touch_tests::quiz_can_enter_and_delete_digits_with_touch ... ok
+test traffic::tests::regenerated_traffic_uses_new_non_prison_spawn_points ... ok
+test world_view::interior_regressions::interior_cache_changes_with_floor_and_clears_outside ... ok
+test world_view::interior_regressions::low_boot_and_streaming_use_coarse_geometry ... ok
+test world_view::tests::frustum_rejects_behind ... ok
+test world_view::tests::opaque_occluder_requires_intersection ... ok
+test game::tests::dispatched_police_enter_factory_and_apartment ... ok
+test game::tests::store_escape_pays_and_police_deadline_confiscates_loot ... ok
+test traffic::tests::patrol_physically_reaches_store ... ok
+
+test result: ok. 72 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 37.09s
+
+     Running unittests src/main.rs (/workspace/.jbrs-tools/target/debug/deps/jbrs-470531645568ab1e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/minimap-6b543108027ef9cb)
+
+running 1 test
+test tests::projection_matches_world_extent ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/mobile_controls-fbb0af69966f02c2)
+
+running 6 tests
+test tests::release_is_owned_by_finger_and_press_is_once ... ok
+test tests::joystick_is_clamped_and_dead_zone_is_stable ... ok
+test tests::contacts_and_queue_are_bounded ... ok
+test tests::cancelled_contacts_never_leave_actions_stuck ... ok
+test tests::short_jump_tap_survives_release_until_the_next_simulation_step ... ok
+test tests::simultaneous_move_look_and_jump ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/player-ae157d27c2877ec4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/police-14a46b9b442e462e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/procedural_audio-0f7fcb264fb21207)
+
+running 8 tests
+test continuity_tests::distance_ranking_changes_do_not_restart_oscillators ... ok
+test phase_boundary_tests::phase_wrap_handles_negative_roundoff ... ok
+test clips::tests::step_variants_preserve_tails_and_finish ... ok
+test tests::siren_pans_and_streaming_is_block_size_independent ... ok
+test tests::steps_decay_and_silence_stays_silent ... ok
+test headroom_tests::simultaneous_sirens_engines_and_steps_keep_stereo_headroom ... ok
+test clips::tests::loops_are_finite_and_crossfade_wrap_is_continuous ... ok
+test tests::voices_are_distinct_bounded_and_deterministic ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/profiling-c323de266a87d759)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/renderer_gl21-76d7126dc143e9d4)
+
+running 2 tests
+test keyboard_tests::physical_controls_ignore_layout_and_capslock ... ok
+test material_tests::atlas_resolutions_keep_tiles_and_add_real_texels ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/renderer_gles2-5f88790fba59b1cf)
+
+running 4 tests
+test keyboard_tests::physical_controls_ignore_layout_and_capslock ... ok
+test gl::tests::projection_does_not_change_model_stack ... ok
+test gl::tests::transform_order_matches_column_vector_gl ... ok
+test material_tests::atlas_resolutions_keep_tiles_and_add_real_texels ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/roads-a36eb7ab2a234415)
+
+running 4 tests
+test routing::tests::intersection_connects_but_overpass_does_not ... ok
+test tests::bridge_grade ... ok
+test tests::west_shore_rail_crossing_has_a_continuous_approach ... ok
+test tests::connected_destinations ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/robberies-c41049cbf6797d50)
+
+running 4 tests
+test alarm::tests::cannot_collect_from_outside_and_deadline_has_priority ... ok
+test alarm::tests::three_sites_pay_only_after_escape_and_once ... ok
+test alarm::tests::deadline_dispatches_and_late_escape_never_pays ... ok
+test tests::delivery_once ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/save_system-a97c42ae539e58b7)
+
+running 11 tests
+test recovery_tests::malformed_save_starts_fresh_without_overwriting_any_backup ... ok
+test recovery_tests::valid_save_is_loaded_without_backup_and_io_errors_are_not_reset ... ok
+test tests::legacy_police_player_migrates_to_prisoner_without_losing_progress ... ok
+test tests::purchased_weapon_and_quality_persist_legacy_has_no_free_gun ... ok
+test tests::roundtrip ... ok
+test tests::settings_and_training_persist_and_legacy_defaults_are_compatible ... ok
+test tests::six_vehicle_save_migrates_without_losing_upgrades ... ok
+test tests::disk_roundtrip_and_version_rejection ... ok
+test tests::seven_vehicle_save_preserves_every_existing_slot_and_defaults_akari ... ok
+test tests::weapons_leases_and_vehicle_plans_roundtrip ... ok
+test recovery_tests::invalid_settings_preserve_progress_and_exact_original_before_store ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/shader_pack-f1b601ec863b3ee9)
+
+running 3 tests
+test tests::reads_shader_pair_from_a_zip_without_extracting_it ... ok
+test tests::pairs_vertex_and_fragment_by_filename_stem ... ok
+test tests::reads_any_vertex_and_fragment_extension_from_a_folder ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/terrain-9aa3a8de019365a1)
+
+running 4 tests
+test tests::industrial_highlands_residential_lowlands_and_new_water_bodies ... ok
+test tests::central_flat_and_island ... ok
+test railway::tests::cars_follow_rails_and_do_not_overlap_each_other ... ok
+test railway::tests::alignment_stays_above_land_and_grade_is_bounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/vehicle_physics-d7f997c185e387b6)
+
+running 10 tests
+test tests::braking_large_dt_does_not_reverse_or_lose_elevation ... ok
+test contact_tests::fast_car_cannot_tunnel_and_rebounds_weakly ... ok
+test contact_tests::riverbed_is_drivable_and_downward_motion_has_gravity ... ok
+test tests::engine_upgrade_accelerates_and_brakes_upgrade_stops_faster ... ok
+test tests::reverse_steering_turns_smoothly_and_recenters ... ok
+test tests::high_speed_steering_ramps_and_limits_yaw_rate ... ok
+test train::tests::mass_traction_and_inertia_shape_acceleration ... ok
+test train::tests::cruise_control_stays_bounded_on_grade_changes ... ok
+test train::tests::uphill_slows_down_downhill_accelerates_and_braking_stops_without_reversing ... ok
+test tests::bounded_speed ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/vehicles-d89acd0c107000b8)
+
+running 6 tests
+test body::tests::imported_headlights_face_the_same_direction_as_vehicle_physics ... ok
+test body::tests::malformed_assets_return_meaningful_errors ... ok
+test body::tests::imported_body_skirts_are_paintable_but_wheel_centers_are_not ... ok
+test rail::tests::rail_geometry_stays_inside_streaming_bounds ... ok
+test body::tests::catalog_meshes_are_distinct_and_cached ... ok
+test body::tests::every_catalog_model_has_bounded_geometry_and_real_lod ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/weapons-42343eedd256c572)
+
+running 3 tests
+test tests::every_weapon_uses_its_magazine_cooldown_and_reload ... ok
+test tests::fire_and_reload ... ok
+test tests::targets_on_other_floor_are_not_hit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/workspace/.jbrs-tools/target/debug/deps/world-c709133e7973b187)
+
+running 16 tests
+test surfaces::donut_roads_tests::imported_shop_and_approach_are_grounded_and_clear ... ok
+test streaming::tests::closing_a_full_job_queue_does_not_deadlock ... ok
+test city_blocks::tests::infill_is_bounded_and_keeps_original_entrances_and_roads_clear ... ok
+test surfaces::tests::rail_embankment_supports_sleepers_but_stays_out_of_roads_and_water ... ok
+test surfaces::tests::water_mesh_is_flat_above_a_real_riverbed ... ok
+test surfaces::tests::forest_is_deterministic_irregular_and_avoids_transport ... ok
+test surfaces::tests::traffic_lanes_and_train_envelope_are_clear ... ok
+test tests::bridge_and_tunnel_surface ... ok
+test tests::elevated_factory_mesh_collision_and_surface_use_same_base ... ok
+test tests::every_cell_has_clear_doorway ... ok
+test tests::grass_chunks_have_sway_tags_and_lod_reduces_blades ... ok
+test tests::deterministic_rebuild ... ok
+test tests::map_audit ... ok
+test tests::prison_perimeter_has_no_free_gate_exit ... ok
+test tests::road_clearance ... ok
+test tests::navigation_exits_cell_block_without_crossing_walls ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.81s
+
+   Doc-tests buildings
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests criminals
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests economy
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests engine_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests gui
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests jbrs
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests minimap
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mobile_controls
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests player
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests police
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests procedural_audio
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests profiling
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests renderer_gl21
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests renderer_gles2
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roads
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests robberies
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests save_system
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests shader_pack
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests terrain
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests vehicle_physics
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests vehicles
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests weapons
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests world
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

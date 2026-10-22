@@ -1,0 +1,7 @@
+MOBILE_TARGET 640x360; UI 1024x576
+OpenGL OpenGL ES 2.0 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+AUDIO SDL stereo 22050 Hz procedural synthesis
+VEHICLE_CACHE parts=16 bytes=1066176
+GEOMETRY scene_triangles=47944 world_triangles=36336 interior_triangles=0 quality=1 vehicles=9872 actors_and_effects=1072
+PROFILE scene=donut-inside-new frames=60 mean_ms=31.07 p95_ms=40.49 max_ms=86.18 rss_mb=120.1 gpu_mb=7.2 active_chunks=38 visible_chunks=17 effective_distance=304
+Rendered 60 frames; observed 30.1 FPS (host only)

@@ -73,12 +73,18 @@ impl Collider {
 }
 impl Building {
     pub fn entrance(&self) -> Vec3 {
+        if self.name == "Donut Shop" {
+            return Vec3::new(donut_shop::DOOR.x + 2., self.p.y + 1., donut_shop::DOOR.z);
+        }
         Vec3::new(self.p.x, self.p.y + 1., self.p.z - self.size.z / 2. - 2.)
     }
     pub fn inside(&self, p: Vec3) -> bool {
         (p.x - self.p.x).abs() < self.size.x / 2. && (p.z - self.p.z).abs() < self.size.z / 2.
     }
     pub fn support(&self, p: Vec3) -> f32 {
+        if self.name == "Donut Shop" {
+            return self.p.y + 0.06;
+        }
         if self.name == "Jewelry" {
             if let Some(height) = jewelry::ramp_height(self, p) {
                 return height;
@@ -153,6 +159,9 @@ impl Building {
         out
     }
     fn local_colliders(&self) -> Vec<Collider> {
+        if self.name == "Donut Shop" {
+            return donut_shop::colliders(self);
+        }
         let mut out = self.shell_colliders();
         out.extend(self.crown());
         if self.name == "Jewelry" {
@@ -205,6 +214,10 @@ impl Building {
         }
     }
     fn local_mesh(&self, m: &mut Mesh, lod: u8) {
+        if self.name == "Donut Shop" {
+            donut_shop::exterior(self, m);
+            return;
+        }
         if self.name == "Jewelry" {
             self.jewelry_exterior(m, lod);
             return;
@@ -294,19 +307,10 @@ impl Building {
         }
         if lod > 0 {
             self.sign(m);
-            if self.name == "Donut Shop" {
-                m.torus([x, h + 3., z], [2.4, 0.65], [0.95, 0.45, 0.65], 8);
-            }
+
             return;
         }
-        if self.name == "Donut Shop" {
-            m.torus(
-                [x, h + 3., z],
-                [2.4, 0.65],
-                [0.86, 0.42, 0.63],
-                if lod == 0 { 24 } else { 8 },
-            );
-        }
+
         if matches!(self.name, "Donut Shop" | "Grocery" | "Weapons") {
             let color = match self.name {
                 "Donut Shop" => [0.85, 0.38, 0.65],
@@ -691,6 +695,9 @@ impl Building {
         m
     }
     fn local_interior_mesh(&self) -> Mesh {
+        if self.name == "Donut Shop" {
+            return Mesh::default();
+        }
         let mut m = Mesh::default();
         if self.name == "Jewelry" {
             self.jewelry_interior(&mut m);
@@ -750,9 +757,7 @@ impl Building {
         if matches!(self.name, "Grocery" | "Gas Station") {
             self.grocery_details_2(&mut m);
         }
-        if self.name == "Donut Shop" {
-            self.donut_shop_details_3(&mut m);
-        }
+
         if self.name == "Garage" || self.name == "Desert Garage" {
             self.garage_details_4(&mut m);
         }
@@ -777,9 +782,7 @@ impl Building {
         if matches!(self.name, "Grocery" | "Gas Station") {
             self.grocery_details_11(&mut m);
         }
-        if self.name == "Donut Shop" {
-            self.donut_shop_details_12(&mut m);
-        }
+
         if self.name == "Bank" {
             self.bank_details_13(&mut m);
         }
@@ -793,6 +796,9 @@ impl Building {
         m
     }
     pub fn roof_mesh(&self) -> Mesh {
+        if self.name == "Donut Shop" {
+            return donut_shop::roof(self);
+        }
         if self.name == "Jewelry" {
             return self.jewelry_roof();
         }

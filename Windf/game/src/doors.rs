@@ -21,6 +21,24 @@ impl Door {
         self.angle += d;
     }
     pub fn blocked(&self, b: &Building, p: Vec3, r: f32) -> bool {
+        if b.name == "Donut Shop" {
+            if p.y < b.p.y - 0.5 || p.y > b.p.y + 5.7 {
+                return false;
+            }
+            for side in [-1., 1.] {
+                let h = engine_core::locations::donut::hinge(side);
+                let a = -side * self.angle;
+                let offset = -side * 1.54;
+                let dx = p.x - h.x - offset * a.sin();
+                let dz = p.z - h.z - offset * a.cos();
+                if (dx * a.sin() + dz * a.cos()).abs() < 1.55 + r
+                    && (dx * a.cos() - dz * a.sin()).abs() < 0.16 + r
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         if !b.interior
             || p.y < b.p.y - 0.5
             || p.y > b.p.y + 4.5

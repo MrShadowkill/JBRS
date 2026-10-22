@@ -1,0 +1,4 @@
+   Compiling world v0.1.0 (/workspace/JBRS/world)
+    Finished `release` profile [optimized] target(s) in 0.17s
+     Running `/workspace/.jbrs-tools/target/release/examples/audit_roads`
+land centerline samples 1643; deviations >20cm: 0

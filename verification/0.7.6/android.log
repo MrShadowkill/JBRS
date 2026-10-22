@@ -1,0 +1,227 @@
++ cmake -S /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11 -B /workspace/.jbrs-tools/android-package/sdl-arm64 -G Ninja -DCMAKE_TOOLCHAIN_FILE=/workspace/.jbrs-tools/android-sdk/android-ndk-r27c/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-29 -DANDROID_STL=c++_static -DCMAKE_BUILD_TYPE=Release -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TEST=OFF -DSDL_HIDAPI=ON -DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384
+CMake Deprecation Warning at /workspace/.jbrs-tools/android-sdk/android-ndk-r27c/build/cmake/android.toolchain.cmake:35 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+Call Stack (most recent call first):
+  /workspace/.jbrs-tools/android-package/sdl-arm64/CMakeFiles/3.31.6/CMakeSystem.cmake:6 (include)
+  CMakeLists.txt:9 (project)
+
+
+CMake Deprecation Warning at /workspace/.jbrs-tools/android-sdk/android-ndk-r27c/build/cmake/android-legacy.toolchain.cmake:35 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+Call Stack (most recent call first):
+  /workspace/.jbrs-tools/android-sdk/android-ndk-r27c/build/cmake/android.toolchain.cmake:55 (include)
+  /workspace/.jbrs-tools/android-package/sdl-arm64/CMakeFiles/3.31.6/CMakeSystem.cmake:6 (include)
+  CMakeLists.txt:9 (project)
+
+
+CMake Deprecation Warning at /workspace/.jbrs-tools/android-sdk/android-ndk-r27c/build/cmake/flags.cmake:18 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+Call Stack (most recent call first):
+  /workspace/.jbrs-tools/android-build-venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Platform/Android-Clang.cmake:23 (include)
+  /workspace/.jbrs-tools/android-build-venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Platform/Android-Clang-C.cmake:1 (include)
+  /workspace/.jbrs-tools/android-build-venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeCInformation.cmake:48 (include)
+  CMakeLists.txt:9 (project)
+
+
+CMake Deprecation Warning at CMakeLists.txt:3249 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+--
+-- SDL2 was configured with the following options:
+--
+-- Platform: Android-1
+-- 64-bit:   TRUE
+-- Compiler: /workspace/.jbrs-tools/android-sdk/android-ndk-r27c/toolchains/llvm/prebuilt/linux-x86_64/bin/clang
+-- Revision: SDL-release-2.30.11-0-gfa24d868a
+--
+-- Subsystems:
+--   Atomic:	ON
+--   Audio:	ON
+--   Video:	ON
+--   Render:	ON
+--   Events:	ON
+--   Joystick:	ON
+--   Haptic:	ON
+--   Hidapi:	ON
+--   Power:	ON
+--   Threads:	ON
+--   Timers:	ON
+--   File:	ON
+--   Loadso:	ON
+--   CPUinfo:	ON
+--   Filesystem:	ON
+--   Sensor:	ON
+--   Locale:	ON
+--   Misc:	ON
+--
+-- Options:
+--   SDL2_DISABLE_INSTALL        (Wanted: OFF): OFF
+--   SDL2_DISABLE_SDL2MAIN       (Wanted: OFF): OFF
+--   SDL2_DISABLE_UNINSTALL      (Wanted: OFF): OFF
+--   SDL_3DNOW                   (Wanted: OFF): OFF
+--   SDL_ALSA                    (Wanted: OFF): OFF
+--   SDL_ALSA_SHARED             (Wanted: OFF): OFF
+--   SDL_ALTIVEC                 (Wanted: ON): OFF
+--   SDL_ARMNEON                 (Wanted: OFF): OFF
+--   SDL_ARMSIMD                 (Wanted: OFF): OFF
+--   SDL_ARTS                    (Wanted: OFF): OFF
+--   SDL_ARTS_SHARED             (Wanted: OFF): OFF
+--   SDL_ASAN                    (Wanted: OFF): OFF
+--   SDL_ASSEMBLY                (Wanted: ON): ON
+--   SDL_ASSERTIONS              (Wanted: auto): auto
+--   SDL_BACKGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_CCACHE                  (Wanted: ON): OFF
+--   SDL_CLOCK_GETTIME           (Wanted: ON): ON
+--   SDL_COCOA                   (Wanted: OFF): OFF
+--   SDL_DBUS                    (Wanted: OFF): OFF
+--   SDL_DIRECTFB                (Wanted: OFF): OFF
+--   SDL_DIRECTFB_SHARED         (Wanted: OFF): OFF
+--   SDL_DIRECTX                 (Wanted: OFF): OFF
+--   SDL_DISKAUDIO               (Wanted: ON): ON
+--   SDL_DUMMYAUDIO              (Wanted: ON): ON
+--   SDL_DUMMYVIDEO              (Wanted: ON): ON
+--   SDL_ESD                     (Wanted: OFF): OFF
+--   SDL_ESD_SHARED              (Wanted: OFF): OFF
+--   SDL_FOREGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_FUSIONSOUND             (Wanted: OFF): OFF
+--   SDL_FUSIONSOUND_SHARED      (Wanted: OFF): OFF
+--   SDL_GCC_ATOMICS             (Wanted: ON): ON
+--   SDL_HIDAPI                  (Wanted: ON): ON
+--   SDL_HIDAPI_JOYSTICK         (Wanted: ON): ON
+--   SDL_HIDAPI_LIBUSB           (Wanted: OFF): OFF
+--   SDL_IBUS                    (Wanted: OFF): OFF
+--   SDL_INSTALL_TESTS           (Wanted: OFF): OFF
+--   SDL_JACK                    (Wanted: OFF): OFF
+--   SDL_JACK_SHARED             (Wanted: OFF): OFF
+--   SDL_KMSDRM                  (Wanted: OFF): OFF
+--   SDL_KMSDRM_SHARED           (Wanted: OFF): OFF
+--   SDL_LASX                    (Wanted: OFF): OFF
+--   SDL_LIBC                    (Wanted: ON): ON
+--   SDL_LIBICONV                (Wanted: OFF): OFF
+--   SDL_LIBSAMPLERATE           (Wanted: OFF): OFF
+--   SDL_LIBSAMPLERATE_SHARED    (Wanted: OFF): OFF
+--   SDL_LIBUDEV                 (Wanted: ON): OFF
+--   SDL_LSX                     (Wanted: OFF): OFF
+--   SDL_METAL                   (Wanted: OFF): OFF
+--   SDL_MMX                     (Wanted: OFF): OFF
+--   SDL_NAS                     (Wanted: OFF): OFF
+--   SDL_NAS_SHARED              (Wanted: OFF): OFF
+--   SDL_OFFSCREEN               (Wanted: ON): ON
+--   SDL_OPENGL                  (Wanted: ON): OFF
+--   SDL_OPENGLES                (Wanted: ON): ON
+--   SDL_OSS                     (Wanted: OFF): OFF
+--   SDL_PIPEWIRE                (Wanted: OFF): OFF
+--   SDL_PIPEWIRE_SHARED         (Wanted: OFF): OFF
+--   SDL_PTHREADS                (Wanted: ON): ON
+--   SDL_PTHREADS_SEM            (Wanted: ON): ON
+--   SDL_PULSEAUDIO              (Wanted: OFF): OFF
+--   SDL_PULSEAUDIO_SHARED       (Wanted: OFF): OFF
+--   SDL_RENDER_D3D              (Wanted: OFF): OFF
+--   SDL_RENDER_METAL            (Wanted: OFF): OFF
+--   SDL_RPATH                   (Wanted: OFF): OFF
+--   SDL_RPI                     (Wanted: OFF): OFF
+--   SDL_SNDIO                   (Wanted: OFF): OFF
+--   SDL_SNDIO_SHARED            (Wanted: OFF): OFF
+--   SDL_SSE                     (Wanted: OFF): OFF
+--   SDL_SSE2                    (Wanted: OFF): OFF
+--   SDL_SSE3                    (Wanted: OFF): OFF
+--   SDL_SSEMATH                 (Wanted: OFF): OFF
+--   SDL_STATIC_PIC              (Wanted: OFF): OFF
+--   SDL_SYSTEM_ICONV            (Wanted: ON): ON
+--   SDL_TESTS                   (Wanted: OFF): OFF
+--   SDL_VENDOR_INFO             (Wanted: ): OFF
+--   SDL_VIRTUAL_JOYSTICK        (Wanted: ON): ON
+--   SDL_VIVANTE                 (Wanted: OFF): OFF
+--   SDL_VULKAN                  (Wanted: ON): ON
+--   SDL_WASAPI                  (Wanted: OFF): OFF
+--   SDL_WAYLAND                 (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR        (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR_SHARED (Wanted: OFF): OFF
+--   SDL_WAYLAND_QT_TOUCH        (Wanted: OFF): OFF
+--   SDL_WAYLAND_SHARED          (Wanted: OFF): OFF
+--   SDL_X11                     (Wanted: OFF): OFF
+--   SDL_X11_SHARED              (Wanted: OFF): OFF
+--   SDL_X11_XCURSOR             (Wanted: OFF): OFF
+--   SDL_X11_XDBE                (Wanted: OFF): OFF
+--   SDL_X11_XFIXES              (Wanted: OFF): OFF
+--   SDL_X11_XINPUT              (Wanted: OFF): OFF
+--   SDL_X11_XRANDR              (Wanted: OFF): OFF
+--   SDL_X11_XSCRNSAVER          (Wanted: OFF): OFF
+--   SDL_X11_XSHAPE              (Wanted: OFF): OFF
+--   SDL_XINPUT                  (Wanted: OFF): OFF
+--
+--  CFLAGS:        -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/src/video/khronos"
+--  EXTRA_CFLAGS:   -Wall -Wundef -fno-strict-aliasing -Wdocumentation -Wdocumentation-unknown-command -fcomment-block-commands=threadsafety -fcomment-block-commands=deprecated -Wdeclaration-after-statement -fvisibility=hidden -Wshadow -Wno-unused-local-typedefs -fcolor-diagnostics
+--  EXTRA_LDFLAGS:  -Wl,--no-undefined
+--  EXTRA_LIBS:    m;OpenSLES;dl;log;android;GLESv1_CM;GLESv2
+--
+--  Build Shared Library: ON
+--  Build Static Library: OFF
+--
+-- If something was not detected, although the libraries
+-- were installed, then make sure you have set the
+-- CFLAGS and LDFLAGS environment variables correctly.
+--
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/.jbrs-tools/android-package/sdl-arm64
++ cmake --build /workspace/.jbrs-tools/android-package/sdl-arm64 --parallel 4
+ninja: no work to do.
++ rustup target add aarch64-linux-android
+info: component rust-std for target aarch64-linux-android is up to date
++ cargo build --locked --release -p jbrs --lib --target aarch64-linux-android --target-dir /workspace/.jbrs-tools/android-package/cargo
+   Compiling world v0.1.0 (/workspace/JBRS/world)
+   Compiling jbrs v0.7.6 (/workspace/JBRS/game)
+    Finished `release` profile [optimized] target(s) in 5.82s
++ java -m jdk.compiler/com.sun.tools.javac.Main -encoding UTF-8 -source 8 -target 8 -g -classpath /workspace/.jbrs-tools/android-sdk/platform34/android-34/android.jar -d /workspace/.jbrs-tools/android-package/classes /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/HIDDevice.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/HIDDeviceUSB.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/SDL.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/SDLAudioManager.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/SDLControllerManager.java /workspace/.jbrs-tools/android-sdk/SDL2-2.30.11/android-project/app/src/main/java/org/libsdl/app/SDLSurface.java /workspace/JBRS/Android/java/dev/jbrs/mobile/MainActivity.java
+warning: [options] bootstrap class path not set in conjunction with -source 8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+4 warnings
++ java -cp /workspace/.jbrs-tools/android-sdk/build35/android-15/lib/d8.jar com.android.tools.r8.D8 --min-api 29 --lib /workspace/.jbrs-tools/android-sdk/platform34/android-34/android.jar --output /workspace/.jbrs-tools/android-package/dex /workspace/.jbrs-tools/android-package/classes.jar
++ /workspace/.jbrs-tools/android-sdk/build35/android-15/aapt package -f -M /workspace/JBRS/Android/AndroidManifest.xml -S /workspace/JBRS/Android/res -I /workspace/.jbrs-tools/android-sdk/platform34/android-34/android.jar -F /workspace/.jbrs-tools/android-package/base.apk
++ /workspace/.jbrs-tools/android-sdk/build35/android-15/zipalign -f 4 /workspace/.jbrs-tools/android-package/unsigned.apk /workspace/.jbrs-tools/android-package/aligned.apk
++ java -jar /workspace/.jbrs-tools/android-sdk/build35/android-15/lib/apksigner.jar sign --ks /workspace/.jbrs-tools/android-signing/preview.keystore --ks-key-alias androiddebugkey --ks-pass env:JBRS_STORE_PASSWORD --key-pass env:JBRS_KEY_PASSWORD --v4-signing-enabled false --out /workspace/JBRS/Android/dist/JBRS-Android10-arm64.apk /workspace/.jbrs-tools/android-package/aligned.apk
++ java -jar /workspace/.jbrs-tools/android-sdk/build35/android-15/lib/apksigner.jar verify --verbose --print-certs /workspace/JBRS/Android/dist/JBRS-Android10-arm64.apk
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): false
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=JBRS Local Preview
+Signer #1 certificate SHA-256 digest: 8d2c4de07f9758546dae5c1054a9413d9db0a822b7449b311b1bc044bc7411fb
+Signer #1 certificate SHA-1 digest: e9293da7d403911b46ccd1682fbe52122b0f8877
+Signer #1 certificate MD5 digest: 7b96132c4b31e259db67526e53fffe1b
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: aa1eb3d9753a5fdb490bbf6ef7ca5ab7ecce33d07ef7233f66e148ec305d8dcb
+Signer #1 public key SHA-1 digest: 3e938f1ce3a0699d2b8a1698aab85f5371b6a7bf
+Signer #1 public key MD5 digest: 88ba7f88a205c8861c37cced7dd72235
+APK ready: /workspace/JBRS/Android/dist/JBRS-Android10-arm64.apk

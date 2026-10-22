@@ -34,7 +34,18 @@ impl Traffic {
             }
             let police = i % 4 == 0;
             let offset = (seed % spawn_nodes.len() as u64) as usize;
-            let from = spawn_nodes[(i * 97 + 32 + offset) % spawn_nodes.len()];
+            let mut from = spawn_nodes[(i * 97 + 32 + offset) % spawn_nodes.len()];
+            if police && i == 8 {
+                // Keep industrial patrol coverage when new driveways change node indices.
+                let anchor = Vec3::new(620., world.surface(620., 140.), 140.);
+                if let Some(p) = spawn_nodes
+                    .iter()
+                    .filter(|p| cars.iter().all(|c| c.pos.distance(**p) > 9.))
+                    .min_by(|a, b| a.distance(anchor).total_cmp(&b.distance(anchor)))
+                {
+                    from = *p;
+                }
+            }
             let to = spawn_nodes[(i * 173 + 240 + offset / 7) % spawn_nodes.len()];
             let Some((_, route)) = graph.route(from, to) else {
                 continue;

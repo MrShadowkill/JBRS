@@ -1,0 +1,18 @@
+{
+  "JBRS-0.7.6-Linux-x64.zip": {
+    "bytes": 1824115,
+    "sha256": "9ef5d826d08bd4730b68185e7d24316353c2ecab5803ce218c2770caeca88f03"
+  },
+  "Windf/JBRS-0.7.6-Windows11-x64.zip": {
+    "bytes": 2798986,
+    "sha256": "b3ad258677ae436781f01fa494c5b262ed3868b20815a69a43b100a38cf0723f"
+  },
+  "Android/dist/JBRS-Android10-arm64.apk": {
+    "bytes": 3733624,
+    "sha256": "a6bcfe20adf8976d06209a7de9534df749bff21d5da2c8a1858b5e9f288a1a77"
+  },
+  "verification/audio/preview.wav": {
+    "bytes": 2289708,
+    "sha256": "82d05c765f2a1564fe039b8f1d9151da4cc812a74bac95d067a2092931c8b301"
+  }
+}

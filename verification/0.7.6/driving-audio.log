@@ -1,0 +1,8 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+CRITICAL: You are using the SDL disk i/o audio driver!
+CRITICAL:  Writing to file [/tmp/jbrs-donut.f32].
+AUDIO SDL stereo 22050 Hz procedural synthesis
+VEHICLE_CACHE parts=18 bytes=2575584
+GEOMETRY scene_triangles=62950 world_triangles=44008 interior_triangles=0 quality=1 vehicles=18822 actors_and_effects=96
+PROFILE scene=driving frames=60 mean_ms=17.14 p95_ms=27.88 max_ms=47.11 rss_mb=121.7 gpu_mb=6.3 active_chunks=37 visible_chunks=16 effective_distance=304
+Rendered 60 frames; observed 56.1 FPS (host only)

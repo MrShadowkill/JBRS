@@ -1,0 +1,3 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `/workspace/.jbrs-tools/target/release/examples/device_check`
+SDL queue/resume check passed: 24576 queued bytes

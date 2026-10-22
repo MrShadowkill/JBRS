@@ -1,0 +1,12 @@
+[
+  {
+    "check": "device",
+    "exit": 0,
+    "audio_driver": "dummy"
+  },
+  {
+    "check": "game",
+    "exit": 0,
+    "audio_driver": "dummy"
+  }
+]

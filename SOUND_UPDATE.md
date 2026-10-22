@@ -1,4 +1,4 @@
-# JBRS 0.7.5 — процедурний звук
+# JBRS 0.7.6 — процедурний звук
 
 Збережено нижчий тон процедурної основи та сирени з 0.7.3. Нові записи використовують власні effects із JSON; попереднє зниження кроків повторно до них не застосовується.
 
@@ -21,7 +21,7 @@
 
 - Кроки прив’язані до пройденої відстані й контакту із землею. У стрибку, машині та під час їзди на потязі кроків немає. Відрізняються тверда поверхня, трава, метал і вода.
 - Викликані поліцейські екіпажі мають плавну сирену з частотною модуляцією та зсунутою гармонікою. Затухання й стереопанорама залежать від положення автомобіля.
-- SDL2 відтворює stereo float 22050 Hz. Міксується до восьми найближчих автомобілів; черга обмежена приблизно 70 мс, синтез не створює потік на кожне авто.
+- SDL2 відтворює stereo float 22050 Hz. Міксується до восьми найближчих автомобілів; черга обмежена приблизно 139 мс, синтез не створює потік на кожне авто.
 - У меню й фоні звук зупиняється. Якщо пристрій недоступний, гра виводить діагностику та працює без звуку. Для вимкнення: `JBRS_AUDIO=0`.
 
 Приклад: [preview.wav](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/verification/audio/preview.wav) — послідовно 8 двигунів, 4 поверхні кроків та сирена. WAV потрібний лише для прослуховування демонстрації; гра не завантажує його.
@@ -30,4 +30,6 @@
 
 Результати перевірок: [verification/audio/README.md](https://github.com/MrShadowkill/JBRS/blob/main/verification/audio/README.md).
 
-Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.5-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.5-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).
+Збірки: [Linux ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/JBRS-0.7.6-Linux-x64.zip), [Windows ZIP](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Windf/JBRS-0.7.6-Windows11-x64.zip), [Android APK](https://github.com/MrShadowkill/JBRS/raw/refs/heads/main/Android/dist/JBRS-Android10-arm64.apk).
+
+0.7.6: замість постійної нелінійної сатурації — лінійний запас 0.65 та спільний для стереопари піковий обмежувач до 0.85 із плавним відновленням. SDL підтримує шість блоків (приблизно 139 мс), робота на кадр обмежена вісьмома. Старт і відновлення після спорожнення черги мають fade-in 128 семплів.

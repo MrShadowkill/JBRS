@@ -73,6 +73,27 @@ pub fn build() -> World {
             false,
         );
     }
+    add_prop(
+        [193., 0.006, -80.],
+        [40., 0.015, 40.],
+        [0.48, 0.46, 0.43],
+        1,
+        false,
+    );
+    add_prop(
+        [214., 0.015, -80.],
+        [18., 0.025, 8.],
+        [0.67, 0.64, 0.59],
+        1,
+        false,
+    );
+    add_prop(
+        [151., 0.006, -80.],
+        [66., 0.015, 40.],
+        [0.43, 0.43, 0.43],
+        0,
+        false,
+    );
     // Two visible escape routes: damaged south gate and western service corridor.
     add_prop(
         [-95., 3.5, -100.],
@@ -392,7 +413,12 @@ pub fn build() -> World {
         ("Garage", 430., -45., [0.5, 0.8, 0.6]),
         ("Military", 585., -500., [0.6, 0.6, 0.3]),
         ("Weapons", 60., 240., [0.8, 0.6, 0.5]),
-        ("Donut Shop", 110., 240., [0.9, 0.45, 0.7]),
+        (
+            "Donut Shop",
+            buildings::donut_shop::CENTER.x,
+            buildings::donut_shop::CENTER.z,
+            [0.9, 0.45, 0.7],
+        ),
         ("Grocery", 210., 240., [0.3, 0.85, 0.4]),
         ("Safehouse", -335., 320., [0.9, 0.2, 0.2]),
         ("Gym", -260., 340., [0.7, 0.65, 0.3]),
@@ -511,6 +537,13 @@ pub fn build() -> World {
     let total = distances.last().copied().unwrap_or(1.);
     for (p, d) in points.iter_mut().zip(distances) {
         p.y = museum.p.y * d / total;
+        // Flat landings keep the entry/exit ribbons from overlapping at different heights.
+        let start = ((d - 45.) / 45.).clamp(0., 1.);
+        p.y *= start;
+        let to_end = total - d;
+        if to_end < 240. {
+            p.y = p.y.max(museum.p.y - (to_end - 200.).max(0.) * 0.08);
+        }
     }
     roadnet.push(Road {
         name: "Museum spiral",
@@ -520,6 +553,9 @@ pub fn build() -> World {
     });
     city_blocks::infill(&roadnet, &mut lib, &props);
     trees.retain(|t| {
+        if (118. ..214.).contains(&t.x) && (-102. ..-58.).contains(&t.z) {
+            return false;
+        }
         if terrain::railway::nearest(*t).0 < 9. {
             return false;
         }

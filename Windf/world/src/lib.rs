@@ -295,6 +295,9 @@ impl World {
         }
         if let Some(id) = self.interior(p) {
             let b = &self.buildings[id];
+            if b.name == "Donut Shop" {
+                return b.p.y + 5.98;
+            }
             if b.name == "Jewelry" && p.y > b.p.y + 12.5 {
                 return f32::MAX;
             }
@@ -319,16 +322,12 @@ impl World {
         f32::MAX
     }
     pub fn surface(&self, x: f32, z: f32) -> f32 {
-        let raw = terrain::height(x, z);
-        if (-380. ..500.).contains(&x) && (-350. ..350.).contains(&z) && raw == 0. {
-            return 0.;
-        }
         let p = Vec3::new(x, 0., z);
         if let Some((distance, y, width)) = self
             .local_roads(x, z)
             .iter()
             .map(|road| {
-                let (d, y) = road.distance(p);
+                let (d, y) = road.ground_cut(p);
                 (d, y, road.width)
             })
             .min_by(|a, b| a.0.total_cmp(&b.0))

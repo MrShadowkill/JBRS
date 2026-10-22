@@ -1,0 +1,15 @@
+{
+  "tests_passed": 165,
+  "fmt": "passed",
+  "clippy": "passed",
+  "source_sync": "all workspace crates identical",
+  "linux_gl21": "front, interior, map and driving passed",
+  "gles2_touch": "interior passed; host only",
+  "windows": "device and interior via Wine; dummy driver",
+  "land_road_centerline_samples": 1643,
+  "road_deviations_over_20cm": 0,
+  "audio_preview_peak": 0.134185791015625,
+  "game_disk_audio_peak": 0.05117872729897499,
+  "device_stall_80ms": "passed",
+  "native_windows_and_physical_android": "not tested"
+}

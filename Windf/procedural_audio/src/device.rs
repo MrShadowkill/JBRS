@@ -49,6 +49,7 @@ pub struct Audio {
     synth: Synth,
     buffer: [f32; 1024],
     paused: bool,
+    fade_remaining: usize,
 }
 impl Audio {
     pub fn open() -> Result<Self, String> {
@@ -87,6 +88,7 @@ impl Audio {
                 synth: Synth::default(),
                 buffer: [0.; 1024],
                 paused: true,
+                fade_remaining: 128,
             })
         }
     }
@@ -104,13 +106,25 @@ impl Audio {
             if scene.steps > 0 {
                 self.synth.step(scene.surface);
             }
-            // At most three blocks (~70 ms), irrespective of render stalls or frame rate.
+            // Six queued blocks (~139 ms) tolerate slow frames; filling remains bounded.
+            if self.paused || SDL_GetQueuedAudioSize(self.device) == 0 {
+                self.fade_remaining = 128;
+            }
             let bytes = std::mem::size_of_val(&self.buffer) as u32;
-            for _ in 0..3 {
-                if SDL_GetQueuedAudioSize(self.device) >= bytes * 2 {
+            for _ in 0..8 {
+                if SDL_GetQueuedAudioSize(self.device) >= bytes * 6 {
                     break;
                 }
                 self.synth.render(scene, &mut self.buffer);
+                for frame in self.buffer.chunks_exact_mut(2) {
+                    if self.fade_remaining == 0 {
+                        break;
+                    }
+                    let gain = 1. - self.fade_remaining as f32 / 128.;
+                    frame[0] *= gain;
+                    frame[1] *= gain;
+                    self.fade_remaining -= 1;
+                }
                 if SDL_QueueAudio(self.device, self.buffer.as_ptr().cast(), bytes) != 0 {
                     return Err(format!("SDL audio queue: {}", error()));
                 }

@@ -17,10 +17,15 @@ fn main() -> Result<(), String> {
     };
     for _ in 0..90 {
         audio.pump(&scene)?;
-        if audio.queued_bytes() > 3 * 4096 {
+        if audio.queued_bytes() > 8 * 4096 {
             return Err("audio queue exceeded bounded latency".into());
         }
         std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+    audio.pump(&scene)?;
+    std::thread::sleep(std::time::Duration::from_millis(80));
+    if audio.queued_bytes() == 0 {
+        return Err("audio queue ran dry during an 80 ms frame stall".into());
     }
     audio.pump(&Scene::default())?;
     if audio.queued_bytes() != 0 {
