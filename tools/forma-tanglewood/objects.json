@@ -7267,25 +7267,42 @@
       "group": "Выключатели/Коридор",
       "kind": "item",
       "pivot": [
-        7.49375,
+        7.53,
         1.25,
-        4.3
+        4.13925
       ],
       "bounds": {
         "min": [
-          7.4675,
+          7.48,
           1.175,
-          4.25
+          4.113
         ],
         "max": [
-          7.52,
+          7.58,
           1.325,
-          4.35
+          4.1655
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Фасад — входная ниша",
+        "wallIndex": 24,
+        "wallPoint": [
+          7.53,
+          1.25,
+          4.032
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7319,25 +7336,42 @@
       "group": "Выключатели/Детская",
       "kind": "item",
       "pivot": [
-        5.17375,
+        5.48,
         1.25,
-        4
+        3.92475
       ],
       "bounds": {
         "min": [
-          5.1475,
+          5.43,
           1.175,
-          3.95
+          3.8985
         ],
         "max": [
-          5.2,
+          5.53,
           1.325,
-          4.05
+          3.951
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Детская — коридор",
+        "wallIndex": 74,
+        "wallPoint": [
+          5.48,
+          1.25,
+          4.032
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          -1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7371,25 +7405,42 @@
       "group": "Выключатели/Ванная",
       "kind": "item",
       "pivot": [
-        3.71375,
+        3.73275,
         1.25,
-        5.7
+        4.2
       ],
       "bounds": {
         "min": [
-          3.6875,
+          3.7065,
           1.175,
-          5.65
+          4.15
         ],
         "max": [
-          3.74,
+          3.759,
           1.325,
-          5.75
+          4.25
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Ванная — коридор",
+        "wallIndex": 71,
+        "wallPoint": [
+          3.84,
+          1.25,
+          4.2
+        ],
+        "outwardNormal": [
+          -1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7423,25 +7474,42 @@
       "group": "Выключатели/Младенческая",
       "kind": "item",
       "pivot": [
-        3.71375,
+        3.73275,
         1.25,
-        10.15
+        9.69
       ],
       "bounds": {
         "min": [
-          3.6875,
+          3.7065,
           1.175,
-          10.1
+          9.64
         ],
         "max": [
-          3.74,
+          3.759,
           1.325,
-          10.2
+          9.74
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Nursery — вход",
+        "wallIndex": 63,
+        "wallPoint": [
+          3.84,
+          1.25,
+          9.69
+        ],
+        "outwardNormal": [
+          -1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7475,25 +7543,42 @@
       "group": "Выключатели/Спальня",
       "kind": "item",
       "pivot": [
-        4.29375,
+        5.6,
         1.25,
-        13.55
+        13.54725
       ],
       "bounds": {
         "min": [
-          4.2675,
+          5.55,
           1.175,
-          13.5
+          13.521
         ],
         "max": [
-          4.32,
+          5.65,
           1.325,
-          13.6
+          13.5735
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Вход главной спальни",
+        "wallIndex": 60,
+        "wallPoint": [
+          5.6,
+          1.25,
+          13.44
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7527,25 +7612,42 @@
       "group": "Выключатели/Санузел спальни",
       "kind": "item",
       "pivot": [
-        2.24375,
+        3.50875,
         1.25,
-        19.4
+        19.56
       ],
       "bounds": {
         "min": [
-          2.2175,
+          3.4825,
           1.175,
-          19.35
+          19.51
         ],
         "max": [
-          2.27,
+          3.535,
           1.325,
-          19.45
+          19.61
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Санузел спальни — гардероб",
+        "wallIndex": 48,
+        "wallPoint": [
+          3.616,
+          1.25,
+          19.56
+        ],
+        "outwardNormal": [
+          -1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7579,25 +7681,42 @@
       "group": "Выключатели/Гардероб",
       "kind": "item",
       "pivot": [
-        5.17375,
+        5.52,
         1.25,
-        19.4
+        19.40325
       ],
       "bounds": {
         "min": [
-          5.1475,
+          5.47,
           1.175,
-          19.35
+          19.377
         ],
         "max": [
-          5.2,
+          5.57,
           1.325,
-          19.45
+          19.4295
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Спальня — гардероб",
+        "wallIndex": 54,
+        "wallPoint": [
+          5.52,
+          1.25,
+          19.296
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7631,25 +7750,42 @@
       "group": "Выключатели/Гостиная",
       "kind": "item",
       "pivot": [
-        5.84375,
+        5.80325,
         1.25,
-        14.2
+        14.0
       ],
       "bounds": {
         "min": [
-          5.8175,
+          5.777,
           1.175,
-          14.15
+          13.95
         ],
         "max": [
-          5.87,
+          5.8295,
           1.325,
-          14.25
+          14.05
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Спальня — гостиная",
+        "wallIndex": 55,
+        "wallPoint": [
+          5.696,
+          1.25,
+          14.0
+        ],
+        "outwardNormal": [
+          1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7683,25 +7819,42 @@
       "group": "Выключатели/Столовая",
       "kind": "item",
       "pivot": [
-        13.29375,
+        13.25925,
         1.25,
-        15.2
+        15.65
       ],
       "bounds": {
         "min": [
-          13.2675,
+          13.233,
           1.175,
-          15.15
+          15.6
         ],
         "max": [
-          13.32,
+          13.2855,
           1.325,
-          15.25
+          15.7
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Лестничная комната/Стена со стороны столовой",
+        "wallIndex": 86,
+        "wallPoint": [
+          13.152,
+          1.25,
+          15.65
+        ],
+        "outwardNormal": [
+          1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7735,25 +7888,42 @@
       "group": "Выключатели/Кухня",
       "kind": "item",
       "pivot": [
-        12.98375,
+        12.93925,
         1.25,
-        12.7
+        13.13
       ],
       "bounds": {
         "min": [
-          12.9575,
+          12.913,
           1.175,
-          12.65
+          13.08
         ],
         "max": [
-          13.01,
+          12.9655,
           1.325,
-          12.75
+          13.18
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Прачечная — кухня",
+        "wallIndex": 81,
+        "wallPoint": [
+          12.832,
+          1.25,
+          13.13
+        ],
+        "outwardNormal": [
+          1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7787,25 +7957,42 @@
       "group": "Выключатели/Прачечная",
       "kind": "item",
       "pivot": [
-        11.37375,
+        12.72475,
         1.25,
-        13.3
+        13.13
       ],
       "bounds": {
         "min": [
-          11.3475,
+          12.6985,
           1.175,
-          13.25
+          13.08
         ],
         "max": [
-          11.4,
+          12.751,
           1.325,
-          13.35
+          13.18
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Прачечная — кухня",
+        "wallIndex": 81,
+        "wallPoint": [
+          12.832,
+          1.25,
+          13.13
+        ],
+        "outwardNormal": [
+          -1,
+          0,
+          0
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7839,25 +8026,42 @@
       "group": "Выключатели/Гараж",
       "kind": "item",
       "pivot": [
-        12.69375,
+        12.95,
         1.25,
-        9.45
+        9.49275
       ],
       "bounds": {
         "min": [
-          12.6675,
+          12.9,
           1.175,
-          9.4
+          9.4665
         ],
         "max": [
-          12.72,
+          13.0,
           1.325,
-          9.5
+          9.519
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Стены/Гараж — кухня и прачечная",
+        "wallIndex": 84,
+        "wallPoint": [
+          12.95,
+          1.25,
+          9.6
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          -1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7891,25 +8095,42 @@
       "group": "Выключатели/Подвал",
       "kind": "item",
       "pivot": [
-        13.24375,
-        1.25,
-        15.4
+        13.42,
+        -1.27,
+        20.94875
       ],
       "bounds": {
         "min": [
-          13.2175,
-          1.175,
-          15.35
+          13.37,
+          -1.345,
+          20.9225
         ],
         "max": [
-          13.27,
-          1.325,
-          15.45
+          13.47,
+          -1.195,
+          20.975
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Подвал/Наружные стены",
+        "wallIndex": 92,
+        "wallPoint": [
+          13.42,
+          -1.27,
+          21.056
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          -1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
@@ -7943,25 +8164,42 @@
       "group": "Выключатели/Лестничная комната",
       "kind": "item",
       "pivot": [
-        13.24375,
+        13.0,
         1.25,
-        15.7
+        15.46725
       ],
       "bounds": {
         "min": [
-          13.2175,
+          12.95,
           1.175,
-          15.65
+          15.441
         ],
         "max": [
-          13.27,
+          13.05,
           1.325,
-          15.75
+          15.4935
         ]
       },
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
+      },
+      "mount": {
+        "wallGroup": "Лестничная комната/Передняя стенка",
+        "wallIndex": 89,
+        "wallPoint": [
+          13.0,
+          1.25,
+          15.36
+        ],
+        "outwardNormal": [
+          0,
+          0,
+          1
+        ],
+        "frameBackGapMetres": 0.001,
+        "heightAboveFloorMetres": 1.25,
+        "placement": "solid wall beside entrance; adjacent return wall where latch-side pier is too narrow"
       }
     },
     {
