@@ -459,6 +459,7 @@ pub struct RenderSaboteur {
     log: usize,
     xy: [f32; 2],
     ram_seconds: f32,
+    ram_reset_in: f32,
     fake_gb: u64,
     ram: [u8; 48],
     ram_len: usize,
@@ -494,6 +495,7 @@ impl RenderSaboteur {
             log: 0,
             xy: [0.; 2],
             ram_seconds: 0.,
+            ram_reset_in: 20.,
             fake_gb: 0,
             ram: [0; 48],
             ram_len: 0,
@@ -502,6 +504,7 @@ impl RenderSaboteur {
             s.car_corrupt[i] = rng.below(100) < 15;
             s.npc_corrupt[i] = rng.below(100) < 15;
         }
+        s.ram_reset_in = rng.range(20., 40.);
         s.write_ram();
         s
     }
@@ -558,10 +561,18 @@ impl RenderSaboteur {
         }
     }
     fn update(&mut self, rng: &mut Rng, dt: f32) {
+        self.ram_reset_in -= dt;
         self.ram_seconds += dt;
         if self.ram_seconds >= 1. {
             self.ram_seconds -= 1.;
             self.fake_gb = self.fake_gb.saturating_add(1).min(999_999_000);
+            self.write_ram();
+        }
+        if self.ram_reset_in <= 0. {
+            // Instant rollback, then a fresh 1 GB/s accumulation cycle.
+            self.fake_gb = 0;
+            self.ram_seconds = 0.;
+            self.ram_reset_in = rng.range(20., 40.);
             self.write_ram();
         }
         self.wait -= dt;
@@ -1032,7 +1043,7 @@ mod tests {
     }
 
     #[test]
-    fn fake_ram_saturates_in_fixed_buffer_and_logs_repeat() {
+    fn fake_ram_saturates_rolls_back_and_accumulates_again() {
         let mut rng = Rng::new(19);
         let mut ui = RenderSaboteur::new(&mut rng);
         for _ in 0..61 {
@@ -1042,11 +1053,30 @@ mod tests {
         ui.fake_gb = 999_999_000;
         ui.write_ram();
         assert_eq!(&ui.ram[..ui.ram_len], b"999999 TB RAM USED");
+        for _ in 0..61 {
+            ui.update(&mut rng, 1. / 60.);
+        }
+        assert_eq!(ui.fake_gb, 999_999_000);
+        ui.ram_reset_in = 0.05;
+        ui.update(&mut rng, 0.1);
+        assert_eq!(ui.fake_gb, 0);
+        assert_eq!(&ui.ram[..ui.ram_len], b"0 GB RAM USED");
+        assert!((20. ..=40.).contains(&ui.ram_reset_in));
+        for _ in 0..61 {
+            ui.update(&mut rng, 1. / 60.);
+        }
+        assert_eq!(ui.fake_gb, 1);
+        let mut rollbacks = 0;
         for _ in 0..1200 {
+            let before = ui.fake_gb;
             ui.update(&mut rng, 0.1);
+            if ui.fake_gb < before {
+                rollbacks += 1;
+                assert_eq!(ui.fake_gb, 0);
+            }
             assert!(ui.log < LOGS.len());
             assert!(ui.alpha == 0. || ui.alpha == 1.);
         }
-        assert_eq!(ui.fake_gb, 999_999_000);
+        assert!(rollbacks >= 2);
     }
 }
