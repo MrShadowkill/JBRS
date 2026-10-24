@@ -163,8 +163,16 @@ struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            projection: vec![identity()],
-            model: vec![identity()],
+            projection: {
+                let mut stack = Vec::with_capacity(32);
+                stack.push(identity());
+                stack
+            },
+            model: {
+                let mut stack = Vec::with_capacity(32);
+                stack.push(identity());
+                stack
+            },
             projection_mode: false,
             color: [1.; 4],
             uv: [0.; 2],

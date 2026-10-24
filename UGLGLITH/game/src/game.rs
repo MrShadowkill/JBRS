@@ -66,6 +66,7 @@ struct Game {
     foot_events: u8,
     sound_throttle: f32,
     glitches: crate::glitches::Glitches,
+    chaos: crate::chaos::ChaosManager,
     camera: Option<[f32; 3]>,
     training_time: f32,
     armory: bool,
@@ -86,6 +87,7 @@ struct Game {
     waypoint: Option<Vec3>,
     pistol: weapons::Pistol,
 }
+
 impl Game {
     fn new() -> Result<Self, String> {
         Self::from_save(save_system::load()?)
@@ -201,6 +203,7 @@ impl Game {
             foot_events: 0,
             sound_throttle: 0.,
             glitches: crate::glitches::Glitches::new(seed),
+            chaos: crate::chaos::ChaosManager::new(seed),
             camera: None,
             training_time: 0.,
             armory: false,
@@ -815,22 +818,47 @@ impl Game {
             .iter()
             .position(|&(x, z)| p.distance(Vec3::new(x, 0., z)) < 14.)
     }
-    fn player_blocked(&self, p: Vec3, r: f32) -> bool {
-        if self.heists.riding.is_none() && terrain::railway::occupied(p, r, self.train.distance) {
+    fn chaos_camera(&self) -> (Vec3, Vec3) {
+        let p = self.camera.unwrap_or([
+            self.player.pos.x,
+            self.player.pos.y + 1.5,
+            self.player.pos.z,
+        ]);
+        (
+            Vec3::new(p[0], p[1], p[2]),
+            Vec3::new(
+                self.yaw.sin() * self.pitch.cos(),
+                -self.pitch.sin(),
+                -self.yaw.cos() * self.pitch.cos(),
+            ),
+        )
+    }
+    fn player_blocked(&self, p: Vec3, radius: f32) -> bool {
+        if self.heists.riding.is_none()
+            && terrain::railway::occupied(p, radius, self.train.distance)
+        {
             return true;
         }
-        if self.stance == 0 {
-            self.blocked(p, r)
-        } else {
-            self.world
-                .body_blocked(p, r, if self.stance == 2 { 0.65 } else { 1.6 })
-                || world::prison::barrier(p, r, self.breached)
-                || self
-                    .doors
-                    .iter()
-                    .zip(&self.world.buildings)
-                    .any(|(d, b)| d.blocked(b, p, r))
-        }
+        let (eye, forward) = self.chaos_camera();
+        let height = match self.stance {
+            2 => 0.65,
+            1 => 1.6,
+            _ => 2.5,
+        };
+        self.world.body_blocked_where(p, radius, height, |c| {
+            crate::chaos::PhysicsSaboteur::wall_active(eye, forward, c)
+        }) || self.chaos.spawner.blocks(p, radius)
+            || world::prison::barrier(p, radius, self.breached)
+            || self.doors.iter().zip(&self.world.buildings).any(|(d, b)| {
+                let collider = buildings::Collider {
+                    p: b.entrance(),
+                    size: Vec3::new(2., 4., 0.2),
+                    movable: false,
+                    breakable: false,
+                };
+                d.blocked(b, p, radius)
+                    && crate::chaos::PhysicsSaboteur::wall_active(eye, forward, &collider)
+            })
     }
     fn steal(&mut self, id: usize) {
         self.traffic.release(id);
@@ -1338,6 +1366,7 @@ impl Game {
             self.notify("R RELOAD");
             return;
         }
+        self.chaos.on_shot(self.cars.len(), self.npcs.len());
         self.shot = 0.15;
         self.player.team = Team::Criminal;
         self.wanted = self.wanted.max(2);
@@ -1475,6 +1504,8 @@ impl Game {
                 self.fuse = None;
                 self.breached = true;
                 self.blast = 0.7;
+                self.chaos
+                    .on_c4(world::prison::WEAK, &self.cars, &self.npcs);
                 if self.player.pos.distance(world::prison::WEAK) < 8. {
                     self.player.health = (self.player.health - 40.).max(1.);
                 }
@@ -1633,6 +1664,19 @@ impl Game {
             }
         }
         self.tick_npcs();
+        let (eye, forward) = self.chaos_camera();
+        self.chaos.update(
+            &self.world,
+            &mut self.cars,
+            &mut self.npcs,
+            self.player.pos,
+            eye,
+            forward,
+            STEP,
+        );
+        if let Some(i) = self.driving {
+            self.player.pos = self.cars[i].pos;
+        }
     }
     fn tick_npcs(&mut self) {
         if self.wanted < 4 {
@@ -2006,7 +2050,7 @@ impl Game {
                 }
             }
         }
-        let requested = if !self.modal() && self.glitches.parameters()[0] > 0. {
+        let requested = if !self.modal() {
             "builtin"
         } else if self.save.auto_shader_pack {
             if daylight < 0.42 && packs.iter().any(|id| id == "Golden_Hour_v2") {
@@ -2264,7 +2308,7 @@ impl Game {
             r.cube([-140., 0.5, -135.], [0.7, 0.7, 0.7], [0.72, 0.24, 0.12], 0.);
         }
         let car_start = r.triangles;
-        for c in &self.cars {
+        for (car_id, c) in self.cars.iter().enumerate() {
             let d = p.distance(c.pos);
             if d > quality.distance
                 || !crate::world_view::sphere_visible(
@@ -2286,7 +2330,9 @@ impl Game {
                 self.draw_sun_shadow(r, c.pos, [2.5, 1.1, 4.7], c.angle, daylight);
             }
             let lod = usize::from(d < quality.detail);
+            self.chaos.car_material(r, car_id);
             draw_car(r, c, &self.car_models[c.kind][lod], lod);
+            r.chaos_car_material(1., None);
             if daylight < 0.34 && d < 64. {
                 for side in [-0.62, 0.62] {
                     let x = c.pos.x + c.angle.sin() * 2.0 + c.angle.cos() * side;
@@ -2391,7 +2437,7 @@ impl Game {
             }
         }
         let npc_start = r.triangles;
-        for n in &self.npcs {
+        for (npc_id, n) in self.npcs.iter().enumerate() {
             if !n.aboard
                 && n.disabled <= 0.
                 && p.distance(n.pos) < quality.distance
@@ -2412,23 +2458,7 @@ impl Game {
                 {
                     self.draw_sun_shadow(r, n.pos, [0.85, 1.8, 0.65], 0., daylight);
                 }
-                draw_person(
-                    r,
-                    n.pos,
-                    n.heading,
-                    n.color(),
-                    n.phase,
-                    p.distance(n.pos) < quality.detail,
-                    quality.segments,
-                    n.motion,
-                    if n.officer() && self.wanted > 0 {
-                        0.35
-                    } else {
-                        0.
-                    },
-                    0.,
-                    0,
-                );
+                self.chaos.render_npc(r, npc_id, n);
                 if n.officer() || n.role == Role::Robber {
                     draw_weapon(r, n.pos, n.heading, n.role == Role::Swat);
                 }
@@ -2493,6 +2523,9 @@ impl Game {
             );
         }
         self.draw_heists(r);
+        if !self.modal() {
+            self.chaos.render(r, Vec3::new(eye[0], eye[1], eye[2]));
+        }
         let scene_draws = r.draws;
         self.npc_triangles = r.triangles - npc_start;
         let scene_triangles = r.triangles;
@@ -2573,6 +2606,9 @@ impl Game {
         }
         if crate::mobile::enabled() {
             self.draw_touch(r);
+        }
+        if !self.modal() {
+            self.chaos.visuals.render_ui(r);
         }
         if let Ok(path) = std::env::var("JBRS_CAPTURE") {
             if !self.captured && self.clock >= self.capture_at && self.capture_frame >= 30 {
@@ -2877,6 +2913,13 @@ pub fn run() -> Result<(), String> {
         g.player.pos,
         crate::quality::PRESETS[g.save.quality].distance,
     ));
+    g.chaos.visuals.initialize(&mut r);
+    for (kind, models) in g.car_models.iter().enumerate() {
+        for (lod, model) in models.iter().enumerate() {
+            r.preload_solid_model(kind * 4 + lod * 2, &model.paint);
+            r.preload_solid_model(kind * 4 + lod * 2 + 1, &model.trim);
+        }
+    }
     let smoke = std::env::args().any(|x| x == "--smoke-test");
     if let Ok(scene) = std::env::var("JBRS_SCENE") {
         let (x, z, yaw) = match scene.as_str() {
@@ -3164,6 +3207,7 @@ pub fn run() -> Result<(), String> {
     }
     if smoke && std::env::var("JBRS_GLITCH").as_deref() == Ok("1") {
         g.glitches.burst();
+        g.chaos.smoke_setup(&g.world, g.player.pos);
     }
     let mut last = std::time::Instant::now();
     let mut accumulator = 0.;
@@ -3651,13 +3695,20 @@ mod tests {
         assert_eq!(g.cars[1].pos.z, -66.);
     }
     #[test]
-    fn closed_gate_and_bomb_escape_are_real_collisions() {
+    fn observed_gate_phases_but_unobserved_gate_and_c4_wall_keep_their_collisions() {
         let mut g = Game::from_save(Default::default()).unwrap();
         g.menu = false;
         g.player.pos = Vec3::new(-95., 1., -104.);
         g.yaw = std::f32::consts::PI;
         for _ in 0..80 {
             g.simulate(1., 0., false, false, false);
+        }
+        // UGLGLITH deliberately phases the observed gate.
+        assert!(g.player.pos.z > -100.5);
+        g.player.pos = Vec3::new(-95., 1., -104.);
+        g.yaw = 0.;
+        for _ in 0..80 {
+            g.simulate(-1., 0., false, false, false);
         }
         assert!(g.player.pos.z < -100.5);
         assert_eq!(g.player.team, Team::Prisoner);
@@ -4444,6 +4495,40 @@ mod donut_response_test {
             g.player.team,
             Team::Prisoner,
             "patrol did not enter the imported shop"
+        );
+    }
+}
+
+#[cfg(test)]
+mod chaos_event_integration {
+    use super::*;
+
+    #[test]
+    fn real_weapon_and_fuse_events_reach_the_chaos_manager() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.menu = false;
+        g.slot = 1;
+        g.save.weapon_owned[0] = true;
+        g.pistol.ammo = 12;
+        g.fire();
+        assert_eq!(g.pistol.ammo, 11);
+        assert!(g
+            .chaos
+            .physics
+            .car_scale
+            .iter()
+            .chain(g.chaos.physics.npc_scale.iter())
+            .any(|&s| s != 1.));
+
+        g.player.pos = Vec3::new(-95., 1., -83.);
+        g.cars[0].pos = Vec3::new(world::prison::WEAK.x + 8., 1., world::prison::WEAK.z);
+        let before = g.cars[0].pos.x;
+        g.fuse = Some(STEP);
+        g.simulate(0., 0., false, false, false);
+        assert!(g.breached);
+        assert!(
+            g.cars[0].pos.x < before,
+            "C4 must pull the actual game car toward the breach"
         );
     }
 }

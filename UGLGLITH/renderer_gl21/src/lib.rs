@@ -220,6 +220,11 @@ pub struct Renderer {
     glitch_uniform: i32,
     silhouette_uniform: i32,
     glitch_state: [f32; 3],
+    anchor_uniform: i32,
+    anchor_position_uniform: i32,
+    motion_uniform: i32,
+    chaos_texture: Option<Texture>,
+    chaos_scale: f32,
     fbo_api: Option<FboApi>,
     scene_fbo: u32,
     scene_depth: u32,
@@ -292,6 +297,11 @@ impl Renderer {
                 glitch_uniform: -1,
                 silhouette_uniform: -1,
                 glitch_state: [0.; 3],
+                anchor_uniform: -1,
+                anchor_position_uniform: -1,
+                motion_uniform: -1,
+                chaos_texture: None,
+                chaos_scale: 1.,
                 fbo_api: load_fbo_api(),
                 scene_fbo: 0,
                 scene_depth: 0,
@@ -323,6 +333,9 @@ impl Renderer {
             self.wind_uniform = uniform("wind_time");
             self.glitch_uniform = uniform("glitch_params");
             self.silhouette_uniform = uniform("glitch_silhouette");
+            self.anchor_uniform = uniform("chaos_anchor");
+            self.anchor_position_uniform = uniform("chaos_anchor_position");
+            self.motion_uniform = uniform("chaos_motion");
             glUseProgram(program);
             glUniform1f(self.opacity_uniform, 1.);
             glUniform1i(uniform("atlas"), 0);
@@ -377,6 +390,60 @@ impl Renderer {
         });
         unsafe {
             glUniform1f(self.silhouette_uniform, if selected { amount } else { 0. });
+        }
+    }
+    pub fn prepare_chaos_actor(&mut self) {
+        unsafe {
+            glUseProgram(self.program);
+            glUniform1f(self.anchor_uniform, -1.);
+            glUniform1f(self.motion_uniform, 0.);
+        }
+    }
+    pub fn preload_solid_model(&mut self, key: usize, cpu: &engine_core::Mesh) {
+        if !self.solid_models.contains_key(&key) {
+            let mesh = self.upload(cpu);
+            self.solid_models.insert(key, mesh);
+        }
+    }
+    pub fn chaos_car_material(&mut self, scale: f32, texture: Option<Texture>) {
+        self.chaos_scale = scale;
+        self.chaos_texture = texture;
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn chaos_model(
+        &mut self,
+        mesh: GpuMesh,
+        p: [f32; 3],
+        yaw: f32,
+        scale: f32,
+        color: [f32; 3],
+        texture: Option<Texture>,
+        phase: f32,
+        anchor: Option<usize>,
+    ) {
+        let (s, c) = yaw.sin_cos();
+        unsafe {
+            glPushMatrix();
+            glTranslatef(p[0], p[1], p[2]);
+            glRotatef(yaw.to_degrees(), 0., 1., 0.);
+            glScalef(scale, scale, scale);
+            glUniform3f(self.tint_uniform, color[0], color[1], color[2]);
+            glUniform1f(self.anchor_uniform, anchor.map_or(-1., |i| (i + 1) as f32));
+            glUniform3f(
+                self.anchor_position_uniform,
+                (-p[0] * c + p[2] * s) / scale,
+                -p[1] / scale,
+                (-p[0] * s - p[2] * c) / scale,
+            );
+            glUniform1f(self.motion_uniform, phase);
+        }
+        self.chaos_texture = texture;
+        self.draw_buffer(mesh, if texture.is_some() { 5 } else { 6 });
+        self.chaos_texture = None;
+        unsafe {
+            glUniform1f(self.anchor_uniform, -1.);
+            glUniform1f(self.motion_uniform, 0.);
+            glPopMatrix();
         }
     }
     pub fn wind_time(&mut self, time: f32) {
@@ -513,6 +580,9 @@ impl Renderer {
         self.wind_uniform = uniform("wind_time");
         self.glitch_uniform = uniform("glitch_params");
         self.silhouette_uniform = uniform("glitch_silhouette");
+        self.anchor_uniform = uniform("chaos_anchor");
+        self.anchor_position_uniform = uniform("chaos_anchor_position");
+        self.motion_uniform = uniform("chaos_motion");
         glUseProgram(self.program);
         glUniform1f(self.opacity_uniform, 1.);
         glUniform1i(uniform("atlas"), 0);
@@ -704,9 +774,10 @@ impl Renderer {
             glRotatef(angle.to_degrees(), 0., 1., 0.);
             glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
             glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
+            glScalef(self.chaos_scale, self.chaos_scale, self.chaos_scale);
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
         }
-        self.draw_buffer(mesh, 2);
+        self.draw_buffer(mesh, if self.chaos_texture.is_some() { 5 } else { 2 });
         unsafe {
             glPopMatrix();
         }
@@ -745,7 +816,7 @@ impl Renderer {
     fn draw_buffer(&mut self, mesh: GpuMesh, mode: i32) {
         unsafe {
             glUniform1i(self.mesh_uniform, mode);
-            glBindTexture(0x0de1, self.atlas);
+            glBindTexture(0x0de1, self.chaos_texture.map_or(self.atlas, |t| t.id));
             glBindBuffer(0x8892, mesh.id);
             let stride = std::mem::size_of::<engine_core::Vertex>() as i32;
             glEnableClientState(0x8074);
@@ -759,6 +830,7 @@ impl Renderer {
             glDisableClientState(0x8076);
             glDisableClientState(0x8078);
             glBindBuffer(0x8892, 0);
+            glBindTexture(0x0de1, self.atlas);
             glUniform1i(self.mesh_uniform, 0);
         }
         self.draws += 1;
@@ -1086,6 +1158,10 @@ impl Renderer {
         }
     }
     pub fn label(&mut self, x: f32, y: f32, size: f32, t: &str, c: [f32; 3]) {
+        self.label_alpha(x, y, size, t, c, 1.);
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn label_alpha(&mut self, x: f32, y: f32, size: f32, t: &str, c: [f32; 3], alpha: f32) {
         let resume = self.ui_open;
         self.finish_ui();
         unsafe {
@@ -1093,7 +1169,7 @@ impl Renderer {
             glBindTexture(0x0de1, self.font);
             glEnable(0xbe2);
             glBlendFunc(0x302, 0x303);
-            glColor4f(c[0], c[1], c[2], 1.);
+            glColor4f(c[0], c[1], c[2], alpha.clamp(0., 1.));
             glBegin(7);
             let scale = size * 7. / 25.;
             let mut cursor = x;

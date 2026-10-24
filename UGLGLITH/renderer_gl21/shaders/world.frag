@@ -19,7 +19,8 @@ void main(){
   float grain=sin(uv.x*1200.)*sin(uv.y*900.);
   base*=1.+detail_amount*grain*(1.-clamp(dist/160.,0.,1.));
  }
- if(mesh_mode==2){base*=model_tint;}
+ if(mesh_mode==2 || mesh_mode==6){base*=model_tint;}
+ if(mesh_mode==5){base=texture2D(atlas,uv).rgb;}
  if(mesh_mode==4){emission=1.;}
  if(mesh_mode==3){base=vec3(0.015,0.02,0.015);}
  float night=1.-smoothstep(0.16,0.48,clamp(daylight,0.,1.));

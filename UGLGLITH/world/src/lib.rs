@@ -137,6 +137,15 @@ impl World {
             .is_some_and(|ids| ids.iter().any(|i| self.colliders[*i].contains(p, r)))
     }
     pub fn body_blocked(&self, p: Vec3, r: f32, height: f32) -> bool {
+        self.body_blocked_where(p, r, height, |_| true)
+    }
+    pub fn body_blocked_where(
+        &self,
+        p: Vec3,
+        r: f32,
+        height: f32,
+        active: impl Fn(&Collider) -> bool,
+    ) -> bool {
         if prison::underground(p) {
             return self.blocked(p, r);
         }
@@ -146,7 +155,8 @@ impl World {
         self.cells.get(&cell(p.x, p.z)).is_some_and(|ids| {
             ids.iter().any(|i| {
                 let c = &self.colliders[*i];
-                p.y - 1. + height > c.p.y - c.size.y / 2.
+                active(c)
+                    && p.y - 1. + height > c.p.y - c.size.y / 2.
                     && p.y - 1. < c.p.y + c.size.y / 2.
                     && (p.x - c.p.x).abs() < c.size.x / 2. + r
                     && (p.z - c.p.z).abs() < c.size.z / 2. + r
