@@ -88,5 +88,17 @@ JBRS_GLITCH=1 JBRS_DEBUG=0 JBRS_SCENE=prison JBRS_FRAMES=120 cargo run --release
 описані таймери. Для GLES2 додайте `--features gles` до команди Cargo.
 
 Готові ZIP/APK основної гри не оновлюються. Ironlake, фізичний телефон,
-динаміки та Windows runtime тут не тестувалися. Mesa llvmpipe не є
+динаміки та нативний Windows runtime тут не тестувалися. Mesa llvmpipe не є
 вимірюванням FPS на цільовому обладнанні.
+
+## Готова збірка Windows
+
+`UGLGLITH-Windows-x64.zip` містить `UGLGLITH.exe`, `SDL2.dll`, `Start.cmd`,
+ліцензії та необов'язкові shader packs. Розпакуйте повністю й запустіть
+`Start.cmd` або `.exe`; Rust не потрібен. Windows-збірка має окреме
+збереження `%LOCALAPPDATA%/UGLGLITH/save.json`.
+
+PE32+ x64 зібраний MinGW-w64; перевірено аудит карти, запуск `Start.cmd`
+з іншої папки та 120 кадрів ChaosManager через Wine 10/OpenGL 2.1.
+Архів перевірено за CRC і SHA256SUMS кожного файла. Це перевірка через
+Wine на Linux, а не запуск на фізичному Windows-комп'ютері.

@@ -140,7 +140,7 @@ pub fn path() -> PathBuf {
                 std::env::var_os("USERPROFILE").map(|p| PathBuf::from(p).join("AppData/Local"))
             })
             .unwrap_or_else(std::env::temp_dir);
-        base.join("JBRS-Windf/save.json")
+        base.join("UGLGLITH/save.json")
     }
     #[cfg(not(windows))]
     {
