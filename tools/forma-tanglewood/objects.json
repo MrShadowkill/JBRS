@@ -1,0 +1,8592 @@
+{
+  "schema": "jbrs.objects.v1",
+  "selection": "one material group per asset, including disconnected parts",
+  "objects": [
+    {
+      "id": "obj_89fbcc9546e8",
+      "group": "Основание/Плита первого этажа",
+      "kind": "architecture",
+      "pivot": [
+        9.264,
+        -0.035,
+        11.584
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          -0.035,
+          0.0
+        ],
+        "max": [
+          18.528,
+          -0.035,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_99d396cd4a85",
+      "group": "Потолок/Основной",
+      "kind": "architecture",
+      "pivot": [
+        9.264,
+        2.85,
+        11.584
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          2.85,
+          0.0
+        ],
+        "max": [
+          18.528,
+          2.85,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_837acf9fff48",
+      "group": "Крыша/Плоская крыша по контуру",
+      "kind": "architecture",
+      "pivot": [
+        9.264,
+        3.03,
+        11.584
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          3.03,
+          0.0
+        ],
+        "max": [
+          18.528,
+          3.03,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_34110867f1cf",
+      "group": "Полы/Детская",
+      "kind": "architecture",
+      "pivot": [
+        3.04,
+        0.006,
+        2.016
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0.006,
+          0.0
+        ],
+        "max": [
+          5.824,
+          0.006,
+          4.032
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_85b295078a33",
+      "group": "Полы/Ванная",
+      "kind": "architecture",
+      "pivot": [
+        2.048,
+        0.006,
+        5.488
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0.006,
+          4.032
+        ],
+        "max": [
+          3.84,
+          0.006,
+          6.944
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b2ed5e9fbdf1",
+      "group": "Полы/Младенческая",
+      "kind": "architecture",
+      "pivot": [
+        1.92,
+        0.006,
+        12.4
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0.006,
+          9.568
+        ],
+        "max": [
+          3.84,
+          0.006,
+          15.232
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4e5ed253cfd5",
+      "group": "Полы/Спальня",
+      "kind": "architecture",
+      "pivot": [
+        2.976,
+        0.006,
+        16.368
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0.006,
+          13.44
+        ],
+        "max": [
+          5.696,
+          0.006,
+          19.296
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_861086217a0c",
+      "group": "Полы/Санузел спальни",
+      "kind": "architecture",
+      "pivot": [
+        1.808,
+        0.006,
+        21.232
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0.006,
+          19.296
+        ],
+        "max": [
+          3.616,
+          0.006,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9c13afd83aa4",
+      "group": "Полы/Гардероб",
+      "kind": "architecture",
+      "pivot": [
+        4.656,
+        0.006,
+        21.232
+      ],
+      "bounds": {
+        "min": [
+          3.616,
+          0.006,
+          19.296
+        ],
+        "max": [
+          5.696,
+          0.006,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f1e44c446bde",
+      "group": "Полы/Коридор",
+      "kind": "architecture",
+      "pivot": [
+        6.096,
+        0.006,
+        8.736
+      ],
+      "bounds": {
+        "min": [
+          2.688,
+          0.006,
+          4.032
+        ],
+        "max": [
+          9.504,
+          0.006,
+          13.44
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_23ad664b0500",
+      "group": "Полы/Гостиная",
+      "kind": "architecture",
+      "pivot": [
+        8.48,
+        0.006,
+        17.248
+      ],
+      "bounds": {
+        "min": [
+          5.696,
+          0.006,
+          13.44
+        ],
+        "max": [
+          11.264,
+          0.006,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_db7677c63dca",
+      "group": "Полы/Столовая",
+      "kind": "architecture",
+      "pivot": [
+        14.016,
+        0.006,
+        17.248
+      ],
+      "bounds": {
+        "min": [
+          9.504,
+          0.006,
+          13.44
+        ],
+        "max": [
+          18.528,
+          0.006,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d2750ada1983",
+      "group": "Полы/Кухня",
+      "kind": "architecture",
+      "pivot": [
+        15.68,
+        0.006,
+        11.52
+      ],
+      "bounds": {
+        "min": [
+          12.832,
+          0.006,
+          9.6
+        ],
+        "max": [
+          18.528,
+          0.006,
+          13.44
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0552094ecc4f",
+      "group": "Полы/Прачечная",
+      "kind": "architecture",
+      "pivot": [
+        10.816,
+        0.006,
+        11.52
+      ],
+      "bounds": {
+        "min": [
+          8.8,
+          0.006,
+          9.6
+        ],
+        "max": [
+          12.832,
+          0.006,
+          13.44
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b19385265d4c",
+      "group": "Полы/Гараж",
+      "kind": "architecture",
+      "pivot": [
+        13.36,
+        0.006,
+        4.8
+      ],
+      "bounds": {
+        "min": [
+          8.192,
+          0.006,
+          0.0
+        ],
+        "max": [
+          18.528,
+          0.006,
+          9.6
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b1651501af91",
+      "group": "Полы/Лестничная комната",
+      "kind": "architecture",
+      "pivot": [
+        12.208,
+        0.006,
+        18.208
+      ],
+      "bounds": {
+        "min": [
+          11.264,
+          0.006,
+          15.36
+        ],
+        "max": [
+          13.152,
+          0.006,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_cd24ccb099d2",
+      "group": "Стены/Наружная — задний выступ",
+      "kind": "architecture",
+      "pivot": [
+        2.848,
+        1.425,
+        23.168
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0,
+          23.088
+        ],
+        "max": [
+          5.696,
+          2.85,
+          23.248
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_32ff36e5d36e",
+      "group": "Стены/Наружная — выступ справа",
+      "kind": "architecture",
+      "pivot": [
+        5.696,
+        1.425,
+        22.112
+      ],
+      "bounds": {
+        "min": [
+          5.616,
+          0,
+          21.056
+        ],
+        "max": [
+          5.776,
+          2.85,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f0b60bcf993d",
+      "group": "Стены/Наружная — задняя",
+      "kind": "architecture",
+      "pivot": [
+        12.112,
+        1.425,
+        21.056
+      ],
+      "bounds": {
+        "min": [
+          5.696,
+          0,
+          20.976
+        ],
+        "max": [
+          18.528,
+          2.85,
+          21.136
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_63627408de3b",
+      "group": "Стены/Наружная — правая",
+      "kind": "architecture",
+      "pivot": [
+        18.528,
+        1.425,
+        10.528
+      ],
+      "bounds": {
+        "min": [
+          18.448,
+          0,
+          0.0
+        ],
+        "max": [
+          18.608,
+          2.85,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4a48c51017ed",
+      "group": "Стены/Фасад гаража",
+      "kind": "architecture",
+      "pivot": [
+        13.36,
+        1.425,
+        0.0
+      ],
+      "bounds": {
+        "min": [
+          8.192,
+          0,
+          -0.08
+        ],
+        "max": [
+          18.528,
+          2.85,
+          0.08
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a91f0882b162",
+      "group": "Стены/Гараж — левая",
+      "kind": "architecture",
+      "pivot": [
+        8.192,
+        1.425,
+        4.8
+      ],
+      "bounds": {
+        "min": [
+          8.112,
+          0,
+          0.0
+        ],
+        "max": [
+          8.272,
+          2.85,
+          9.6
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f973e384ec00",
+      "group": "Стены/Уступ у гаража",
+      "kind": "architecture",
+      "pivot": [
+        7.936,
+        1.425,
+        9.6
+      ],
+      "bounds": {
+        "min": [
+          7.68,
+          0,
+          9.52
+        ],
+        "max": [
+          8.192,
+          2.85,
+          9.68
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_48b2f29364a9",
+      "group": "Стены/Коридор — правая",
+      "kind": "architecture",
+      "pivot": [
+        7.68,
+        1.425,
+        7.76
+      ],
+      "bounds": {
+        "min": [
+          7.6,
+          0,
+          4.032
+        ],
+        "max": [
+          7.76,
+          2.85,
+          11.488
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_3c84dd22922e",
+      "group": "Стены/Фасад — входная ниша",
+      "kind": "architecture",
+      "pivot": [
+        6.752,
+        1.425,
+        4.032
+      ],
+      "bounds": {
+        "min": [
+          5.824,
+          0,
+          3.952
+        ],
+        "max": [
+          7.68,
+          2.85,
+          4.112
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d26f991c925f",
+      "group": "Стены/Фасад — бок входной ниши",
+      "kind": "architecture",
+      "pivot": [
+        5.824,
+        1.425,
+        2.016
+      ],
+      "bounds": {
+        "min": [
+          5.744,
+          0,
+          0.0
+        ],
+        "max": [
+          5.904,
+          2.85,
+          4.032
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1d4b0302d78f",
+      "group": "Стены/Фасад детской",
+      "kind": "architecture",
+      "pivot": [
+        3.04,
+        1.425,
+        0.0
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0,
+          -0.08
+        ],
+        "max": [
+          5.824,
+          2.85,
+          0.08
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7a41b26af716",
+      "group": "Стены/Наружная — передняя левая",
+      "kind": "architecture",
+      "pivot": [
+        0.256,
+        1.425,
+        3.472
+      ],
+      "bounds": {
+        "min": [
+          0.176,
+          0,
+          0.0
+        ],
+        "max": [
+          0.336,
+          2.85,
+          6.944
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fefefe144cc9",
+      "group": "Стены/Уступ ванной",
+      "kind": "architecture",
+      "pivot": [
+        1.472,
+        1.425,
+        6.944
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0,
+          6.864
+        ],
+        "max": [
+          2.688,
+          2.85,
+          7.024
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_958a795e2437",
+      "group": "Стены/Наружная — ниша коридора",
+      "kind": "architecture",
+      "pivot": [
+        2.688,
+        1.425,
+        8.256
+      ],
+      "bounds": {
+        "min": [
+          2.608,
+          0,
+          6.944
+        ],
+        "max": [
+          2.768,
+          2.85,
+          9.568
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_24ab5b7b37dc",
+      "group": "Стены/Наружная — низ Nursery",
+      "kind": "architecture",
+      "pivot": [
+        1.344,
+        1.425,
+        9.568
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0,
+          9.488
+        ],
+        "max": [
+          2.688,
+          2.85,
+          9.648
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_decc64b8c5e3",
+      "group": "Стены/Наружная — Nursery",
+      "kind": "architecture",
+      "pivot": [
+        0.0,
+        1.425,
+        12.4
+      ],
+      "bounds": {
+        "min": [
+          -0.08,
+          0,
+          9.568
+        ],
+        "max": [
+          0.08,
+          2.85,
+          15.232
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1ad692261a10",
+      "group": "Стены/Уступ Nursery",
+      "kind": "architecture",
+      "pivot": [
+        0.128,
+        1.425,
+        15.232
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0,
+          15.152
+        ],
+        "max": [
+          0.256,
+          2.85,
+          15.312
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bbf5e8ca0427",
+      "group": "Стены/Наружная — спальня",
+      "kind": "architecture",
+      "pivot": [
+        0.256,
+        1.425,
+        17.264
+      ],
+      "bounds": {
+        "min": [
+          0.176,
+          0,
+          15.232
+        ],
+        "max": [
+          0.336,
+          2.85,
+          19.296
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_3ddc5c4a4dd4",
+      "group": "Стены/Уступ спальни",
+      "kind": "architecture",
+      "pivot": [
+        0.128,
+        1.425,
+        19.296
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0,
+          19.216
+        ],
+        "max": [
+          0.256,
+          2.85,
+          19.376
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_dd60a8913549",
+      "group": "Стены/Наружная — санузел спальни",
+      "kind": "architecture",
+      "pivot": [
+        0.0,
+        1.425,
+        21.232
+      ],
+      "bounds": {
+        "min": [
+          -0.08,
+          0,
+          19.296
+        ],
+        "max": [
+          0.08,
+          2.85,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bb4f4cb83567",
+      "group": "Стены/Санузел спальни — гардероб",
+      "kind": "architecture",
+      "pivot": [
+        3.616,
+        1.425,
+        21.232
+      ],
+      "bounds": {
+        "min": [
+          3.536,
+          0,
+          19.296
+        ],
+        "max": [
+          3.696,
+          2.85,
+          23.168
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_2e9a1349482a",
+      "group": "Стены/Спальня — санузел",
+      "kind": "architecture",
+      "pivot": [
+        1.808,
+        1.425,
+        19.296
+      ],
+      "bounds": {
+        "min": [
+          0.0,
+          0,
+          19.216
+        ],
+        "max": [
+          3.616,
+          2.85,
+          19.376
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f3e67dae7d18",
+      "group": "Стены/Спальня — гардероб",
+      "kind": "architecture",
+      "pivot": [
+        4.656,
+        1.425,
+        19.296
+      ],
+      "bounds": {
+        "min": [
+          3.616,
+          0,
+          19.216
+        ],
+        "max": [
+          5.696,
+          2.85,
+          19.376
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_931cc7e4465d",
+      "group": "Стены/Спальня — гостиная",
+      "kind": "architecture",
+      "pivot": [
+        5.696,
+        1.425,
+        17.248
+      ],
+      "bounds": {
+        "min": [
+          5.616,
+          0,
+          13.44
+        ],
+        "max": [
+          5.776,
+          2.85,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_df54c378ffc6",
+      "group": "Стены/Спальня — Nursery",
+      "kind": "architecture",
+      "pivot": [
+        2.048,
+        1.425,
+        15.232
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0,
+          15.152
+        ],
+        "max": [
+          3.84,
+          2.85,
+          15.312
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ec9f8fe5fd3d",
+      "group": "Стены/Спальня — коридор",
+      "kind": "architecture",
+      "pivot": [
+        3.84,
+        1.425,
+        13.36
+      ],
+      "bounds": {
+        "min": [
+          3.76,
+          0,
+          11.488
+        ],
+        "max": [
+          3.92,
+          2.85,
+          15.232
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_37760a9086fc",
+      "group": "Стены/Вход главной спальни",
+      "kind": "architecture",
+      "pivot": [
+        4.768,
+        1.425,
+        13.44
+      ],
+      "bounds": {
+        "min": [
+          3.84,
+          0,
+          13.36
+        ],
+        "max": [
+          5.696,
+          2.85,
+          13.52
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e4dbb0a95461",
+      "group": "Стены/Nursery — вход",
+      "kind": "architecture",
+      "pivot": [
+        3.84,
+        1.425,
+        10.528
+      ],
+      "bounds": {
+        "min": [
+          3.76,
+          0,
+          9.568
+        ],
+        "max": [
+          3.92,
+          2.85,
+          11.488
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_217098ac546b",
+      "group": "Стены/Nursery — нижняя",
+      "kind": "architecture",
+      "pivot": [
+        3.264,
+        1.425,
+        9.568
+      ],
+      "bounds": {
+        "min": [
+          2.688,
+          0,
+          9.488
+        ],
+        "max": [
+          3.84,
+          2.85,
+          9.648
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e8a766b54f25",
+      "group": "Стены/Шкаф коридора 01 — низ",
+      "kind": "architecture",
+      "pivot": [
+        3.264,
+        1.425,
+        7.84
+      ],
+      "bounds": {
+        "min": [
+          2.688,
+          0,
+          7.76
+        ],
+        "max": [
+          3.84,
+          2.85,
+          7.92
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b60eeb4a85e8",
+      "group": "Стены/Шкаф коридора 01 — фасад",
+      "kind": "architecture",
+      "pivot": [
+        3.84,
+        1.425,
+        8.704
+      ],
+      "bounds": {
+        "min": [
+          3.76,
+          0,
+          7.84
+        ],
+        "max": [
+          3.92,
+          2.85,
+          9.568
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_73e1579f0511",
+      "group": "Стены/Ванная — коридор",
+      "kind": "architecture",
+      "pivot": [
+        3.84,
+        1.425,
+        5.936
+      ],
+      "bounds": {
+        "min": [
+          3.76,
+          0,
+          4.032
+        ],
+        "max": [
+          3.92,
+          2.85,
+          7.84
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_79e685241f3c",
+      "group": "Стены/Детская — коридор",
+      "kind": "architecture",
+      "pivot": [
+        3.04,
+        1.425,
+        4.032
+      ],
+      "bounds": {
+        "min": [
+          0.256,
+          0,
+          3.952
+        ],
+        "max": [
+          5.824,
+          2.85,
+          4.112
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_168eae339252",
+      "group": "Стены/Шкаф коридора 02 — верх",
+      "kind": "architecture",
+      "pivot": [
+        5.152,
+        1.425,
+        11.488
+      ],
+      "bounds": {
+        "min": [
+          4.48,
+          0,
+          11.408
+        ],
+        "max": [
+          5.824,
+          2.85,
+          11.568
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_3a982f997cb9",
+      "group": "Стены/Шкаф коридора 02 — низ",
+      "kind": "architecture",
+      "pivot": [
+        5.152,
+        1.425,
+        9.76
+      ],
+      "bounds": {
+        "min": [
+          4.48,
+          0,
+          9.68
+        ],
+        "max": [
+          5.824,
+          2.85,
+          9.84
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9b6eae5afa37",
+      "group": "Стены/Шкаф коридора 02 — задняя",
+      "kind": "architecture",
+      "pivot": [
+        4.48,
+        1.425,
+        10.624
+      ],
+      "bounds": {
+        "min": [
+          4.4,
+          0,
+          9.76
+        ],
+        "max": [
+          4.56,
+          2.85,
+          11.488
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_40323e73926f",
+      "group": "Стены/Шкаф коридора 02 — фасад",
+      "kind": "architecture",
+      "pivot": [
+        5.824,
+        1.425,
+        10.624
+      ],
+      "bounds": {
+        "min": [
+          5.744,
+          0,
+          9.76
+        ],
+        "max": [
+          5.904,
+          2.85,
+          11.488
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_03260828f2ac",
+      "group": "Стены/Угол прохода у Utility",
+      "kind": "architecture",
+      "pivot": [
+        8.608,
+        1.425,
+        12.464
+      ],
+      "bounds": {
+        "min": [
+          7.62202,
+          0,
+          11.43288
+        ],
+        "max": [
+          9.59398,
+          2.85,
+          13.49512
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fefde86a8cd1",
+      "group": "Стены/Прачечная — левая",
+      "kind": "architecture",
+      "pivot": [
+        8.8,
+        1.425,
+        11.12
+      ],
+      "bounds": {
+        "min": [
+          8.72,
+          0,
+          9.6
+        ],
+        "max": [
+          8.88,
+          2.85,
+          12.64
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c103b155e331",
+      "group": "Стены/Прачечная — скос",
+      "kind": "architecture",
+      "pivot": [
+        9.168,
+        1.425,
+        13.04
+      ],
+      "bounds": {
+        "min": [
+          8.74113,
+          0,
+          12.58584
+        ],
+        "max": [
+          9.59487,
+          2.85,
+          13.49416
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4270669dc177",
+      "group": "Стены/Прачечная — верх",
+      "kind": "architecture",
+      "pivot": [
+        11.184,
+        1.425,
+        13.44
+      ],
+      "bounds": {
+        "min": [
+          9.536,
+          0,
+          13.36
+        ],
+        "max": [
+          12.832,
+          2.85,
+          13.52
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ac5affda2bd1",
+      "group": "Стены/Прачечная — кухня",
+      "kind": "architecture",
+      "pivot": [
+        12.832,
+        1.425,
+        11.52
+      ],
+      "bounds": {
+        "min": [
+          12.752,
+          0,
+          9.6
+        ],
+        "max": [
+          12.912,
+          2.85,
+          13.44
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0b482b9da468",
+      "group": "Стены/Гараж — кухня и прачечная",
+      "kind": "architecture",
+      "pivot": [
+        13.36,
+        1.425,
+        9.6
+      ],
+      "bounds": {
+        "min": [
+          8.192,
+          0,
+          9.52
+        ],
+        "max": [
+          18.528,
+          2.85,
+          9.68
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a3b8f4cff761",
+      "group": "Лестничная комната/Стена со стороны дивана",
+      "kind": "architecture",
+      "pivot": [
+        11.264,
+        1.425,
+        18.208
+      ],
+      "bounds": {
+        "min": [
+          11.184,
+          0,
+          15.36
+        ],
+        "max": [
+          11.344,
+          2.85,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4ae063dccf8b",
+      "group": "Лестничная комната/Стена со стороны столовой",
+      "kind": "architecture",
+      "pivot": [
+        13.152,
+        1.425,
+        18.208
+      ],
+      "bounds": {
+        "min": [
+          13.072,
+          0,
+          15.36
+        ],
+        "max": [
+          13.232,
+          2.85,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_78aa086bb8d4",
+      "group": "Лестничная комната/Передняя стенка",
+      "kind": "architecture",
+      "pivot": [
+        12.208,
+        1.425,
+        15.36
+      ],
+      "bounds": {
+        "min": [
+          11.264,
+          0,
+          15.28
+        ],
+        "max": [
+          13.152,
+          2.85,
+          15.44
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_565d798793f6",
+      "group": "Окна/Санузел спальни",
+      "kind": "item",
+      "pivot": [
+        2.704,
+        1.6725,
+        23.168
+      ],
+      "bounds": {
+        "min": [
+          2.1855,
+          1.05,
+          23.1255
+        ],
+        "max": [
+          3.2225,
+          2.295,
+          23.2105
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_76c0d36d9e84",
+      "group": "Окна/Гостиная",
+      "kind": "item",
+      "pivot": [
+        9.52,
+        1.5975,
+        21.056
+      ],
+      "bounds": {
+        "min": [
+          8.2655,
+          0.85,
+          21.0135
+        ],
+        "max": [
+          10.7745,
+          2.345,
+          21.0985
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9d8656c2f950",
+      "group": "Окна/Столовая",
+      "kind": "item",
+      "pivot": [
+        14.608,
+        1.5975,
+        21.056
+      ],
+      "bounds": {
+        "min": [
+          13.1295,
+          0.85,
+          21.0135
+        ],
+        "max": [
+          16.0865,
+          2.345,
+          21.0985
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d0244b174f1d",
+      "group": "Окна/Кухня",
+      "kind": "item",
+      "pivot": [
+        18.528,
+        1.6575,
+        11.456
+      ],
+      "bounds": {
+        "min": [
+          18.4855,
+          1.02,
+          10.8575
+        ],
+        "max": [
+          18.5705,
+          2.295,
+          12.0545
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b465302420ef",
+      "group": "Окна/Детская",
+      "kind": "item",
+      "pivot": [
+        1.408,
+        1.5975,
+        0.0
+      ],
+      "bounds": {
+        "min": [
+          0.8415,
+          0.85,
+          -0.0425
+        ],
+        "max": [
+          1.9745,
+          2.345,
+          0.0425
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_32a7541defc2",
+      "group": "Окна/Ванная",
+      "kind": "item",
+      "pivot": [
+        0.256,
+        1.6975,
+        5.552
+      ],
+      "bounds": {
+        "min": [
+          0.2135,
+          1.1,
+          5.0975
+        ],
+        "max": [
+          0.2985,
+          2.295,
+          6.0065
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c0ab6dd808ad",
+      "group": "Окна/Младенческая",
+      "kind": "item",
+      "pivot": [
+        0.0,
+        1.5975,
+        12.96
+      ],
+      "bounds": {
+        "min": [
+          -0.0425,
+          0.85,
+          12.0095
+        ],
+        "max": [
+          0.0425,
+          2.345,
+          13.9105
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fc8226973da8",
+      "group": "Окна/Спальня",
+      "kind": "item",
+      "pivot": [
+        0.256,
+        1.5975,
+        17.296
+      ],
+      "bounds": {
+        "min": [
+          0.2135,
+          0.85,
+          16.0415
+        ],
+        "max": [
+          0.2985,
+          2.345,
+          18.5505
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8a72c502a956",
+      "group": "Двери/Детская — наличники",
+      "kind": "item",
+      "pivot": [
+        4.592,
+        1.1125,
+        4.032
+      ],
+      "bounds": {
+        "min": [
+          3.9035,
+          -0.015,
+          3.987
+        ],
+        "max": [
+          5.2805,
+          2.24,
+          4.077
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9ca3381654cf",
+      "group": "Двери/Детская — полотно",
+      "kind": "item",
+      "pivot": [
+        3.95889,
+        1.08,
+        3.3764
+      ],
+      "bounds": {
+        "min": [
+          3.91351,
+          0.025,
+          2.72001
+        ],
+        "max": [
+          4.00427,
+          2.135,
+          4.03279
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ee52802d4dd4",
+      "group": "Двери/Детская — ручка",
+      "kind": "item",
+      "pivot": [
+        3.97492,
+        1.03,
+        2.91748
+      ],
+      "bounds": {
+        "min": [
+          3.93992,
+          1.0075,
+          2.88248
+        ],
+        "max": [
+          4.00992,
+          1.0525,
+          2.95248
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7bc28ba06ba9",
+      "group": "Двери/Ванная — наличники",
+      "kind": "item",
+      "pivot": [
+        3.84,
+        1.1125,
+        5.008
+      ],
+      "bounds": {
+        "min": [
+          3.795,
+          -0.015,
+          4.3835
+        ],
+        "max": [
+          3.885,
+          2.24,
+          5.6325
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_36da33a0f0b0",
+      "group": "Двери/Ванная — полотно",
+      "kind": "item",
+      "pivot": [
+        3.248365,
+        1.08,
+        5.57934
+      ],
+      "bounds": {
+        "min": [
+          2.65594,
+          0.025,
+          5.53619
+        ],
+        "max": [
+          3.84079,
+          2.135,
+          5.62249
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_33e046acd20a",
+      "group": "Двери/Ванная — ручка",
+      "kind": "item",
+      "pivot": [
+        2.83421,
+        1.03,
+        5.56488
+      ],
+      "bounds": {
+        "min": [
+          2.79921,
+          1.0075,
+          5.52988
+        ],
+        "max": [
+          2.86921,
+          1.0525,
+          5.59988
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_56c33c0f5018",
+      "group": "Двери/Младенческая — наличники",
+      "kind": "item",
+      "pivot": [
+        3.84,
+        1.1125,
+        10.608
+      ],
+      "bounds": {
+        "min": [
+          3.795,
+          -0.015,
+          9.7915
+        ],
+        "max": [
+          3.885,
+          2.24,
+          11.4245
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c36b68b0222d",
+      "group": "Двери/Младенческая — полотно",
+      "kind": "item",
+      "pivot": [
+        4.62352,
+        1.08,
+        11.36464
+      ],
+      "bounds": {
+        "min": [
+          3.83921,
+          0.025,
+          11.31479
+        ],
+        "max": [
+          5.40783,
+          2.135,
+          11.41449
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_84e4bbe45f04",
+      "group": "Двери/Младенческая — ручка",
+      "kind": "item",
+      "pivot": [
+        5.17199,
+        1.03,
+        11.34549
+      ],
+      "bounds": {
+        "min": [
+          5.13699,
+          1.0075,
+          11.31049
+        ],
+        "max": [
+          5.20699,
+          1.0525,
+          11.38049
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fb735c3da542",
+      "group": "Двери/Спальня — наличники",
+      "kind": "item",
+      "pivot": [
+        4.864,
+        1.1125,
+        13.44
+      ],
+      "bounds": {
+        "min": [
+          4.1915,
+          -0.015,
+          13.395
+        ],
+        "max": [
+          5.5365,
+          2.24,
+          13.485
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e2b2ccfc7ca3",
+      "group": "Двери/Спальня — полотно",
+      "kind": "item",
+      "pivot": [
+        4.246335,
+        1.08,
+        14.07961
+      ],
+      "bounds": {
+        "min": [
+          4.20151,
+          0.025,
+          13.43921
+        ],
+        "max": [
+          4.29116,
+          2.135,
+          14.72001
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_afe41757595f",
+      "group": "Двери/Спальня — ручка",
+      "kind": "item",
+      "pivot": [
+        4.26197,
+        1.03,
+        14.52734
+      ],
+      "bounds": {
+        "min": [
+          4.22697,
+          1.0075,
+          14.49234
+        ],
+        "max": [
+          4.29697,
+          1.0525,
+          14.56234
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9cc1f5627f92",
+      "group": "Двери/Санузел спальни — наличники",
+      "kind": "item",
+      "pivot": [
+        2.928,
+        1.1125,
+        19.296
+      ],
+      "bounds": {
+        "min": [
+          2.3675,
+          -0.015,
+          19.251
+        ],
+        "max": [
+          3.4885,
+          2.24,
+          19.341
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a1f73376d9b9",
+      "group": "Двери/Санузел спальни — полотно",
+      "kind": "item",
+      "pivot": [
+        2.418425,
+        1.08,
+        19.823675
+      ],
+      "bounds": {
+        "min": [
+          2.37751,
+          0.025,
+          19.29521
+        ],
+        "max": [
+          2.45934,
+          2.135,
+          20.35214
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_60ac69d7555d",
+      "group": "Двери/Санузел спальни — ручка",
+      "kind": "item",
+      "pivot": [
+        2.43133,
+        1.03,
+        20.19305
+      ],
+      "bounds": {
+        "min": [
+          2.39633,
+          1.0075,
+          20.15805
+        ],
+        "max": [
+          2.46633,
+          1.0525,
+          20.22805
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1f699277ac0a",
+      "group": "Двери/Гардероб — наличники",
+      "kind": "item",
+      "pivot": [
+        4.8,
+        1.1125,
+        19.296
+      ],
+      "bounds": {
+        "min": [
+          4.2235,
+          -0.015,
+          19.251
+        ],
+        "max": [
+          5.3765,
+          2.24,
+          19.341
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_13e3e4911601",
+      "group": "Двери/Гардероб — полотно",
+      "kind": "item",
+      "pivot": [
+        4.274985,
+        1.08,
+        19.839665
+      ],
+      "bounds": {
+        "min": [
+          4.23351,
+          0.025,
+          19.29521
+        ],
+        "max": [
+          4.31646,
+          2.135,
+          20.38412
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e873e398bd27",
+      "group": "Двери/Гардероб — ручка",
+      "kind": "item",
+      "pivot": [
+        4.28828,
+        1.03,
+        20.22024
+      ],
+      "bounds": {
+        "min": [
+          4.25328,
+          1.0075,
+          20.18524
+        ],
+        "max": [
+          4.32328,
+          1.0525,
+          20.25524
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_abfdf82feacf",
+      "group": "Двери/Прачечная — наличники",
+      "kind": "item",
+      "pivot": [
+        12.08,
+        1.1125,
+        13.44
+      ],
+      "bounds": {
+        "min": [
+          11.4555,
+          -0.015,
+          13.395
+        ],
+        "max": [
+          12.7045,
+          2.24,
+          13.485
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7ce44f6c3a49",
+      "group": "Двери/Прачечная — полотно",
+      "kind": "item",
+      "pivot": [
+        11.50866,
+        1.08,
+        12.848365
+      ],
+      "bounds": {
+        "min": [
+          11.46551,
+          0.025,
+          12.25594
+        ],
+        "max": [
+          11.55181,
+          2.135,
+          13.44079
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_75b0f1d94539",
+      "group": "Двери/Прачечная — ручка",
+      "kind": "item",
+      "pivot": [
+        11.52312,
+        1.03,
+        12.43421
+      ],
+      "bounds": {
+        "min": [
+          11.48812,
+          1.0075,
+          12.39921
+        ],
+        "max": [
+          11.55812,
+          1.0525,
+          12.46921
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e8d70c4b221e",
+      "group": "Двери/Гараж — наличники",
+      "kind": "item",
+      "pivot": [
+        12.032,
+        1.1125,
+        9.6
+      ],
+      "bounds": {
+        "min": [
+          11.3595,
+          -0.015,
+          9.555
+        ],
+        "max": [
+          12.7045,
+          2.24,
+          9.645
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_84cc370057a8",
+      "group": "Двери/Гараж — полотно",
+      "kind": "item",
+      "pivot": [
+        11.414335,
+        1.08,
+        8.96039
+      ],
+      "bounds": {
+        "min": [
+          11.36951,
+          0.025,
+          8.31999
+        ],
+        "max": [
+          11.45916,
+          2.135,
+          9.60079
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_27c547720d1d",
+      "group": "Двери/Гараж — ручка",
+      "kind": "item",
+      "pivot": [
+        11.42997,
+        1.03,
+        8.51266
+      ],
+      "bounds": {
+        "min": [
+          11.39497,
+          1.0075,
+          8.47766
+        ],
+        "max": [
+          11.46497,
+          1.0525,
+          8.54766
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_641e21a54bb7",
+      "group": "Двери/Подвал — наличники",
+      "kind": "item",
+      "pivot": [
+        12.208,
+        1.1125,
+        15.36
+      ],
+      "bounds": {
+        "min": [
+          11.5515,
+          -0.015,
+          15.315
+        ],
+        "max": [
+          12.8645,
+          2.24,
+          15.405
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bdfe31ef528e",
+      "group": "Двери/Подвал — полотно",
+      "kind": "item",
+      "pivot": [
+        11.605775,
+        1.08,
+        15.983615
+      ],
+      "bounds": {
+        "min": [
+          11.56151,
+          0.025,
+          15.35921
+        ],
+        "max": [
+          11.65004,
+          2.135,
+          16.60802
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f79233c4f29f",
+      "group": "Двери/Подвал — ручка",
+      "kind": "item",
+      "pivot": [
+        11.62102,
+        1.03,
+        16.42015
+      ],
+      "bounds": {
+        "min": [
+          11.58602,
+          1.0075,
+          16.38515
+        ],
+        "max": [
+          11.65602,
+          1.0525,
+          16.45515
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_49030175c699",
+      "group": "Двери/Входная — наличники",
+      "kind": "item",
+      "pivot": [
+        6.72,
+        1.1125,
+        4.032
+      ],
+      "bounds": {
+        "min": [
+          6.0475,
+          -0.015,
+          3.987
+        ],
+        "max": [
+          7.3925,
+          2.24,
+          4.077
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_56a195d486e6",
+      "group": "Двери/Входная — полотно",
+      "kind": "item",
+      "pivot": [
+        6.102335,
+        1.08,
+        4.67161
+      ],
+      "bounds": {
+        "min": [
+          6.05751,
+          0.025,
+          4.03121
+        ],
+        "max": [
+          6.14716,
+          2.135,
+          5.31201
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_76fa10cd2f90",
+      "group": "Двери/Входная — ручка",
+      "kind": "item",
+      "pivot": [
+        6.11797,
+        1.03,
+        5.11934
+      ],
+      "bounds": {
+        "min": [
+          6.08297,
+          1.0075,
+          5.08434
+        ],
+        "max": [
+          6.15297,
+          1.0525,
+          5.15434
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7ab5697d587e",
+      "group": "Двери/Шкаф коридора 01 — наличники",
+      "kind": "item",
+      "pivot": [
+        3.84,
+        1.1125,
+        8.704
+      ],
+      "bounds": {
+        "min": [
+          3.795,
+          -0.015,
+          8.0635
+        ],
+        "max": [
+          3.885,
+          2.24,
+          9.3445
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6e5fd3f8151a",
+      "group": "Двери/Шкаф коридора 01 — полотно",
+      "kind": "item",
+      "pivot": [
+        4.447625,
+        1.08,
+        9.290785
+      ],
+      "bounds": {
+        "min": [
+          3.83921,
+          0.025,
+          9.24708
+        ],
+        "max": [
+          5.05604,
+          2.135,
+          9.33449
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_943ff5430f9c",
+      "group": "Двери/Шкаф коридора 01 — ручка",
+      "kind": "item",
+      "pivot": [
+        4.87297,
+        1.03,
+        9.27593
+      ],
+      "bounds": {
+        "min": [
+          4.83797,
+          1.0075,
+          9.24093
+        ],
+        "max": [
+          4.90797,
+          1.0525,
+          9.31093
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_979d2106c565",
+      "group": "Двери/Шкаф коридора 02 — наличники",
+      "kind": "item",
+      "pivot": [
+        5.824,
+        1.1125,
+        10.624
+      ],
+      "bounds": {
+        "min": [
+          5.779,
+          -0.015,
+          9.9515
+        ],
+        "max": [
+          5.869,
+          2.24,
+          11.2965
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f9cc8b1604d4",
+      "group": "Двери/Шкаф коридора 02 — полотно",
+      "kind": "item",
+      "pivot": [
+        6.46361,
+        1.08,
+        11.241665
+      ],
+      "bounds": {
+        "min": [
+          5.82321,
+          0.025,
+          11.19684
+        ],
+        "max": [
+          7.10401,
+          2.135,
+          11.28649
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e5514c54b210",
+      "group": "Двери/Шкаф коридора 02 — ручка",
+      "kind": "item",
+      "pivot": [
+        6.91134,
+        1.03,
+        11.22603
+      ],
+      "bounds": {
+        "min": [
+          6.87634,
+          1.0075,
+          11.19103
+        ],
+        "max": [
+          6.94634,
+          1.0525,
+          11.26103
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ad97ac5492ca",
+      "group": "Двери/Гаражные ворота",
+      "kind": "item",
+      "pivot": [
+        13.76,
+        1.1475,
+        0.0125
+      ],
+      "bounds": {
+        "min": [
+          10.368,
+          0.03,
+          -0.015
+        ],
+        "max": [
+          17.152,
+          2.265,
+          0.04
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c8a693bbc8e3",
+      "group": "Фургон/Шасси",
+      "kind": "item",
+      "pivot": [
+        10.2,
+        0.155,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          0.06,
+          -9.075
+        ],
+        "max": [
+          13.35,
+          0.25,
+          -6.525
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1f42d93921ff",
+      "group": "Фургон/Пол грузового отсека",
+      "kind": "item",
+      "pivot": [
+        9.275,
+        0.325,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          0.28,
+          -8.995
+        ],
+        "max": [
+          11.5,
+          0.37,
+          -6.605
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_133b062818a2",
+      "group": "Фургон/Левый борт",
+      "kind": "item",
+      "pivot": [
+        9.225,
+        1.48,
+        -9.03
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          0.36,
+          -9.075
+        ],
+        "max": [
+          11.4,
+          2.6,
+          -8.985
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bcbd738b8399",
+      "group": "Фургон/Правый борт",
+      "kind": "item",
+      "pivot": [
+        9.225,
+        1.48,
+        -6.57
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          0.36,
+          -6.615
+        ],
+        "max": [
+          11.4,
+          2.6,
+          -6.525
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_acd1e088f4f1",
+      "group": "Фургон/Крыша",
+      "kind": "item",
+      "pivot": [
+        9.35,
+        2.65,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          2.6,
+          -9.075
+        ],
+        "max": [
+          11.65,
+          2.7,
+          -6.525
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_748497edd1d7",
+      "group": "Фургон/Перегородка кабины",
+      "kind": "item",
+      "pivot": [
+        11.41,
+        1.48,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          11.37,
+          0.36,
+          -8.985
+        ],
+        "max": [
+          11.45,
+          2.6,
+          -6.615
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_299cd9165bc2",
+      "group": "Фургон/Полосы кузова",
+      "kind": "item",
+      "pivot": [
+        9.2,
+        0.55,
+        -7.7975
+      ],
+      "bounds": {
+        "min": [
+          7.05,
+          0.49,
+          -8.975
+        ],
+        "max": [
+          11.35,
+          0.61,
+          -6.62
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_05232794639d",
+      "group": "Фургон/Капот",
+      "kind": "item",
+      "pivot": [
+        12.5,
+        0.76,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          11.65,
+          0.26,
+          -9.075
+        ],
+        "max": [
+          13.35,
+          1.26,
+          -6.525
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d13a9be1614b",
+      "group": "Фургон/Лобовое стекло",
+      "kind": "item",
+      "pivot": [
+        12.14,
+        1.78,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          11.83,
+          1.26,
+          -8.975
+        ],
+        "max": [
+          12.45,
+          2.3,
+          -6.625
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0dc747e06f40",
+      "group": "Фургон/Крыша кабины",
+      "kind": "item",
+      "pivot": [
+        11.575,
+        2.385,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          11.3,
+          2.31,
+          -9.015
+        ],
+        "max": [
+          11.85,
+          2.46,
+          -6.585
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_87415a44f623",
+      "group": "Двери фургона/Левая дверь кабины",
+      "kind": "item",
+      "pivot": [
+        11.815,
+        1.34,
+        -9.045
+      ],
+      "bounds": {
+        "min": [
+          11.43,
+          0.38,
+          -9.087
+        ],
+        "max": [
+          12.2,
+          2.3,
+          -9.003
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b44e62ac3de9",
+      "group": "Фургон/Зеркала",
+      "kind": "item",
+      "pivot": [
+        12.195,
+        1.51,
+        -7.83
+      ],
+      "bounds": {
+        "min": [
+          12.08,
+          1.38,
+          -9.375
+        ],
+        "max": [
+          12.31,
+          1.64,
+          -6.285
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_60d3709a0049",
+      "group": "Двери фургона/Правая дверь кабины",
+      "kind": "item",
+      "pivot": [
+        11.815,
+        1.34,
+        -6.555
+      ],
+      "bounds": {
+        "min": [
+          11.43,
+          0.38,
+          -6.597
+        ],
+        "max": [
+          12.2,
+          2.3,
+          -6.513
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5d1cd30ea82c",
+      "group": "Фургон/Бамперы",
+      "kind": "item",
+      "pivot": [
+        10.15,
+        0.345,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          6.89,
+          0.23,
+          -9.125
+        ],
+        "max": [
+          13.41,
+          0.46,
+          -6.475
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0d9bbd97c5d4",
+      "group": "Фургон/Передние фары",
+      "kind": "item",
+      "pivot": [
+        13.356,
+        0.68,
+        -7.795
+      ],
+      "bounds": {
+        "min": [
+          13.347,
+          0.58,
+          -8.915
+        ],
+        "max": [
+          13.365,
+          0.78,
+          -6.675
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8f94630e0dad",
+      "group": "Фургон/Решётка",
+      "kind": "item",
+      "pivot": [
+        13.365,
+        0.55,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          13.355,
+          0.41,
+          -8.275
+        ],
+        "max": [
+          13.375,
+          0.69,
+          -7.325
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_79abb8581c8f",
+      "group": "Фургон/Задние фонари",
+      "kind": "item",
+      "pivot": [
+        7.0225,
+        0.99,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          7.005,
+          0.78,
+          -9.035
+        ],
+        "max": [
+          7.04,
+          1.2,
+          -6.565
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_91c56a395f2d",
+      "group": "Фургон/Задние ступени",
+      "kind": "item",
+      "pivot": [
+        6.505,
+        -0.03,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          6.1,
+          -0.21,
+          -8.825
+        ],
+        "max": [
+          6.91,
+          0.15,
+          -6.775
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_44be5f44b891",
+      "group": "Фургон/Рабочий стол",
+      "kind": "item",
+      "pivot": [
+        10.05,
+        0.66,
+        -8.68
+      ],
+      "bounds": {
+        "min": [
+          9.2,
+          0.37,
+          -8.945
+        ],
+        "max": [
+          10.9,
+          0.95,
+          -8.415
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_84b6884b8dbc",
+      "group": "Фургон/Монитор 01",
+      "kind": "item",
+      "pivot": [
+        10.37,
+        1.275,
+        -8.858
+      ],
+      "bounds": {
+        "min": [
+          10.04,
+          0.94,
+          -8.905
+        ],
+        "max": [
+          10.7,
+          1.61,
+          -8.811
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b7a55e4ec07f",
+      "group": "Фургон/Монитор 02",
+      "kind": "item",
+      "pivot": [
+        9.62,
+        1.275,
+        -8.858
+      ],
+      "bounds": {
+        "min": [
+          9.29,
+          0.94,
+          -8.905
+        ],
+        "max": [
+          9.95,
+          1.61,
+          -8.811
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_eec48530f9f2",
+      "group": "Фургон/Клавиатура",
+      "kind": "item",
+      "pivot": [
+        10.45,
+        0.9675,
+        -8.585
+      ],
+      "bounds": {
+        "min": [
+          10.15,
+          0.955,
+          -8.695
+        ],
+        "max": [
+          10.75,
+          0.98,
+          -8.475
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4bfc107e2c7a",
+      "group": "Фургон/Полки снаряжения",
+      "kind": "item",
+      "pivot": [
+        9.35,
+        1.32,
+        -6.8725
+      ],
+      "bounds": {
+        "min": [
+          7.8,
+          0.38,
+          -7.115
+        ],
+        "max": [
+          10.9,
+          2.26,
+          -6.63
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_95174cc11b50",
+      "group": "Снаряжение/Фонарик FLASH_01",
+      "kind": "item",
+      "pivot": [
+        10.65,
+        0.8665,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          10.578,
+          0.725,
+          -6.967
+        ],
+        "max": [
+          10.722,
+          1.008,
+          -6.823
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.65,
+            0.8665,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_f30cea76872d",
+      "group": "Снаряжение/Фонарик FLASH_02",
+      "kind": "item",
+      "pivot": [
+        10.33,
+        0.8665,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          10.258,
+          0.725,
+          -6.967
+        ],
+        "max": [
+          10.402,
+          1.008,
+          -6.823
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.33,
+            0.8665,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_47f96f0d7be4",
+      "group": "Снаряжение/Фонарик FLASH_03",
+      "kind": "item",
+      "pivot": [
+        10.01,
+        0.8665,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          9.938,
+          0.725,
+          -6.967
+        ],
+        "max": [
+          10.082,
+          1.008,
+          -6.823
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.01,
+            0.8665,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_5a3f4390bd54",
+      "group": "Снаряжение/EMF EMF_01",
+      "kind": "item",
+      "pivot": [
+        9.51,
+        0.845,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          9.46,
+          0.725,
+          -6.96
+        ],
+        "max": [
+          9.56,
+          0.965,
+          -6.83
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.51,
+            0.845,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_94bd78296bbc",
+      "group": "Снаряжение/EMF EMF_02",
+      "kind": "item",
+      "pivot": [
+        9.19,
+        0.845,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          9.14,
+          0.725,
+          -6.96
+        ],
+        "max": [
+          9.24,
+          0.965,
+          -6.83
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.19,
+            0.845,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_14a57d01581e",
+      "group": "Снаряжение/Рация RADIO_01",
+      "kind": "item",
+      "pivot": [
+        8.7045,
+        0.9175,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          8.66,
+          0.725,
+          -6.95
+        ],
+        "max": [
+          8.749,
+          1.11,
+          -6.84
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.7045,
+            0.9175,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_290dbaedbdbd",
+      "group": "Снаряжение/Рация RADIO_02",
+      "kind": "item",
+      "pivot": [
+        8.3545,
+        0.9175,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          8.31,
+          0.725,
+          -6.95
+        ],
+        "max": [
+          8.399,
+          1.11,
+          -6.84
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.3545,
+            0.9175,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_53e81020c4c9",
+      "group": "Снаряжение/Камера CAMERA_01",
+      "kind": "item",
+      "pivot": [
+        10.6,
+        1.351,
+        -6.938
+      ],
+      "bounds": {
+        "min": [
+          10.535,
+          1.275,
+          -7.086
+        ],
+        "max": [
+          10.665,
+          1.427,
+          -6.79
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.6,
+            1.351,
+            -6.938
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_1695f7eb0416",
+      "group": "Снаряжение/Камера CAMERA_02",
+      "kind": "item",
+      "pivot": [
+        10.1,
+        1.351,
+        -6.938
+      ],
+      "bounds": {
+        "min": [
+          10.035,
+          1.275,
+          -7.086
+        ],
+        "max": [
+          10.165,
+          1.427,
+          -6.79
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.1,
+            1.351,
+            -6.938
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_953e978481f1",
+      "group": "Снаряжение/Термометр THERM_01",
+      "kind": "item",
+      "pivot": [
+        9.5025,
+        1.395,
+        -6.901
+      ],
+      "bounds": {
+        "min": [
+          9.465,
+          1.275,
+          -6.947
+        ],
+        "max": [
+          9.54,
+          1.515,
+          -6.855
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.5025,
+            1.395,
+            -6.901
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_e22b6e6e3e6d",
+      "group": "Снаряжение/Термометр THERM_02",
+      "kind": "item",
+      "pivot": [
+        9.1025,
+        1.395,
+        -6.901
+      ],
+      "bounds": {
+        "min": [
+          9.065,
+          1.275,
+          -6.947
+        ],
+        "max": [
+          9.14,
+          1.515,
+          -6.855
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.1025,
+            1.395,
+            -6.901
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_68fd54b80194",
+      "group": "Снаряжение/Радиоприёмник SPIRIT_01",
+      "kind": "item",
+      "pivot": [
+        8.5,
+        1.5025,
+        -6.91
+      ],
+      "bounds": {
+        "min": [
+          8.38,
+          1.275,
+          -7.045
+        ],
+        "max": [
+          8.62,
+          1.73,
+          -6.775
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.5,
+            1.5025,
+            -6.91
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_5797039ad121",
+      "group": "Снаряжение/Книга BOOK_01",
+      "kind": "item",
+      "pivot": [
+        10.5,
+        1.858,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          10.3,
+          1.825,
+          -7.035
+        ],
+        "max": [
+          10.7,
+          1.891,
+          -6.755
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.5,
+            1.858,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_9b390f7b3b08",
+      "group": "Снаряжение/Книга BOOK_02",
+      "kind": "item",
+      "pivot": [
+        9.9,
+        1.858,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          9.7,
+          1.825,
+          -7.035
+        ],
+        "max": [
+          10.1,
+          1.891,
+          -6.755
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.9,
+            1.858,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_a4f4babcc273",
+      "group": "Снаряжение/Крест CRUCIFIX_01",
+      "kind": "item",
+      "pivot": [
+        9.34,
+        1.8485,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          9.18,
+          1.825,
+          -7.005
+        ],
+        "max": [
+          9.5,
+          1.872,
+          -6.785
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.34,
+            1.8485,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_489618bc4f8f",
+      "group": "Снаряжение/Соль SALT_01",
+      "kind": "item",
+      "pivot": [
+        8.75,
+        1.9385,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          8.672,
+          1.825,
+          -6.972
+        ],
+        "max": [
+          8.828,
+          2.052,
+          -6.818
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.75,
+            1.9385,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_4f1f60f48cdd",
+      "group": "Снаряжение/Благовония INCENSE_01",
+      "kind": "item",
+      "pivot": [
+        8.29,
+        1.85,
+        -6.895
+      ],
+      "bounds": {
+        "min": [
+          8.1362,
+          1.815,
+          -6.9872
+        ],
+        "max": [
+          8.4438,
+          1.885,
+          -6.8028
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.29,
+            1.85,
+            -6.895
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_0af29b78a174",
+      "group": "Снаряжение/Штатив TRIPOD_01",
+      "kind": "item",
+      "pivot": [
+        7.7,
+        0.8973,
+        -8.6003
+      ],
+      "bounds": {
+        "min": [
+          7.4921,
+          0.3746,
+          -8.7828
+        ],
+        "max": [
+          7.9079,
+          1.42,
+          -8.4178
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            7.7,
+            0.8973,
+            -8.6003
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_c988d7b1705a",
+      "group": "Снаряжение/УФ фонарь UV_01",
+      "kind": "item",
+      "pivot": [
+        9.675,
+        1.0,
+        -8.695
+      ],
+      "bounds": {
+        "min": [
+          9.5,
+          0.945,
+          -8.75
+        ],
+        "max": [
+          9.85,
+          1.055,
+          -8.64
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.675,
+            1.0,
+            -8.695
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_d5471807a795",
+      "group": "Снаряжение/Датчик движения MOTION_01",
+      "kind": "item",
+      "pivot": [
+        9.39,
+        1.025,
+        -8.7035
+      ],
+      "bounds": {
+        "min": [
+          9.33,
+          0.955,
+          -8.792
+        ],
+        "max": [
+          9.45,
+          1.095,
+          -8.615
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            9.39,
+            1.025,
+            -8.7035
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_f9551612b215",
+      "group": "Освещение/Фургон — потолочный светильник",
+      "kind": "item",
+      "pivot": [
+        9.955,
+        2.5625,
+        -7.8
+      ],
+      "bounds": {
+        "min": [
+          9.86,
+          2.54,
+          -8.275
+        ],
+        "max": [
+          10.05,
+          2.585,
+          -7.325
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f130b5d39275",
+      "group": "Фургон/Доска заданий",
+      "kind": "item",
+      "pivot": [
+        11.302,
+        1.535,
+        -8.41
+      ],
+      "bounds": {
+        "min": [
+          11.274,
+          1.01,
+          -8.935
+        ],
+        "max": [
+          11.33,
+          2.06,
+          -7.885
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fde18c34fadb",
+      "group": "Двери фургона/Задняя левая",
+      "kind": "item",
+      "pivot": [
+        7.01,
+        1.47,
+        -8.455
+      ],
+      "bounds": {
+        "min": [
+          6.925,
+          0.38,
+          -9.085
+        ],
+        "max": [
+          7.095,
+          2.56,
+          -7.825
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5d6ae916ca20",
+      "group": "Двери фургона/Задняя правая",
+      "kind": "item",
+      "pivot": [
+        7.01,
+        1.47,
+        -7.17
+      ],
+      "bounds": {
+        "min": [
+          6.925,
+          0.38,
+          -7.8
+        ],
+        "max": [
+          7.095,
+          2.56,
+          -6.54
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f19fba16bd6b",
+      "group": "Фургон/Клавиши клавиатуры",
+      "kind": "item",
+      "pivot": [
+        10.4385,
+        0.986,
+        -8.601
+      ],
+      "bounds": {
+        "min": [
+          10.18,
+          0.982,
+          -8.68
+        ],
+        "max": [
+          10.697,
+          0.99,
+          -8.522
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_58136ae4ebb0",
+      "group": "Фургон/Интерфейс мониторов",
+      "kind": "item",
+      "pivot": [
+        9.945,
+        1.271,
+        -8.795
+      ],
+      "bounds": {
+        "min": [
+          9.34,
+          1.12,
+          -8.797
+        ],
+        "max": [
+          10.55,
+          1.422,
+          -8.793
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6163cf56b3ad",
+      "group": "Колёса фургона/Левое заднее",
+      "kind": "item",
+      "pivot": [
+        8.2,
+        0.2,
+        -9.1
+      ],
+      "bounds": {
+        "min": [
+          7.7345,
+          -0.2655,
+          -9.235
+        ],
+        "max": [
+          8.6655,
+          0.6655,
+          -8.965
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d1fd23448612",
+      "group": "Колёса фургона/Левое переднее",
+      "kind": "item",
+      "pivot": [
+        12.35,
+        0.2,
+        -9.1
+      ],
+      "bounds": {
+        "min": [
+          11.8845,
+          -0.2655,
+          -9.235
+        ],
+        "max": [
+          12.8155,
+          0.6655,
+          -8.965
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_00fce332c945",
+      "group": "Колёса фургона/Правое заднее",
+      "kind": "item",
+      "pivot": [
+        8.2,
+        0.2,
+        -6.5
+      ],
+      "bounds": {
+        "min": [
+          7.7345,
+          -0.2655,
+          -6.635
+        ],
+        "max": [
+          8.6655,
+          0.6655,
+          -6.365
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8ba629381b70",
+      "group": "Колёса фургона/Правое переднее",
+      "kind": "item",
+      "pivot": [
+        12.35,
+        0.2,
+        -6.5
+      ],
+      "bounds": {
+        "min": [
+          11.8845,
+          -0.2655,
+          -6.635
+        ],
+        "max": [
+          12.8155,
+          0.6655,
+          -6.365
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0d9f74ac6ea1",
+      "group": "Детская/Кровать — Детская",
+      "kind": "item",
+      "pivot": [
+        1.65215,
+        0.57,
+        1.73357
+      ],
+      "bounds": {
+        "min": [
+          1.025,
+          0.02,
+          0.58907
+        ],
+        "max": [
+          2.2793,
+          1.12,
+          2.87807
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5394c61dbfe9",
+      "group": "Детская/Рабочее место — Детская",
+      "kind": "item",
+      "pivot": [
+        4.75,
+        0.725,
+        1.25
+      ],
+      "bounds": {
+        "min": [
+          4.225,
+          0.02,
+          0.95
+        ],
+        "max": [
+          5.275,
+          1.43,
+          1.55
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_08790ec93293",
+      "group": "Детская/Стул — Детская",
+      "kind": "item",
+      "pivot": [
+        4.7541,
+        0.5475,
+        2.231
+      ],
+      "bounds": {
+        "min": [
+          4.5141,
+          0.03,
+          1.991
+        ],
+        "max": [
+          4.9941,
+          1.065,
+          2.471
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_012afb8adf39",
+      "group": "Мебель/Тумбочки 01 — Мебель",
+      "kind": "item",
+      "pivot": [
+        2.65,
+        0.345,
+        2.65
+      ],
+      "bounds": {
+        "min": [
+          2.325,
+          0.06,
+          2.41
+        ],
+        "max": [
+          2.975,
+          0.63,
+          2.89
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_46262bf05253",
+      "group": "Младенческая/Кроватка — Младенческая",
+      "kind": "item",
+      "pivot": [
+        1.2,
+        0.625,
+        11.1
+      ],
+      "bounds": {
+        "min": [
+          0.8,
+          0.0825,
+          10.43
+        ],
+        "max": [
+          1.6,
+          1.1675,
+          11.77
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5a79f94396dd",
+      "group": "Младенческая/Комод — Младенческая",
+      "kind": "item",
+      "pivot": [
+        0.62,
+        0.585,
+        13.5
+      ],
+      "bounds": {
+        "min": [
+          0.37,
+          0.06,
+          13.1
+        ],
+        "max": [
+          0.87,
+          1.11,
+          13.9
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4628e5c11f41",
+      "group": "Младенческая/Игрушки — Младенческая",
+      "kind": "item",
+      "pivot": [
+        2.75,
+        0.4,
+        14.3
+      ],
+      "bounds": {
+        "min": [
+          2.5408,
+          -0.025,
+          14.1462
+        ],
+        "max": [
+          2.9592,
+          0.825,
+          14.4538
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            2.75,
+            0.4,
+            14.3
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_8a07403b1f26",
+      "group": "Младенческая/Ковёр",
+      "kind": "item",
+      "pivot": [
+        1.8,
+        0.025,
+        12.5
+      ],
+      "bounds": {
+        "min": [
+          0.65,
+          0.0125,
+          11.15
+        ],
+        "max": [
+          2.95,
+          0.0375,
+          13.85
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_026bba008458",
+      "group": "Спальня/Кровать — Спальня",
+      "kind": "item",
+      "pivot": [
+        2.1475,
+        0.57,
+        16.42874
+      ],
+      "bounds": {
+        "min": [
+          1.0925,
+          0.02,
+          15.29869
+        ],
+        "max": [
+          3.2025,
+          1.12,
+          17.55879
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_df026479a5c4",
+      "group": "Спальня/Тумбочка 01",
+      "kind": "item",
+      "pivot": [
+        0.65,
+        0.345,
+        15.75
+      ],
+      "bounds": {
+        "min": [
+          0.325,
+          0.06,
+          15.51
+        ],
+        "max": [
+          0.975,
+          0.63,
+          15.99
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8034f7d14f85",
+      "group": "Спальня/Тумбочка 02",
+      "kind": "item",
+      "pivot": [
+        3.65,
+        0.345,
+        15.75
+      ],
+      "bounds": {
+        "min": [
+          3.325,
+          0.06,
+          15.51
+        ],
+        "max": [
+          3.975,
+          0.63,
+          15.99
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a629727ebf5d",
+      "group": "Спальня/Письменный стол и компьютер",
+      "kind": "item",
+      "pivot": [
+        5.12,
+        0.725,
+        17.8
+      ],
+      "bounds": {
+        "min": [
+          4.82,
+          0.02,
+          17.275
+        ],
+        "max": [
+          5.42,
+          1.43,
+          18.325
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4d1231c19f5f",
+      "group": "Спальня/Офисное кресло",
+      "kind": "item",
+      "pivot": [
+        4.4125,
+        0.695,
+        17.8
+      ],
+      "bounds": {
+        "min": [
+          4.1,
+          0.08,
+          17.525
+        ],
+        "max": [
+          4.725,
+          1.31,
+          18.075
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_04b1d8f854af",
+      "group": "Шкафы/Гардероб — корпус",
+      "kind": "item",
+      "pivot": [
+        4.65,
+        1.25,
+        22.55
+      ],
+      "bounds": {
+        "min": [
+          3.87,
+          0.05,
+          22.2
+        ],
+        "max": [
+          5.43,
+          2.45,
+          22.9
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_76080adead93",
+      "group": "Дверцы шкафа/Гардероб — дверца 01",
+      "kind": "item",
+      "pivot": [
+        4.25,
+        1.25,
+        22.16
+      ],
+      "bounds": {
+        "min": [
+          3.896,
+          0.14,
+          22.12
+        ],
+        "max": [
+          4.604,
+          2.36,
+          22.2
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_835203742ce0",
+      "group": "Дверцы шкафа/Гардероб — дверца 02",
+      "kind": "item",
+      "pivot": [
+        5.0,
+        1.25,
+        22.16
+      ],
+      "bounds": {
+        "min": [
+          4.646,
+          0.14,
+          22.12
+        ],
+        "max": [
+          5.354,
+          2.36,
+          22.2
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_94629da91de5",
+      "group": "Гардероб/Детальный стеллаж",
+      "kind": "item",
+      "pivot": [
+        3.95,
+        1.185,
+        20.85
+      ],
+      "bounds": {
+        "min": [
+          3.75875,
+          0.06,
+          20.3825
+        ],
+        "max": [
+          4.14125,
+          2.31,
+          21.3175
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ab570b3593d2",
+      "group": "Ванная/Ванна",
+      "kind": "item",
+      "pivot": [
+        0.9,
+        0.31,
+        5.35
+      ],
+      "bounds": {
+        "min": [
+          0.47,
+          0.04,
+          4.5
+        ],
+        "max": [
+          1.33,
+          0.58,
+          6.2
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_18b3de2fe2ca",
+      "group": "Ванная/Унитаз",
+      "kind": "item",
+      "pivot": [
+        2.65,
+        0.4925,
+        4.62
+      ],
+      "bounds": {
+        "min": [
+          2.4,
+          0.03,
+          4.29
+        ],
+        "max": [
+          2.9,
+          0.955,
+          4.95
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d542e1e5ff30",
+      "group": "Ванная/Тумба под раковиной",
+      "kind": "item",
+      "pivot": [
+        2.5,
+        0.43,
+        6.4
+      ],
+      "bounds": {
+        "min": [
+          2.1,
+          0.03,
+          6.15
+        ],
+        "max": [
+          2.9,
+          0.83,
+          6.65
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1908848da531",
+      "group": "Ванная/Раковина",
+      "kind": "item",
+      "pivot": [
+        2.5,
+        0.915,
+        6.4
+      ],
+      "bounds": {
+        "min": [
+          2.12,
+          0.86,
+          6.15
+        ],
+        "max": [
+          2.88,
+          0.97,
+          6.65
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_160a897e75e5",
+      "group": "Ванная/Зеркало",
+      "kind": "item",
+      "pivot": [
+        2.5,
+        1.6,
+        6.66
+      ],
+      "bounds": {
+        "min": [
+          2.16,
+          1.19,
+          6.6425
+        ],
+        "max": [
+          2.84,
+          2.01,
+          6.6775
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bc5db8261477",
+      "group": "Ванная/Кран",
+      "kind": "item",
+      "pivot": [
+        2.5,
+        1.0275,
+        6.53375
+      ],
+      "bounds": {
+        "min": [
+          2.4825,
+          0.9,
+          6.45
+        ],
+        "max": [
+          2.5175,
+          1.155,
+          6.6175
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8c199885ce83",
+      "group": "Санузел спальни/Ванна",
+      "kind": "item",
+      "pivot": [
+        0.8,
+        0.31,
+        21.35
+      ],
+      "bounds": {
+        "min": [
+          0.37,
+          0.04,
+          20.5
+        ],
+        "max": [
+          1.23,
+          0.58,
+          22.2
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_279047364fa8",
+      "group": "Санузел спальни/Унитаз",
+      "kind": "item",
+      "pivot": [
+        2.55,
+        0.4925,
+        20.62
+      ],
+      "bounds": {
+        "min": [
+          2.3,
+          0.03,
+          20.29
+        ],
+        "max": [
+          2.8,
+          0.955,
+          20.95
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_53f857c8453c",
+      "group": "Санузел спальни/Тумба под раковиной",
+      "kind": "item",
+      "pivot": [
+        2.4,
+        0.43,
+        22.4
+      ],
+      "bounds": {
+        "min": [
+          2.0,
+          0.03,
+          22.15
+        ],
+        "max": [
+          2.8,
+          0.83,
+          22.65
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_aef62a43030e",
+      "group": "Санузел спальни/Раковина",
+      "kind": "item",
+      "pivot": [
+        2.4,
+        0.915,
+        22.4
+      ],
+      "bounds": {
+        "min": [
+          2.02,
+          0.86,
+          22.15
+        ],
+        "max": [
+          2.78,
+          0.97,
+          22.65
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_911178b0cccb",
+      "group": "Санузел спальни/Зеркало",
+      "kind": "item",
+      "pivot": [
+        2.4,
+        1.6,
+        22.66
+      ],
+      "bounds": {
+        "min": [
+          2.06,
+          1.19,
+          22.6425
+        ],
+        "max": [
+          2.74,
+          2.01,
+          22.6775
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9d67778d630d",
+      "group": "Санузел спальни/Кран",
+      "kind": "item",
+      "pivot": [
+        2.4,
+        1.0275,
+        22.53375
+      ],
+      "bounds": {
+        "min": [
+          2.3825,
+          0.9,
+          22.45
+        ],
+        "max": [
+          2.4175,
+          1.155,
+          22.6175
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4420420fdb70",
+      "group": "Гостиная/Диван — Гостиная",
+      "kind": "item",
+      "pivot": [
+        9.635,
+        0.70248,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          8.48,
+          0.12,
+          17.1
+        ],
+        "max": [
+          10.79,
+          1.28496,
+          19.8
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7d77b4b19d42",
+      "group": "Гостиная/Ковёр — Гостиная",
+      "kind": "item",
+      "pivot": [
+        8.65,
+        0.035,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          6.9,
+          0.02625,
+          17.075
+        ],
+        "max": [
+          10.4,
+          0.04375,
+          19.825
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_615b6b66d0bd",
+      "group": "Гостиная/Журнальный стол — Гостиная",
+      "kind": "item",
+      "pivot": [
+        8.15,
+        0.3,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          7.5125,
+          0.032,
+          18.08875
+        ],
+        "max": [
+          8.7875,
+          0.568,
+          18.81125
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8854888acd6a",
+      "group": "Гостиная/ТВ — Гостиная",
+      "kind": "item",
+      "pivot": [
+        7.45,
+        0.82,
+        20.7
+      ],
+      "bounds": {
+        "min": [
+          6.55,
+          0.06,
+          20.52
+        ],
+        "max": [
+          8.35,
+          1.58,
+          20.88
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4fb091383a9d",
+      "group": "Гостиная/Витрина 01",
+      "kind": "item",
+      "pivot": [
+        6.1525,
+        1.115,
+        17.475
+      ],
+      "bounds": {
+        "min": [
+          5.88,
+          0.04,
+          17.0
+        ],
+        "max": [
+          6.425,
+          2.19,
+          17.95
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_35bae612bd97",
+      "group": "Гостиная/Витрина 02",
+      "kind": "item",
+      "pivot": [
+        6.1525,
+        1.115,
+        18.575
+      ],
+      "bounds": {
+        "min": [
+          5.88,
+          0.04,
+          18.1
+        ],
+        "max": [
+          6.425,
+          2.19,
+          19.05
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_278135b05f36",
+      "group": "Гостиная/Витрина 03",
+      "kind": "item",
+      "pivot": [
+        6.1525,
+        1.115,
+        19.675
+      ],
+      "bounds": {
+        "min": [
+          5.88,
+          0.04,
+          19.2
+        ],
+        "max": [
+          6.425,
+          2.19,
+          20.15
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_2477bad8c70a",
+      "group": "Гостиная/Чашка 01",
+      "kind": "item",
+      "pivot": [
+        8.05,
+        0.625,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          8.005,
+          0.58,
+          18.405
+        ],
+        "max": [
+          8.095,
+          0.67,
+          18.495
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.05,
+            0.625,
+            18.45
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_703941a5b17e",
+      "group": "Гостиная/Чашка 02",
+      "kind": "item",
+      "pivot": [
+        8.35,
+        0.625,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          8.305,
+          0.58,
+          18.405
+        ],
+        "max": [
+          8.395,
+          0.67,
+          18.495
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            8.35,
+            0.625,
+            18.45
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_846a88411e9e",
+      "group": "Гостиная/Приставной столик",
+      "kind": "item",
+      "pivot": [
+        10.42,
+        0.365,
+        20.25
+      ],
+      "bounds": {
+        "min": [
+          10.12,
+          0.02,
+          19.95
+        ],
+        "max": [
+          10.72,
+          0.71,
+          20.55
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6f08d8ea10ed",
+      "group": "Гостиная/Ваза",
+      "kind": "item",
+      "pivot": [
+        10.42,
+        0.895,
+        20.25
+      ],
+      "bounds": {
+        "min": [
+          10.31,
+          0.71,
+          20.14
+        ],
+        "max": [
+          10.53,
+          1.08,
+          20.36
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            10.42,
+            0.895,
+            20.25
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_9e0215121980",
+      "group": "Столовая/Стол — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.7969,
+        0.42,
+        18.6041
+      ],
+      "bounds": {
+        "min": [
+          14.7969,
+          0.02,
+          18.0541
+        ],
+        "max": [
+          16.7969,
+          0.82,
+          19.1541
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ae09b9861942",
+      "group": "Столовая/Стулья 01 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.0702,
+        0.5475,
+        17.6484
+      ],
+      "bounds": {
+        "min": [
+          14.8302,
+          0.03,
+          17.4084
+        ],
+        "max": [
+          15.3102,
+          1.065,
+          17.8884
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4810c6ffb659",
+      "group": "Столовая/Стулья 02 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.9202,
+        0.5475,
+        17.6484
+      ],
+      "bounds": {
+        "min": [
+          15.6802,
+          0.03,
+          17.4084
+        ],
+        "max": [
+          16.1602,
+          1.065,
+          17.8884
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4e7bcad1bbbf",
+      "group": "Столовая/Стулья 03 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.0702,
+        0.5475,
+        19.5984
+      ],
+      "bounds": {
+        "min": [
+          14.8302,
+          0.03,
+          19.3584
+        ],
+        "max": [
+          15.3102,
+          1.065,
+          19.8384
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_17ba7a73a463",
+      "group": "Столовая/Стулья 04 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.9202,
+        0.5475,
+        19.5984
+      ],
+      "bounds": {
+        "min": [
+          15.6802,
+          0.03,
+          19.3584
+        ],
+        "max": [
+          16.1602,
+          1.065,
+          19.8384
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c8f6b17c318c",
+      "group": "Столовая/Посуда 01 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.0827,
+        0.8335,
+        18.2968
+      ],
+      "bounds": {
+        "min": [
+          14.9327,
+          0.826,
+          18.1468
+        ],
+        "max": [
+          15.2327,
+          0.841,
+          18.4468
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.0827,
+            0.8335,
+            18.2968
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_bcdec154f636",
+      "group": "Столовая/Посуда 02 — Столовая",
+      "kind": "item",
+      "pivot": [
+        16.3827,
+        0.8335,
+        18.2968
+      ],
+      "bounds": {
+        "min": [
+          16.2327,
+          0.826,
+          18.1468
+        ],
+        "max": [
+          16.5327,
+          0.841,
+          18.4468
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.3827,
+            0.8335,
+            18.2968
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_1105b589ef20",
+      "group": "Столовая/Посуда 04 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.0827,
+        0.8335,
+        18.8468
+      ],
+      "bounds": {
+        "min": [
+          14.9327,
+          0.826,
+          18.6968
+        ],
+        "max": [
+          15.2327,
+          0.841,
+          18.9968
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.0827,
+            0.8335,
+            18.8468
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_5fe4f93f2041",
+      "group": "Столовая/Посуда 05 — Столовая",
+      "kind": "item",
+      "pivot": [
+        16.3827,
+        0.8335,
+        18.8468
+      ],
+      "bounds": {
+        "min": [
+          16.2327,
+          0.826,
+          18.6968
+        ],
+        "max": [
+          16.5327,
+          0.841,
+          18.9968
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.3827,
+            0.8335,
+            18.8468
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_932ae860ce57",
+      "group": "Столовая/Посуда 03 — Столовая",
+      "kind": "item",
+      "pivot": [
+        15.7827,
+        1.025,
+        18.5968
+      ],
+      "bounds": {
+        "min": [
+          15.6777,
+          0.825,
+          18.4969
+        ],
+        "max": [
+          15.8877,
+          1.225,
+          18.6967
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.7827,
+            1.025,
+            18.5968
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_fdbd6998e4e4",
+      "group": "Столовая/Ковёр",
+      "kind": "item",
+      "pivot": [
+        15.825,
+        0.0265,
+        18.6
+      ],
+      "bounds": {
+        "min": [
+          14.15,
+          0.014,
+          17.1
+        ],
+        "max": [
+          17.5,
+          0.039,
+          20.1
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_44aeeb31a953",
+      "group": "Столовая/Комод",
+      "kind": "item",
+      "pivot": [
+        17.78,
+        0.48,
+        20.35
+      ],
+      "bounds": {
+        "min": [
+          17.47,
+          0.03,
+          19.825
+        ],
+        "max": [
+          18.09,
+          0.93,
+          20.875
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_59394e8731f7",
+      "group": "Кухня/Гарнитур — у задней стены",
+      "kind": "item",
+      "pivot": [
+        16.115,
+        0.4875,
+        10.0615
+      ],
+      "bounds": {
+        "min": [
+          13.975,
+          0.07,
+          9.725
+        ],
+        "max": [
+          18.255,
+          0.905,
+          10.398
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_cb9010e49df7",
+      "group": "Кухня/Гарнитур — у правой стены",
+      "kind": "item",
+      "pivot": [
+        16.34,
+        0.4875,
+        12.28
+      ],
+      "bounds": {
+        "min": [
+          14.425,
+          0.07,
+          10.355
+        ],
+        "max": [
+          18.255,
+          0.905,
+          14.205
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ef2d73142c5d",
+      "group": "Кухня/Навесные шкафы",
+      "kind": "item",
+      "pivot": [
+        16.175,
+        1.955,
+        9.955
+      ],
+      "bounds": {
+        "min": [
+          14.2,
+          1.58,
+          9.76
+        ],
+        "max": [
+          18.15,
+          2.33,
+          10.15
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_dc0a7f97b56b",
+      "group": "Кухня/Остров",
+      "kind": "item",
+      "pivot": [
+        15.149,
+        0.46,
+        12.55
+      ],
+      "bounds": {
+        "min": [
+          14.398,
+          0.07,
+          11.4
+        ],
+        "max": [
+          15.9,
+          0.85,
+          13.7
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_d162cc1acaa1",
+      "group": "Кухня/Холодильник",
+      "kind": "item",
+      "pivot": [
+        13.3375,
+        1.0,
+        10.25
+      ],
+      "bounds": {
+        "min": [
+          12.92,
+          0.025,
+          9.86
+        ],
+        "max": [
+          13.755,
+          1.975,
+          10.64
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f19023134d9e",
+      "group": "Кухня/Плита",
+      "kind": "item",
+      "pivot": [
+        17.94,
+        0.9175,
+        11.36
+      ],
+      "bounds": {
+        "min": [
+          17.63,
+          0.9,
+          11.0
+        ],
+        "max": [
+          18.25,
+          0.935,
+          11.72
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_56a928971afa",
+      "group": "Кухня/Конфорки",
+      "kind": "item",
+      "pivot": [
+        17.92,
+        0.947,
+        11.34
+      ],
+      "bounds": {
+        "min": [
+          17.69,
+          0.94,
+          11.07
+        ],
+        "max": [
+          18.15,
+          0.954,
+          11.61
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0d87443a9437",
+      "group": "Кухня/Вытяжка",
+      "kind": "item",
+      "pivot": [
+        17.95,
+        2.215,
+        11.36
+      ],
+      "bounds": {
+        "min": [
+          17.64,
+          1.65,
+          10.97
+        ],
+        "max": [
+          18.26,
+          2.78,
+          11.75
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e9ec90a847cc",
+      "group": "Кухня/Мойка",
+      "kind": "item",
+      "pivot": [
+        15.0,
+        0.8875,
+        10.02
+      ],
+      "bounds": {
+        "min": [
+          14.7,
+          0.82,
+          9.82
+        ],
+        "max": [
+          15.3,
+          0.955,
+          10.22
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_247667ec158b",
+      "group": "Кухня/Кран",
+      "kind": "item",
+      "pivot": [
+        15.0,
+        1.0875,
+        9.91125
+      ],
+      "bounds": {
+        "min": [
+          14.9825,
+          0.91,
+          9.8125
+        ],
+        "max": [
+          15.0175,
+          1.265,
+          10.01
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c6031f144a03",
+      "group": "Кухня/Микроволновка",
+      "kind": "item",
+      "pivot": [
+        17.15,
+        1.08,
+        10.01
+      ],
+      "bounds": {
+        "min": [
+          16.87,
+          0.92,
+          9.8
+        ],
+        "max": [
+          17.43,
+          1.24,
+          10.22
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bfe3ab2dd872",
+      "group": "Кухня/Чайник",
+      "kind": "item",
+      "pivot": [
+        16.45,
+        1.04,
+        10.0
+      ],
+      "bounds": {
+        "min": [
+          16.31,
+          0.91,
+          9.86
+        ],
+        "max": [
+          16.59,
+          1.17,
+          10.14
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.45,
+            1.04,
+            10.0
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_8fcaf26816d2",
+      "group": "Кухня/Тарелка 01",
+      "kind": "item",
+      "pivot": [
+        14.7,
+        0.916,
+        11.9
+      ],
+      "bounds": {
+        "min": [
+          14.56,
+          0.91,
+          11.76
+        ],
+        "max": [
+          14.84,
+          0.922,
+          12.04
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            14.7,
+            0.916,
+            11.9
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_42b57ce3dfe8",
+      "group": "Кухня/Тарелка 02",
+      "kind": "item",
+      "pivot": [
+        15.55,
+        0.916,
+        12.7
+      ],
+      "bounds": {
+        "min": [
+          15.41,
+          0.91,
+          12.56
+        ],
+        "max": [
+          15.69,
+          0.922,
+          12.84
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.55,
+            0.916,
+            12.7
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_ae680515b3bb",
+      "group": "Кухня/Чашка 01",
+      "kind": "item",
+      "pivot": [
+        14.75,
+        0.98,
+        12.8
+      ],
+      "bounds": {
+        "min": [
+          14.7,
+          0.925,
+          12.75
+        ],
+        "max": [
+          14.8,
+          1.035,
+          12.85
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            14.75,
+            0.98,
+            12.8
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_c10b1c185b91",
+      "group": "Кухня/Ведро",
+      "kind": "item",
+      "pivot": [
+        14.0,
+        0.295,
+        11.8
+      ],
+      "bounds": {
+        "min": [
+          13.82,
+          0.03,
+          11.62
+        ],
+        "max": [
+          14.18,
+          0.56,
+          11.98
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ac2a33b57458",
+      "group": "Прачечная/Стиральная машина",
+      "kind": "item",
+      "pivot": [
+        9.74,
+        0.6225,
+        10.15
+      ],
+      "bounds": {
+        "min": [
+          9.4,
+          0.035,
+          9.81
+        ],
+        "max": [
+          10.08,
+          1.21,
+          10.49
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f93205d78be6",
+      "group": "Прачечная/Сушильная машина",
+      "kind": "item",
+      "pivot": [
+        10.59,
+        0.6225,
+        10.15
+      ],
+      "bounds": {
+        "min": [
+          10.25,
+          0.035,
+          9.81
+        ],
+        "max": [
+          10.93,
+          1.21,
+          10.49
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6f8ba8efcc32",
+      "group": "Прачечная/Детальный стеллаж",
+      "kind": "item",
+      "pivot": [
+        9.42,
+        1.185,
+        12.38
+      ],
+      "bounds": {
+        "min": [
+          9.24,
+          0.06,
+          11.94
+        ],
+        "max": [
+          9.6,
+          2.31,
+          12.82
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_785a4c3a527d",
+      "group": "Прачечная/Корзина 01",
+      "kind": "item",
+      "pivot": [
+        10.165,
+        0.23,
+        11.6
+      ],
+      "bounds": {
+        "min": [
+          9.8725,
+          0.03,
+          11.3775
+        ],
+        "max": [
+          10.4575,
+          0.43,
+          11.8225
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_947addb3d3cd",
+      "group": "Прачечная/Корзина 02",
+      "kind": "item",
+      "pivot": [
+        10.915,
+        0.23,
+        11.6
+      ],
+      "bounds": {
+        "min": [
+          10.6225,
+          0.03,
+          11.3775
+        ],
+        "max": [
+          11.2075,
+          0.43,
+          11.8225
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_bedfa1e8d51c",
+      "group": "Гараж/Верстак — Гараж",
+      "kind": "item",
+      "pivot": [
+        17.95,
+        0.45,
+        6.4
+      ],
+      "bounds": {
+        "min": [
+          17.625,
+          0.05,
+          5.25
+        ],
+        "max": [
+          18.275,
+          0.85,
+          7.55
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5be4a6a1ca20",
+      "group": "Гараж/Инструменты — Гараж",
+      "kind": "item",
+      "pivot": [
+        18.26,
+        1.75,
+        6.4
+      ],
+      "bounds": {
+        "min": [
+          18.1775,
+          1.1,
+          5.25
+        ],
+        "max": [
+          18.3425,
+          2.4,
+          7.55
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ea2ded542113",
+      "group": "Гараж/Шины — Гараж",
+      "kind": "item",
+      "pivot": [
+        16.7,
+        0.29,
+        8.7
+      ],
+      "bounds": {
+        "min": [
+          16.36,
+          0.025,
+          8.36
+        ],
+        "max": [
+          17.04,
+          0.555,
+          9.04
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_be0076ecd654",
+      "group": "Гараж/Металлические локеры",
+      "kind": "item",
+      "pivot": [
+        9.24,
+        1.1,
+        8.6825
+      ],
+      "bounds": {
+        "min": [
+          8.7,
+          0.025,
+          8.39
+        ],
+        "max": [
+          9.78,
+          2.175,
+          8.975
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_404325592978",
+      "group": "Гараж/Автомобиль",
+      "kind": "item",
+      "pivot": [
+        13.8025,
+        0.895,
+        4.6875
+      ],
+      "bounds": {
+        "min": [
+          12.665,
+          0.03,
+          2.4
+        ],
+        "max": [
+          14.94,
+          1.76,
+          6.975
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_693c1c57d195",
+      "group": "Полы/Подвал",
+      "kind": "architecture",
+      "pivot": [
+        14.896,
+        -2.52,
+        16.378
+      ],
+      "bounds": {
+        "min": [
+          11.264,
+          -2.52,
+          11.7
+        ],
+        "max": [
+          18.528,
+          -2.52,
+          21.056
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_0ca73a0413cf",
+      "group": "Подвал/Наружные стены",
+      "kind": "architecture",
+      "pivot": [
+        14.896,
+        -1.305,
+        16.378
+      ],
+      "bounds": {
+        "min": [
+          11.184,
+          -2.58,
+          11.62
+        ],
+        "max": [
+          18.608,
+          -0.03,
+          21.136
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6504c85cd6f4",
+      "group": "Подвал/Стена лестничного марша",
+      "kind": "item",
+      "pivot": [
+        13.152,
+        -1.26,
+        17.456
+      ],
+      "bounds": {
+        "min": [
+          13.082,
+          -2.52,
+          15.36
+        ],
+        "max": [
+          13.222,
+          0.0,
+          19.552
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_dc6777d5f826",
+      "group": "Подвал/Лестница — ступени",
+      "kind": "item",
+      "pivot": [
+        12.208,
+        -1.3825,
+        18.051
+      ],
+      "bounds": {
+        "min": [
+          11.424,
+          -2.585,
+          15.808
+        ],
+        "max": [
+          12.992,
+          -0.18,
+          20.294
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_353a9d476090",
+      "group": "Лестничная комната/Верхняя площадка",
+      "kind": "architecture",
+      "pivot": [
+        12.208,
+        -0.0175,
+        15.584
+      ],
+      "bounds": {
+        "min": [
+          11.424,
+          -0.04,
+          15.36
+        ],
+        "max": [
+          12.992,
+          0.005,
+          15.808
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_63e257d97b2a",
+      "group": "Подвал/Перила — стойки",
+      "kind": "item",
+      "pivot": [
+        12.9395,
+        -0.85,
+        17.7455
+      ],
+      "bounds": {
+        "min": [
+          12.922,
+          -2.34,
+          15.808
+        ],
+        "max": [
+          12.957,
+          0.64,
+          19.683
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f69e0655b7ea",
+      "group": "Подвал/Наклонный поручень",
+      "kind": "item",
+      "pivot": [
+        12.942,
+        -0.475,
+        17.998
+      ],
+      "bounds": {
+        "min": [
+          12.907,
+          -1.68084,
+          15.79145
+        ],
+        "max": [
+          12.977,
+          0.73084,
+          20.20455
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ade5dd43bd13",
+      "group": "Подвал/Стеллаж — Подвал",
+      "kind": "item",
+      "pivot": [
+        16.100005,
+        -1.33,
+        12.199995
+      ],
+      "bounds": {
+        "min": [
+          15.15438,
+          -2.475,
+          11.93437
+        ],
+        "max": [
+          17.04563,
+          -0.185,
+          12.46562
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_aae962dff50c",
+      "group": "Подвал/Коробки 01 — Подвал",
+      "kind": "item",
+      "pivot": [
+        15.4409,
+        -1.84,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          15.2009,
+          -2.05,
+          12.0778
+        ],
+        "max": [
+          15.6809,
+          -1.63,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.4409,
+            -1.84,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_b699ffd52b3b",
+      "group": "Подвал/Коробки 04 — Подвал",
+      "kind": "item",
+      "pivot": [
+        16.0909,
+        -1.84,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          15.8509,
+          -2.05,
+          12.0778
+        ],
+        "max": [
+          16.3309,
+          -1.63,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.0909,
+            -1.84,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_0acf787c027d",
+      "group": "Подвал/Коробки 06 — Подвал",
+      "kind": "item",
+      "pivot": [
+        16.7409,
+        -1.84,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          16.5009,
+          -2.05,
+          12.0778
+        ],
+        "max": [
+          16.9809,
+          -1.63,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.7409,
+            -1.84,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_2f8c73c34a33",
+      "group": "Подвал/Коробки 02 — Подвал",
+      "kind": "item",
+      "pivot": [
+        15.4409,
+        -1.09,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          15.2009,
+          -1.3,
+          12.0778
+        ],
+        "max": [
+          15.6809,
+          -0.88,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.4409,
+            -1.09,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_7491807e0486",
+      "group": "Подвал/Коробки 05 — Подвал",
+      "kind": "item",
+      "pivot": [
+        16.0909,
+        -1.09,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          15.8509,
+          -1.3,
+          12.0778
+        ],
+        "max": [
+          16.3309,
+          -0.88,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.0909,
+            -1.09,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_c58415f3801d",
+      "group": "Подвал/Коробки 07 — Подвал",
+      "kind": "item",
+      "pivot": [
+        16.7409,
+        -1.09,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          16.5009,
+          -1.3,
+          12.0778
+        ],
+        "max": [
+          16.9809,
+          -0.88,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            16.7409,
+            -1.09,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_c25598cba3e6",
+      "group": "Подвал/Коробки 03 — Подвал",
+      "kind": "item",
+      "pivot": [
+        15.4409,
+        -0.34,
+        12.2928
+      ],
+      "bounds": {
+        "min": [
+          15.2009,
+          -0.55,
+          12.0778
+        ],
+        "max": [
+          15.6809,
+          -0.13,
+          12.5078
+        ]
+      },
+      "pickup": {
+        "enabled": true,
+        "reachMetres": 1.8,
+        "grip": {
+          "anchor": "right_hand",
+          "position": [
+            0.23,
+            -0.2,
+            0.55
+          ],
+          "rotationDegrees": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "pivot": [
+            15.4409,
+            -0.34,
+            12.2928
+          ]
+        }
+      }
+    },
+    {
+      "id": "obj_e26f884e5a9d",
+      "group": "Подвал/Стеллаж боковой 15.2",
+      "kind": "item",
+      "pivot": [
+        18.0,
+        -1.33,
+        15.199995
+      ],
+      "bounds": {
+        "min": [
+          17.73438,
+          -2.475,
+          14.25437
+        ],
+        "max": [
+          18.26562,
+          -0.185,
+          16.14562
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_081a67a2528d",
+      "group": "Подвал/Стеллаж боковой 17.8",
+      "kind": "item",
+      "pivot": [
+        18.0,
+        -1.33,
+        17.800005
+      ],
+      "bounds": {
+        "min": [
+          17.73438,
+          -2.475,
+          16.85438
+        ],
+        "max": [
+          18.26562,
+          -0.185,
+          18.74563
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7b33f457cc08",
+      "group": "Подвал/Старый холодильник",
+      "kind": "item",
+      "pivot": [
+        15.3,
+        -1.7,
+        20.5
+      ],
+      "bounds": {
+        "min": [
+          14.925,
+          -2.475,
+          20.175
+        ],
+        "max": [
+          15.675,
+          -0.925,
+          20.825
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_044ef79f9c13",
+      "group": "Освещение/Коридор — светильник",
+      "kind": "item",
+      "pivot": [
+        6.55,
+        2.615,
+        7.4
+      ],
+      "bounds": {
+        "min": [
+          6.37,
+          2.42,
+          7.22
+        ],
+        "max": [
+          6.73,
+          2.81,
+          7.58
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_2e022fc35c67",
+      "group": "Выключатели/Коридор",
+      "kind": "item",
+      "pivot": [
+        7.49375,
+        1.25,
+        4.3
+      ],
+      "bounds": {
+        "min": [
+          7.4675,
+          1.175,
+          4.25
+        ],
+        "max": [
+          7.52,
+          1.325,
+          4.35
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e1bfdbdf9e53",
+      "group": "Освещение/Детская — светильник",
+      "kind": "item",
+      "pivot": [
+        2.65,
+        2.615,
+        2.1
+      ],
+      "bounds": {
+        "min": [
+          2.47,
+          2.42,
+          1.92
+        ],
+        "max": [
+          2.83,
+          2.81,
+          2.28
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_40c7ccae0a74",
+      "group": "Выключатели/Детская",
+      "kind": "item",
+      "pivot": [
+        5.17375,
+        1.25,
+        4.0
+      ],
+      "bounds": {
+        "min": [
+          5.1475,
+          1.175,
+          3.95
+        ],
+        "max": [
+          5.2,
+          1.325,
+          4.05
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_aa3f6e0c62b6",
+      "group": "Освещение/Ванная — светильник",
+      "kind": "item",
+      "pivot": [
+        1.9,
+        2.64,
+        5.5
+      ],
+      "bounds": {
+        "min": [
+          1.72,
+          2.47,
+          5.32
+        ],
+        "max": [
+          2.08,
+          2.81,
+          5.68
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_23c4cdd41d86",
+      "group": "Выключатели/Ванная",
+      "kind": "item",
+      "pivot": [
+        3.71375,
+        1.25,
+        5.7
+      ],
+      "bounds": {
+        "min": [
+          3.6875,
+          1.175,
+          5.65
+        ],
+        "max": [
+          3.74,
+          1.325,
+          5.75
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_45a4023e5336",
+      "group": "Освещение/Младенческая — светильник",
+      "kind": "item",
+      "pivot": [
+        1.9,
+        2.615,
+        12.5
+      ],
+      "bounds": {
+        "min": [
+          1.72,
+          2.42,
+          12.32
+        ],
+        "max": [
+          2.08,
+          2.81,
+          12.68
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fe16602c9631",
+      "group": "Выключатели/Младенческая",
+      "kind": "item",
+      "pivot": [
+        3.71375,
+        1.25,
+        10.15
+      ],
+      "bounds": {
+        "min": [
+          3.6875,
+          1.175,
+          10.1
+        ],
+        "max": [
+          3.74,
+          1.325,
+          10.2
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8cb1719930f1",
+      "group": "Освещение/Спальня — светильник",
+      "kind": "item",
+      "pivot": [
+        2.6,
+        2.615,
+        17.4
+      ],
+      "bounds": {
+        "min": [
+          2.42,
+          2.42,
+          17.22
+        ],
+        "max": [
+          2.78,
+          2.81,
+          17.58
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_9cd7ddcae991",
+      "group": "Выключатели/Спальня",
+      "kind": "item",
+      "pivot": [
+        4.29375,
+        1.25,
+        13.55
+      ],
+      "bounds": {
+        "min": [
+          4.2675,
+          1.175,
+          13.5
+        ],
+        "max": [
+          4.32,
+          1.325,
+          13.6
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e95c538b7b49",
+      "group": "Освещение/Санузел спальни — светильник",
+      "kind": "item",
+      "pivot": [
+        1.8,
+        2.615,
+        21.2
+      ],
+      "bounds": {
+        "min": [
+          1.62,
+          2.42,
+          21.02
+        ],
+        "max": [
+          1.98,
+          2.81,
+          21.38
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8f6afc1306e0",
+      "group": "Выключатели/Санузел спальни",
+      "kind": "item",
+      "pivot": [
+        2.24375,
+        1.25,
+        19.4
+      ],
+      "bounds": {
+        "min": [
+          2.2175,
+          1.175,
+          19.35
+        ],
+        "max": [
+          2.27,
+          1.325,
+          19.45
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_22962c5e1083",
+      "group": "Освещение/Гардероб — светильник",
+      "kind": "item",
+      "pivot": [
+        4.65,
+        2.615,
+        21.2
+      ],
+      "bounds": {
+        "min": [
+          4.47,
+          2.42,
+          21.02
+        ],
+        "max": [
+          4.83,
+          2.81,
+          21.38
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e917586d83ab",
+      "group": "Выключатели/Гардероб",
+      "kind": "item",
+      "pivot": [
+        5.17375,
+        1.25,
+        19.4
+      ],
+      "bounds": {
+        "min": [
+          5.1475,
+          1.175,
+          19.35
+        ],
+        "max": [
+          5.2,
+          1.325,
+          19.45
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_b436a539fba0",
+      "group": "Освещение/Гостиная — светильник",
+      "kind": "item",
+      "pivot": [
+        8.2,
+        2.615,
+        18.3
+      ],
+      "bounds": {
+        "min": [
+          8.02,
+          2.42,
+          18.12
+        ],
+        "max": [
+          8.38,
+          2.81,
+          18.48
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a38763937e7c",
+      "group": "Выключатели/Гостиная",
+      "kind": "item",
+      "pivot": [
+        5.84375,
+        1.25,
+        14.2
+      ],
+      "bounds": {
+        "min": [
+          5.8175,
+          1.175,
+          14.15
+        ],
+        "max": [
+          5.87,
+          1.325,
+          14.25
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_fd8513a3cac5",
+      "group": "Освещение/Столовая — светильник",
+      "kind": "item",
+      "pivot": [
+        15.75,
+        2.615,
+        18.6
+      ],
+      "bounds": {
+        "min": [
+          15.57,
+          2.42,
+          18.42
+        ],
+        "max": [
+          15.93,
+          2.81,
+          18.78
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_5093e8163d6b",
+      "group": "Выключатели/Столовая",
+      "kind": "item",
+      "pivot": [
+        13.29375,
+        1.25,
+        15.2
+      ],
+      "bounds": {
+        "min": [
+          13.2675,
+          1.175,
+          15.15
+        ],
+        "max": [
+          13.32,
+          1.325,
+          15.25
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_73a847568646",
+      "group": "Освещение/Кухня — светильник",
+      "kind": "item",
+      "pivot": [
+        15.6,
+        2.615,
+        12.0
+      ],
+      "bounds": {
+        "min": [
+          15.42,
+          2.42,
+          11.82
+        ],
+        "max": [
+          15.78,
+          2.81,
+          12.18
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_eb4db78112ef",
+      "group": "Выключатели/Кухня",
+      "kind": "item",
+      "pivot": [
+        12.98375,
+        1.25,
+        12.7
+      ],
+      "bounds": {
+        "min": [
+          12.9575,
+          1.175,
+          12.65
+        ],
+        "max": [
+          13.01,
+          1.325,
+          12.75
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_a3c3aeb1c94d",
+      "group": "Освещение/Прачечная — светильник",
+      "kind": "item",
+      "pivot": [
+        11.2,
+        2.615,
+        11.6
+      ],
+      "bounds": {
+        "min": [
+          11.02,
+          2.42,
+          11.42
+        ],
+        "max": [
+          11.38,
+          2.81,
+          11.78
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_2d82776fb796",
+      "group": "Выключатели/Прачечная",
+      "kind": "item",
+      "pivot": [
+        11.37375,
+        1.25,
+        13.3
+      ],
+      "bounds": {
+        "min": [
+          11.3475,
+          1.175,
+          13.25
+        ],
+        "max": [
+          11.4,
+          1.325,
+          13.35
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6da521a1d6e7",
+      "group": "Освещение/Гараж — светильник",
+      "kind": "item",
+      "pivot": [
+        13.8,
+        2.64,
+        5.0
+      ],
+      "bounds": {
+        "min": [
+          13.62,
+          2.47,
+          4.82
+        ],
+        "max": [
+          13.98,
+          2.81,
+          5.18
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_3815ce208c12",
+      "group": "Выключатели/Гараж",
+      "kind": "item",
+      "pivot": [
+        12.69375,
+        1.25,
+        9.45
+      ],
+      "bounds": {
+        "min": [
+          12.6675,
+          1.175,
+          9.4
+        ],
+        "max": [
+          12.72,
+          1.325,
+          9.5
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_1cf5d3dd2ac9",
+      "group": "Освещение/Подвал — светильник",
+      "kind": "item",
+      "pivot": [
+        15.3,
+        -0.24,
+        16.6
+      ],
+      "bounds": {
+        "min": [
+          15.12,
+          -0.38,
+          16.42
+        ],
+        "max": [
+          15.48,
+          -0.1,
+          16.78
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_ee1e6da3154f",
+      "group": "Выключатели/Подвал",
+      "kind": "item",
+      "pivot": [
+        13.24375,
+        1.25,
+        15.4
+      ],
+      "bounds": {
+        "min": [
+          13.2175,
+          1.175,
+          15.35
+        ],
+        "max": [
+          13.27,
+          1.325,
+          15.45
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_6f1b9160cc4d",
+      "group": "Освещение/Лестничная комната — светильник",
+      "kind": "item",
+      "pivot": [
+        12.15,
+        2.615,
+        17.8
+      ],
+      "bounds": {
+        "min": [
+          11.97,
+          2.42,
+          17.62
+        ],
+        "max": [
+          12.33,
+          2.81,
+          17.98
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_cfdc72bcf81d",
+      "group": "Выключатели/Лестничная комната",
+      "kind": "item",
+      "pivot": [
+        13.24375,
+        1.25,
+        15.7
+      ],
+      "bounds": {
+        "min": [
+          13.2175,
+          1.175,
+          15.65
+        ],
+        "max": [
+          13.27,
+          1.325,
+          15.75
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f4121a555fc3",
+      "group": "Электрощит/Корпус",
+      "kind": "item",
+      "pivot": [
+        17.86,
+        -1.2,
+        11.855
+      ],
+      "bounds": {
+        "min": [
+          17.55,
+          -1.65,
+          11.78
+        ],
+        "max": [
+          18.17,
+          -0.75,
+          11.93
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_3415ec018d29",
+      "group": "Рубильники/Главный щит",
+      "kind": "item",
+      "pivot": [
+        17.8375,
+        -1.105,
+        11.955
+      ],
+      "bounds": {
+        "min": [
+          17.63,
+          -1.15,
+          11.94
+        ],
+        "max": [
+          18.045,
+          -1.06,
+          11.97
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_836290174aab",
+      "group": "Участок/Грунт",
+      "kind": "architecture",
+      "pivot": [
+        10.0,
+        -0.29,
+        8.5
+      ],
+      "bounds": {
+        "min": [
+          -5,
+          -0.34,
+          -13
+        ],
+        "max": [
+          25,
+          -0.24,
+          30
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e16c84d0e050",
+      "group": "Улица/Асфальт",
+      "kind": "architecture",
+      "pivot": [
+        10.0,
+        -0.2025,
+        -9.4
+      ],
+      "bounds": {
+        "min": [
+          -5,
+          -0.23,
+          -12
+        ],
+        "max": [
+          25,
+          -0.175,
+          -6.8
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_8df762577fb3",
+      "group": "Улица/Разметка",
+      "kind": "architecture",
+      "pivot": [
+        10.9,
+        -0.167,
+        -9.4
+      ],
+      "bounds": {
+        "min": [
+          -4,
+          -0.17,
+          -9.45
+        ],
+        "max": [
+          25.8,
+          -0.164,
+          -9.35
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_42e74d58a12a",
+      "group": "Участок/Подъезд к гаражу",
+      "kind": "architecture",
+      "pivot": [
+        13.5,
+        -0.1925,
+        -3.425
+      ],
+      "bounds": {
+        "min": [
+          8.15,
+          -0.22,
+          -6.8
+        ],
+        "max": [
+          18.85,
+          -0.165,
+          -0.05
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_76a6a32a881b",
+      "group": "Крыльцо/Дорожка к входу",
+      "kind": "architecture",
+      "pivot": [
+        6.72,
+        -0.17,
+        -1.384
+      ],
+      "bounds": {
+        "min": [
+          5.83,
+          -0.2,
+          -6.8
+        ],
+        "max": [
+          7.61,
+          -0.14,
+          4.032
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_af6c1bd1b38d",
+      "group": "Крыльцо/Порог",
+      "kind": "architecture",
+      "pivot": [
+        6.752,
+        -0.065,
+        4.042
+      ],
+      "bounds": {
+        "min": [
+          5.824,
+          -0.13,
+          3.882
+        ],
+        "max": [
+          7.68,
+          0.0,
+          4.202
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c91311702247",
+      "group": "Участок/Садовые фонари",
+      "kind": "architecture",
+      "pivot": [
+        6.72,
+        0.045,
+        -1.0
+      ],
+      "bounds": {
+        "min": [
+          5.595,
+          -0.18,
+          -5.035
+        ],
+        "max": [
+          7.845,
+          0.27,
+          3.035
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_c42b78805041",
+      "group": "Участок/Садовые фонари — рассеиватели",
+      "kind": "architecture",
+      "pivot": [
+        6.72,
+        0.225,
+        -1.0
+      ],
+      "bounds": {
+        "min": [
+          5.555,
+          0.2,
+          -5.075
+        ],
+        "max": [
+          7.885,
+          0.25,
+          3.075
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_56abe34ee534",
+      "group": "Детская/Постер",
+      "kind": "item",
+      "pivot": [
+        2.0,
+        1.7,
+        3.96
+      ],
+      "bounds": {
+        "min": [
+          1.45,
+          1.375,
+          3.9475
+        ],
+        "max": [
+          2.55,
+          2.025,
+          3.9725
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_e9e2ef17ddda",
+      "group": "Младенческая/Картина",
+      "kind": "item",
+      "pivot": [
+        0.12,
+        1.7,
+        13.0
+      ],
+      "bounds": {
+        "min": [
+          0.1075,
+          1.3,
+          12.5
+        ],
+        "max": [
+          0.1325,
+          2.1,
+          13.5
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_4e4b1e0c8fbd",
+      "group": "Гостиная/Картина",
+      "kind": "item",
+      "pivot": [
+        5.8,
+        1.65,
+        18.2
+      ],
+      "bounds": {
+        "min": [
+          5.7875,
+          1.325,
+          17.825
+        ],
+        "max": [
+          5.8125,
+          1.975,
+          18.575
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_2ec648b13827",
+      "group": "Спальня/Комод у зеркала",
+      "kind": "item",
+      "pivot": [
+        0.42,
+        0.46,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          0.095,
+          0.035,
+          18.15
+        ],
+        "max": [
+          0.745,
+          0.885,
+          18.75
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_7fad7925b1ea",
+      "group": "Спальня/Зеркало",
+      "kind": "item",
+      "pivot": [
+        0.16,
+        1.65,
+        18.45
+      ],
+      "bounds": {
+        "min": [
+          0.1425,
+          1.175,
+          18.225
+        ],
+        "max": [
+          0.1775,
+          2.125,
+          18.675
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_f9499c11fd11",
+      "group": "Коридор/Консоль",
+      "kind": "item",
+      "pivot": [
+        7.25,
+        0.39,
+        6.65
+      ],
+      "bounds": {
+        "min": [
+          7.07,
+          0.025,
+          6.15
+        ],
+        "max": [
+          7.43,
+          0.755,
+          7.15
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    },
+    {
+      "id": "obj_46afb679489c",
+      "group": "Коридор/Настольная лампа",
+      "kind": "item",
+      "pivot": [
+        7.25,
+        1.025,
+        6.65
+      ],
+      "bounds": {
+        "min": [
+          7.08,
+          0.78,
+          6.48
+        ],
+        "max": [
+          7.42,
+          1.27,
+          6.82
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      }
+    }
+  ]
+}
