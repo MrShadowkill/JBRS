@@ -1,0 +1,4 @@
+[workspace]
+resolver = "2"
+members = ["procedural_audio", "terrain", "roads", "buildings", "weapons", "criminals", "game", "engine_core", "renderer_gl21", "renderer_gles2", "shader_pack", "mobile_controls", "world", "vehicles", "vehicle_physics", "player", "police", "robberies", "economy", "gui", "minimap", "save_system", "profiling"]
+default-members = ["game"]
