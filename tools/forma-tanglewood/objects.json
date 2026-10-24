@@ -2522,59 +2522,8 @@
       "pickup": {
         "enabled": false,
         "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_6e5fd3f8151a",
-      "group": "Двери/Шкаф коридора 01 — полотно",
-      "kind": "item",
-      "pivot": [
-        4.447625,
-        1.08,
-        9.290785
-      ],
-      "bounds": {
-        "min": [
-          3.83921,
-          0.025,
-          9.24708
-        ],
-        "max": [
-          5.05604,
-          2.135,
-          9.33449
-        ]
       },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_943ff5430f9c",
-      "group": "Двери/Шкаф коридора 01 — ручка",
-      "kind": "item",
-      "pivot": [
-        4.87297,
-        1.03,
-        9.27593
-      ],
-      "bounds": {
-        "min": [
-          4.83797,
-          1.0075,
-          9.24093
-        ],
-        "max": [
-          4.90797,
-          1.0525,
-          9.31093
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
+      "cabinetId": "cab_a04cfd911a"
     },
     {
       "id": "obj_ad97ac5492ca",
@@ -4718,84 +4667,6 @@
       }
     },
     {
-      "id": "obj_04b1d8f854af",
-      "group": "Шкафы/Гардероб — корпус",
-      "kind": "item",
-      "pivot": [
-        4.65,
-        1.25,
-        22.68
-      ],
-      "bounds": {
-        "min": [
-          3.87,
-          0.05,
-          22.33
-        ],
-        "max": [
-          5.43,
-          2.45,
-          23.03
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_76080adead93",
-      "group": "Дверцы шкафа/Гардероб — дверца 01",
-      "kind": "item",
-      "pivot": [
-        4.25,
-        1.25,
-        22.29
-      ],
-      "bounds": {
-        "min": [
-          3.896,
-          0.14,
-          22.25
-        ],
-        "max": [
-          4.604,
-          2.36,
-          22.33
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_835203742ce0",
-      "group": "Дверцы шкафа/Гардероб — дверца 02",
-      "kind": "item",
-      "pivot": [
-        5.0,
-        1.25,
-        22.29
-      ],
-      "bounds": {
-        "min": [
-          4.646,
-          0.14,
-          22.25
-        ],
-        "max": [
-          5.354,
-          2.36,
-          22.33
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
       "id": "obj_94629da91de5",
       "group": "Гардероб/Детальный стеллаж",
       "kind": "item",
@@ -5230,84 +5101,6 @@
           8.35,
           1.58,
           20.88
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_4fb091383a9d",
-      "group": "Гостиная/Витрина 01",
-      "kind": "item",
-      "pivot": [
-        6.0925,
-        1.115,
-        17.475
-      ],
-      "bounds": {
-        "min": [
-          5.82,
-          0.04,
-          17.0
-        ],
-        "max": [
-          6.365,
-          2.19,
-          17.95
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_35bae612bd97",
-      "group": "Гостиная/Витрина 02",
-      "kind": "item",
-      "pivot": [
-        6.0925,
-        1.115,
-        18.575
-      ],
-      "bounds": {
-        "min": [
-          5.82,
-          0.04,
-          18.1
-        ],
-        "max": [
-          6.365,
-          2.19,
-          19.05
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_278135b05f36",
-      "group": "Гостиная/Витрина 03",
-      "kind": "item",
-      "pivot": [
-        6.0925,
-        1.115,
-        19.675
-      ],
-      "bounds": {
-        "min": [
-          5.82,
-          0.04,
-          19.2
-        ],
-        "max": [
-          6.365,
-          2.19,
-          20.15
         ]
       },
       "pickup": {
@@ -6498,32 +6291,6 @@
           17.04,
           0.555,
           9.04
-        ]
-      },
-      "pickup": {
-        "enabled": false,
-        "reachMetres": 1.8
-      }
-    },
-    {
-      "id": "obj_be0076ecd654",
-      "group": "Гараж/Металлические локеры",
-      "kind": "item",
-      "pivot": [
-        8.89,
-        1.1,
-        9.1625
-      ],
-      "bounds": {
-        "min": [
-          8.35,
-          0.025,
-          8.87
-        ],
-        "max": [
-          9.43,
-          2.175,
-          9.455
         ]
       },
       "pickup": {
@@ -14140,6 +13907,465 @@
         "enabled": false,
         "reachMetres": 1.8
       }
+    },
+    {
+      "id": "obj_04b1d8f854af",
+      "group": "Шкафы/Гардероб — корпус",
+      "kind": "item",
+      "pivot": [
+        4.65,
+        1.25,
+        22.68
+      ],
+      "bounds": {
+        "min": [
+          3.87,
+          0.05,
+          22.33
+        ],
+        "max": [
+          5.43,
+          2.45,
+          23.03
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_0eca3c10f5"
+    },
+    {
+      "id": "obj_76080adead93",
+      "group": "Дверцы шкафа/Гардероб — дверца 01",
+      "kind": "item",
+      "pivot": [
+        4.2705,
+        1.25,
+        22.28875
+      ],
+      "bounds": {
+        "min": [
+          3.897,
+          0.085,
+          22.25
+        ],
+        "max": [
+          4.644,
+          2.415,
+          22.3275
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_0eca3c10f5"
+    },
+    {
+      "id": "obj_835203742ce0",
+      "group": "Дверцы шкафа/Гардероб — дверца 02",
+      "kind": "item",
+      "pivot": [
+        5.0295,
+        1.25,
+        22.28875
+      ],
+      "bounds": {
+        "min": [
+          4.656,
+          0.085,
+          22.25
+        ],
+        "max": [
+          5.403,
+          2.415,
+          22.3275
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_0eca3c10f5"
+    },
+    {
+      "id": "obj_4fb091383a9d",
+      "group": "Гостиная/Витрина 01",
+      "kind": "item",
+      "pivot": [
+        6.06,
+        1.115,
+        17.475
+      ],
+      "bounds": {
+        "min": [
+          5.82,
+          0.04,
+          17.0
+        ],
+        "max": [
+          6.3,
+          2.19,
+          17.95
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_2d935c2a44"
+    },
+    {
+      "id": "obj_2961f8e3db90",
+      "group": "Дверцы шкафа/Витрина 01 — ліва стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          17.027
+        ],
+        "max": [
+          6.38,
+          2.155,
+          17.469
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        17.248
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_2d935c2a44"
+    },
+    {
+      "id": "obj_3692ae39b38b",
+      "group": "Дверцы шкафа/Витрина 01 — права стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          17.481
+        ],
+        "max": [
+          6.38,
+          2.155,
+          17.923
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        17.702
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_2d935c2a44"
+    },
+    {
+      "id": "obj_35bae612bd97",
+      "group": "Гостиная/Витрина 02",
+      "kind": "item",
+      "pivot": [
+        6.06,
+        1.115,
+        18.575
+      ],
+      "bounds": {
+        "min": [
+          5.82,
+          0.04,
+          18.1
+        ],
+        "max": [
+          6.3,
+          2.19,
+          19.05
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_94e6509fa8"
+    },
+    {
+      "id": "obj_4f1b7fc1c008",
+      "group": "Дверцы шкафа/Витрина 02 — ліва стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          18.127
+        ],
+        "max": [
+          6.38,
+          2.155,
+          18.569
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        18.348
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_94e6509fa8"
+    },
+    {
+      "id": "obj_5d1cb7689dc4",
+      "group": "Дверцы шкафа/Витрина 02 — права стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          18.581
+        ],
+        "max": [
+          6.38,
+          2.155,
+          19.023
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        18.802
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_94e6509fa8"
+    },
+    {
+      "id": "obj_278135b05f36",
+      "group": "Гостиная/Витрина 03",
+      "kind": "item",
+      "pivot": [
+        6.06,
+        1.115,
+        19.675
+      ],
+      "bounds": {
+        "min": [
+          5.82,
+          0.04,
+          19.2
+        ],
+        "max": [
+          6.3,
+          2.19,
+          20.15
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_b1d1aef206"
+    },
+    {
+      "id": "obj_a6bf8e8a3876",
+      "group": "Дверцы шкафа/Витрина 03 — ліва стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          19.227
+        ],
+        "max": [
+          6.38,
+          2.155,
+          19.669
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        19.448
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_b1d1aef206"
+    },
+    {
+      "id": "obj_235580c7cb8f",
+      "group": "Дверцы шкафа/Витрина 03 — права стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          6.3025,
+          0.075,
+          19.681
+        ],
+        "max": [
+          6.38,
+          2.155,
+          20.123
+        ]
+      },
+      "pivot": [
+        6.34125,
+        1.115,
+        19.902
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_b1d1aef206"
+    },
+    {
+      "id": "obj_be0076ecd654",
+      "group": "Гараж/Металлические локеры",
+      "kind": "item",
+      "pivot": [
+        8.89,
+        1.1,
+        9.1625
+      ],
+      "bounds": {
+        "min": [
+          8.35,
+          0.025,
+          8.87
+        ],
+        "max": [
+          9.43,
+          2.175,
+          9.455
+        ]
+      },
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_e8894850ef"
+    },
+    {
+      "id": "obj_7a129226f8fb",
+      "group": "Дверцы шкафа/Гаражні локери — ліва стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          8.377,
+          0.06,
+          8.79
+        ],
+        "max": [
+          8.884,
+          2.14,
+          8.8675
+        ]
+      },
+      "pivot": [
+        8.6305,
+        1.1,
+        8.82875
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_e8894850ef"
+    },
+    {
+      "id": "obj_c2e505e61b3f",
+      "group": "Дверцы шкафа/Гаражні локери — права стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          8.896,
+          0.06,
+          8.79
+        ],
+        "max": [
+          9.403,
+          2.14,
+          8.8675
+        ]
+      },
+      "pivot": [
+        9.1495,
+        1.1,
+        8.82875
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_e8894850ef"
+    },
+    {
+      "id": "obj_2d392cc0cb17",
+      "group": "Дверцы шкафа/Шафа коридору 01 — ліва стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          3.8425,
+          0.025,
+          8.71
+        ],
+        "max": [
+          3.92,
+          2.135,
+          9.298
+        ]
+      },
+      "pivot": [
+        3.88125,
+        1.08,
+        9.004
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_a04cfd911a"
+    },
+    {
+      "id": "obj_946e5253ee54",
+      "group": "Дверцы шкафа/Шафа коридору 01 — права стулка",
+      "kind": "item",
+      "bounds": {
+        "min": [
+          3.8425,
+          0.025,
+          8.11
+        ],
+        "max": [
+          3.92,
+          2.135,
+          8.698
+        ]
+      },
+      "pivot": [
+        3.88125,
+        1.08,
+        8.404
+      ],
+      "pickup": {
+        "enabled": false,
+        "reachMetres": 1.8
+      },
+      "cabinetId": "cab_a04cfd911a"
     }
   ]
 }
