@@ -29,7 +29,9 @@ impl Glitches {
         self.elapsed = 0.;
         self.seed = self.next() * 63.;
     }
-    pub fn tick(&mut self, dt: f32) {
+    /// Returns true exactly once, when a corruption burst finishes.
+    pub fn tick(&mut self, dt: f32) -> bool {
+        let was_active = self.remaining > 0.;
         if self.remaining > 0. {
             self.remaining = (self.remaining - dt).max(0.);
             self.elapsed += dt;
@@ -42,6 +44,7 @@ impl Glitches {
                 self.burst();
             }
         }
+        was_active && self.remaining == 0.
     }
     pub fn parameters(&self) -> [f32; 3] {
         [
@@ -55,6 +58,19 @@ impl Glitches {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn completion_fires_once_and_not_during_idle_or_fade_in() {
+        let mut g = Glitches::new(21);
+        assert!(!g.tick(0.1));
+        g.burst();
+        let mut finished = 0;
+        for _ in 0..600 {
+            if g.tick(1. / 60.) {
+                finished += 1;
+            }
+        }
+        assert_eq!(finished, 1);
+    }
     #[test]
     fn bursts_start_end_and_recur_with_varied_timing() {
         let mut g = Glitches::new(42);

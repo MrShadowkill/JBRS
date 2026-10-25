@@ -1476,7 +1476,10 @@ impl Game {
         if self.modal() {
             return;
         }
-        self.glitches.tick(STEP);
+        if self.glitches.tick(STEP) {
+            let (_, forward) = self.chaos_camera();
+            self.chaos.after_glitch(&self.world, self.player.pos, forward);
+        }
         self.immunity = (self.immunity - STEP).max(0.);
         if self.cuffs.active {
             if self.cuffs.tick(STEP) {

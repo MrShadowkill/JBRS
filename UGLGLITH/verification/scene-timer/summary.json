@@ -1,0 +1,14 @@
+{
+  "policy": "glitch completion or 15 active seconds, whichever comes first",
+  "resets_on_switch": true,
+  "double_auto_transition_prevented": true,
+  "workspace_tests_passed": 188,
+  "windows_smoke_frames": 420,
+  "native_windows_tested": false,
+  "archive": {
+    "path": "UGLGLITH/UGLGLITH-Windows-x64.zip",
+    "bytes": 2729331,
+    "sha256": "b52f28ceb8fd2ddd1d23845d38a31563b67880bc979e3e93bee41d91103b5561",
+    "git_sha": "dcad44583dcc9a90acc7dec5a18e38aa6c74d205"
+  }
+}
