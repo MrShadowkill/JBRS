@@ -1,5 +1,8 @@
 //! Bounded, allocation-free chaos simulation. GPU assets are created once at startup.
+#[path = "absurd.rs"]
+mod absurd;
 use crate::npcs::Npc;
+pub use absurd::Interaction;
 use engine_core::{Mesh, Vec3};
 use renderer_gl21::{GpuMesh, Renderer, Texture};
 use vehicles::Car;
@@ -614,16 +617,26 @@ impl RenderSaboteur {
         corrupt: bool,
         phase: f32,
         anchor: Option<usize>,
+        mesh_override: Option<GpuMesh>,
+        texture_override: Option<Texture>,
     ) {
-        if let Some(mesh) = self.actor {
+        if let Some(mesh) = mesh_override.or(self.actor) {
             r.chaos_model(
                 mesh,
                 [p.x, p.y, p.z],
                 yaw,
                 scale,
-                color,
-                if corrupt { self.missing } else { None },
-                phase,
+                if mesh_override.is_some() {
+                    [1.; 3]
+                } else {
+                    color
+                },
+                if mesh_override.is_some() {
+                    None
+                } else {
+                    texture_override.or(if corrupt { self.missing } else { None })
+                },
+                if mesh_override.is_some() { 0. } else { phase },
                 anchor,
             );
         }
@@ -634,6 +647,7 @@ pub struct ChaosManager {
     pub spawner: SchizoSpawner,
     pub physics: PhysicsSaboteur,
     pub visuals: RenderSaboteur,
+    pub absurd: absurd::AbsurdDirector,
     random: Rng,
     render_random: Rng,
 }
@@ -646,9 +660,18 @@ impl ChaosManager {
             spawner: SchizoSpawner::new(),
             physics,
             visuals,
+            absurd: absurd::AbsurdDirector::new(),
             random,
             render_random: Rng::new(seed ^ 0x9e3779b97f4a7c15),
         }
+    }
+    pub fn initialize(&mut self, r: &mut Renderer) {
+        self.visuals.initialize(r);
+        self.absurd.initialize(r);
+        println!("ABSURD scenes={}", absurd::AbsurdDirector::scene_count());
+    }
+    pub fn next_absurd(&mut self, world: &World, p: Vec3, forward: Vec3) {
+        self.absurd.advance(world, p, forward, &mut self.random);
     }
     #[allow(clippy::too_many_arguments)]
     pub fn update(
@@ -666,6 +689,25 @@ impl ChaosManager {
         }
         let dt = dt.min(0.1);
         self.visuals.update(&mut self.random, dt);
+        self.absurd.update(
+            world,
+            cars,
+            npcs,
+            player,
+            eye,
+            forward,
+            &mut self.physics,
+            &mut self.random,
+            dt,
+        );
+        self.absurd.compensate_gravity(&mut self.physics, dt);
+        if self.absurd.gravity_off() {
+            for i in 0..CAPACITY {
+                if self.spawner.kind[i] != Entity::Empty && !self.spawner.frozen[i] {
+                    self.spawner.velocity[i].y += 18. * dt;
+                }
+            }
+        }
         self.spawner
             .update(world, player, eye, forward, &mut self.random, dt);
         self.physics
@@ -748,6 +790,7 @@ impl ChaosManager {
         }
     }
     pub fn render(&mut self, r: &mut Renderer, eye: Vec3) {
+        r.set_chaos_crouch(self.absurd.crouch());
         for i in 0..CAPACITY {
             let kind = self.spawner.kind[i];
             let p = self.spawner.position[i];
@@ -774,10 +817,14 @@ impl ChaosManager {
                 kind == Entity::GachiTitan || kind == Entity::PiskaZaGuboy,
                 phase,
                 anchor,
+                self.absurd.npc_mesh(),
+                None,
             );
         }
+        self.absurd.render(r, eye);
     }
     pub fn render_npc(&mut self, r: &mut Renderer, i: usize, n: &Npc) {
+        r.set_chaos_crouch(self.absurd.crouch());
         let scale = self.physics.npc_scale.get(i).copied().unwrap_or(1.);
         let corrupt = self.visuals.npc_corrupt.get(i).copied().unwrap_or(false);
         let infected = self.physics.npc_infected.get(i).copied().unwrap_or(false);
@@ -795,6 +842,8 @@ impl ChaosManager {
                 n.phase * 9. * n.motion
             },
             anchor,
+            self.absurd.npc_mesh(),
+            self.absurd.potato_texture(i),
         );
     }
     pub fn car_material(&self, r: &mut Renderer, i: usize) {
@@ -804,10 +853,12 @@ impl ChaosManager {
         } else {
             None
         };
-        r.chaos_car_material(scale, texture);
+        r.set_noodle_cars(self.absurd.noodle_cars());
+        r.chaos_car_material(scale, self.absurd.potato_texture(i).or(texture));
     }
     pub fn smoke_setup(&mut self, world: &World, p: Vec3) {
         self.spawner.initialize(world, p);
+        self.absurd.force(3, world, p, Vec3::new(0., 0., 1.));
         self.spawner.peasant_wait = 0.;
         self.visuals.wait = 0.;
         self.physics.frames = 1;
@@ -827,7 +878,7 @@ mod tests {
         let world = World::new();
         let p = Vec3::new(80., 1., 0.);
         let mut chaos = ChaosManager::new(23);
-        chaos.visuals.initialize(&mut renderer);
+        chaos.initialize(&mut renderer);
         chaos.smoke_setup(&world, p);
         chaos.visuals.update(&mut chaos.random, DT);
         for _ in 0..2 {
@@ -836,6 +887,7 @@ mod tests {
             chaos.render(&mut renderer, p);
             renderer.ui();
             chaos.visuals.render_ui(&mut renderer);
+            chaos.absurd.render_ui(&mut renderer, p, 0., 0.2);
             renderer.end();
         }
         renderer.begin([80., 4., 12.], 0., 0.2, 1.);
@@ -843,10 +895,23 @@ mod tests {
             chaos.render(&mut renderer, p);
             renderer.ui();
             chaos.visuals.render_ui(&mut renderer);
+            chaos.absurd.render_ui(&mut renderer, p, 0., 0.2);
         });
         renderer.end();
         renderer.validate()?;
         assert_eq!(allocations, 0);
+        for source in [6, 31, 36, 45, 94, 100] {
+            chaos.absurd.force(source, &world, p, Vec3::new(0., 0., 1.));
+            renderer.begin([80., 4., 12.], 0., 0.2, 1.);
+            let allocations = crate::allocation_probe::count(|| {
+                chaos.render(&mut renderer, p);
+                renderer.ui();
+                chaos.absurd.render_ui(&mut renderer, p, 0., 0.2);
+            });
+            renderer.end();
+            renderer.validate()?;
+            assert_eq!(allocations, 0);
+        }
         Ok(())
     }
 

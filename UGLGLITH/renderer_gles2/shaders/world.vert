@@ -15,8 +15,13 @@ uniform mediump int mesh_mode;
 uniform float chaos_anchor;
 uniform vec3 chaos_anchor_position;
 uniform float chaos_motion;
+uniform float noodle_amount;
 void main() {
  vec4 input_color=color; vec3 p=position;
+ if(noodle_amount>0.0) {
+  p.x+=sin(p.z*3.0+wind_time*3.0)*0.5*noodle_amount;
+  p.y+=cos(p.z*2.0+wind_time*3.0)*0.3*noodle_amount;
+ }
  if(mesh_mode>=5) {
   if(input_color.a>144.0) {
    p.z+=sin(chaos_motion)*(input_color.a<=180.0?0.3:-0.3);

@@ -37,6 +37,7 @@ impl Game {
         let mut scene = Scene {
             active: true,
             glitch: self.glitches.parameters()[0],
+            absurd_mode: self.chaos.absurd.audio(),
             steps,
             ..Default::default()
         };

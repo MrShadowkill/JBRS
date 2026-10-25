@@ -1,4 +1,5 @@
 //! Bounded hybrid audio: uploaded sine-function clips and procedural voices.
+mod absurd;
 mod clips;
 mod device;
 mod glitch;
@@ -33,6 +34,7 @@ pub struct Scene {
     pub active: bool,
     /// Cosmetic corruption amount, 0 = unchanged audio.
     pub glitch: f32,
+    pub absurd_mode: u8,
 }
 /// Idle RPM, redline, firing pulses per revolution, harmonic mix, phase, electric.
 const PROFILES: [(f32, f32, f32, f32, f32, bool); 8] = [
@@ -88,6 +90,7 @@ pub struct Synth {
     steps: clips::Steps,
     limiter_gain: f32,
     glitch: glitch::Glitch,
+    absurd: absurd::AbsurdSynth,
 }
 impl Default for Synth {
     fn default() -> Self {
@@ -101,6 +104,7 @@ impl Default for Synth {
             steps: clips::Steps::default(),
             limiter_gain: 1.,
             glitch: glitch::Glitch::default(),
+            absurd: absurd::AbsurdSynth::default(),
         }
     }
 }
@@ -247,6 +251,12 @@ impl Synth {
             let (step_left, step_right) = self.steps.render();
             left += step_left;
             right += step_right;
+            let absurd = self
+                .absurd
+                .sample(if scene.active { scene.absurd_mode } else { 0 }, table);
+            let pan = self.absurd.pan(scene.absurd_mode, table);
+            left += absurd * (0.7 - 0.3 * pan);
+            right += absurd * (0.7 + 0.3 * pan);
             let corrupted = self
                 .glitch
                 .process([left, right], if scene.active { scene.glitch } else { 0. });

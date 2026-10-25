@@ -146,6 +146,10 @@ pub struct Renderer {
     motion_uniform: i32,
     chaos_texture: Option<Texture>,
     chaos_scale: f32,
+    chaos_crouch: bool,
+    noodle: bool,
+    noodle_uniform: i32,
+    absurd_sky_uniform: i32,
 }
 impl Renderer {
     pub fn new() -> Result<Self, String> {
@@ -216,6 +220,10 @@ impl Renderer {
                 motion_uniform: -1,
                 chaos_texture: None,
                 chaos_scale: 1.,
+                chaos_crouch: false,
+                noodle: false,
+                noodle_uniform: -1,
+                absurd_sky_uniform: -1,
             };
             renderer.setup()?;
             if cfg!(target_os = "android") || std::env::var("JBRS_TOUCH").as_deref() == Ok("1") {
@@ -304,6 +312,8 @@ impl Renderer {
             self.anchor_uniform = uniform("chaos_anchor");
             self.anchor_position_uniform = uniform("chaos_anchor_position");
             self.motion_uniform = uniform("chaos_motion");
+            self.noodle_uniform = uniform("noodle_amount");
+            self.absurd_sky_uniform = uniform("absurd_sky");
             glUseProgram(program);
             glUniform1f(self.opacity_uniform, 1.);
             glUniform1i(uniform("atlas"), 0);
@@ -375,6 +385,21 @@ impl Renderer {
             self.solid_models.insert(key, mesh);
         }
     }
+    pub fn set_chaos_crouch(&mut self, enabled: bool) {
+        self.chaos_crouch = enabled;
+    }
+    pub fn set_noodle_cars(&mut self, enabled: bool) {
+        self.noodle = enabled;
+    }
+    pub fn set_absurd_sky(&mut self, enabled: bool) {
+        unsafe {
+            glUniform1f(self.absurd_sky_uniform, if enabled { 1. } else { 0. });
+            if enabled {
+                glClearColor(0.12, 0.8, 0.18, 1.);
+                glClear(0x4000);
+            }
+        }
+    }
     pub fn chaos_car_material(&mut self, scale: f32, texture: Option<Texture>) {
         self.chaos_scale = scale;
         self.chaos_texture = texture;
@@ -392,17 +417,19 @@ impl Renderer {
         anchor: Option<usize>,
     ) {
         let (s, c) = yaw.sin_cos();
+        let y_scale = scale * if self.chaos_crouch { 0.55 } else { 1. };
+        let y = p[1] - if self.chaos_crouch { scale * 0.45 } else { 0. };
         unsafe {
             glPushMatrix();
-            glTranslatef(p[0], p[1], p[2]);
+            glTranslatef(p[0], y, p[2]);
             glRotatef(yaw.to_degrees(), 0., 1., 0.);
-            glScalef(scale, scale, scale);
+            glScalef(scale, y_scale, scale);
             glUniform3f(self.tint_uniform, color[0], color[1], color[2]);
             glUniform1f(self.anchor_uniform, anchor.map_or(-1., |i| (i + 1) as f32));
             glUniform3f(
                 self.anchor_position_uniform,
                 (-p[0] * c + p[2] * s) / scale,
-                -p[1] / scale,
+                -y / y_scale,
                 (-p[0] * s - p[2] * c) / scale,
             );
             glUniform1f(self.motion_uniform, phase);
@@ -519,6 +546,8 @@ impl Renderer {
         self.anchor_uniform = uniform("chaos_anchor");
         self.anchor_position_uniform = uniform("chaos_anchor_position");
         self.motion_uniform = uniform("chaos_motion");
+        self.noodle_uniform = uniform("noodle_amount");
+        self.absurd_sky_uniform = uniform("absurd_sky");
         glUseProgram(self.program);
         glUniform1f(self.opacity_uniform, 1.);
         glUniform1i(uniform("atlas"), 0);
@@ -710,11 +739,22 @@ impl Renderer {
             glRotatef(angle.to_degrees(), 0., 1., 0.);
             glRotatef(tilt[0].to_degrees(), 1., 0., 0.);
             glRotatef(tilt[1].to_degrees(), 0., 0., 1.);
-            glScalef(self.chaos_scale, self.chaos_scale, self.chaos_scale);
+            let axes = if self.noodle {
+                [0.22, 0.22, 3.5]
+            } else {
+                [1.; 3]
+            };
+            glScalef(
+                self.chaos_scale * axes[0],
+                self.chaos_scale * axes[1],
+                self.chaos_scale * axes[2],
+            );
+            glUniform1f(self.noodle_uniform, if self.noodle { 1. } else { 0. });
             glUniform3f(self.tint_uniform, tint[0], tint[1], tint[2]);
         }
         self.draw_buffer(mesh, if self.chaos_texture.is_some() { 5 } else { 2 });
         unsafe {
+            glUniform1f(self.noodle_uniform, 0.);
             glPopMatrix();
         }
     }

@@ -134,6 +134,13 @@ impl Game {
             cooldown: save.robbery_cooldown,
             ..Default::default()
         };
+        let chaos = crate::chaos::ChaosManager::new(seed);
+        #[cfg(test)]
+        let chaos = {
+            let mut chaos = chaos;
+            chaos.absurd.disable_automatic();
+            chaos
+        };
         Ok(Self {
             world: world.clone(),
             doors,
@@ -203,7 +210,7 @@ impl Game {
             foot_events: 0,
             sound_throttle: 0.,
             glitches: crate::glitches::Glitches::new(seed),
-            chaos: crate::chaos::ChaosManager::new(seed),
+            chaos,
             camera: None,
             training_time: 0.,
             armory: false,
@@ -714,6 +721,11 @@ impl Game {
                 self.adjust_graphics_setting(if k == 1073741904 { -1 } else { 1 });
             }
             1073741886 => self.save(),
+            1073741887 if !self.modal() => {
+                let (_, forward) = self.chaos_camera();
+                self.chaos
+                    .next_absurd(&self.world, self.player.pos, forward);
+            }
             1073741884 => self.debug = !self.debug,
             113 if self.menu => return false,
             49..=55 if !self.modal() => {
@@ -927,6 +939,39 @@ impl Game {
             return;
         }
         let p = self.player.pos;
+        if let Some(action) = self.chaos.absurd.interact(p) {
+            match action {
+                crate::chaos::Interaction::Message(message) => self.notify(message),
+                crate::chaos::Interaction::Rest => {
+                    self.player.health = (self.player.health + 25.).min(100.);
+                    self.stamina = 100.;
+                    self.notify("ДИВАН ПЕРЕМІГ. ВИ ВІДПОЧИЛИ.");
+                }
+                crate::chaos::Interaction::BuyDumplings => {
+                    if self.save.balance >= 12
+                        && self.save.food.saturating_add(self.save.water)
+                            < self.save.carry_level.saturating_mul(2).saturating_add(8)
+                    {
+                        self.save.balance -= 12;
+                        self.save.food += 1;
+                        self.notify("ВАРЕНИКИ ВІД БАБУСІ-ВЕРТОЛЬОТА: $12");
+                    } else {
+                        self.notify("ПОТРІБНІ $12 І МІСЦЕ В СУМЦІ");
+                    }
+                }
+                crate::chaos::Interaction::Portal => {
+                    if let Some(b) = self.world.buildings.iter().find(|b| b.name == "Office") {
+                        self.player.pos = Vec3::new(b.p.x, b.p.y + 1., b.p.z);
+                        self.player.pos.y = self.world.walking_surface(self.player.pos) + 1.;
+                        self.chaos.absurd.office_party(self.player.pos);
+                        self.player.vy = 0.;
+                        self.camera = None;
+                        self.notify("БУХГАЛТЕРІЯ ПРИЙМАЄ ЛИШЕ ЛІТАЮЧІ ОГІРКИ");
+                    }
+                }
+            }
+            return;
+        }
         if self.special_interact() {
             return;
         }
@@ -1583,6 +1628,9 @@ impl Game {
             if jump && self.stance == 0 && self.player.pos.y <= ground + 0.01 {
                 self.player.vy = 7.;
             }
+            if self.chaos.absurd.gravity_off() {
+                self.player.vy += 18. * STEP;
+            }
             self.player.vy -= 18. * STEP;
             if self.parachute && self.player.pos.y > ground + 3. {
                 self.player.vy = self.player.vy.max(-3.);
@@ -1674,6 +1722,9 @@ impl Game {
             forward,
             STEP,
         );
+        if self.chaos.absurd.take_player_lift() && self.driving.is_none() {
+            self.player.vy = 6.;
+        }
         if let Some(i) = self.driving {
             self.player.pos = self.cars[i].pos;
         }
@@ -2075,6 +2126,7 @@ impl Game {
         let quality = crate::quality::PRESETS[self.save.quality];
         r.begin(eye, self.yaw, self.pitch, daylight);
         r.wind_time(self.clock);
+        r.set_absurd_sky(!self.modal() && self.chaos.absurd.sky_jelly());
         let [amount, time, seed] = self.glitches.parameters();
         r.glitch(if self.modal() { 0. } else { amount }, time, seed);
         let effect_amount =
@@ -2333,6 +2385,7 @@ impl Game {
             self.chaos.car_material(r, car_id);
             draw_car(r, c, &self.car_models[c.kind][lod], lod);
             r.chaos_car_material(1., None);
+            r.set_noodle_cars(false);
             if daylight < 0.34 && d < 64. {
                 for side in [-0.62, 0.62] {
                     let x = c.pos.x + c.angle.sin() * 2.0 + c.angle.cos() * side;
@@ -2609,6 +2662,9 @@ impl Game {
         }
         if !self.modal() {
             self.chaos.visuals.render_ui(r);
+            self.chaos
+                .absurd
+                .render_ui(r, Vec3::new(eye[0], eye[1], eye[2]), self.yaw, self.pitch);
         }
         if let Ok(path) = std::env::var("JBRS_CAPTURE") {
             if !self.captured && self.clock >= self.capture_at && self.capture_frame >= 30 {
@@ -2913,7 +2969,7 @@ pub fn run() -> Result<(), String> {
         g.player.pos,
         crate::quality::PRESETS[g.save.quality].distance,
     ));
-    g.chaos.visuals.initialize(&mut r);
+    g.chaos.initialize(&mut r);
     for (kind, models) in g.car_models.iter().enumerate() {
         for (lod, model) in models.iter().enumerate() {
             r.preload_solid_model(kind * 4 + lod * 2, &model.paint);
@@ -3209,6 +3265,15 @@ pub fn run() -> Result<(), String> {
         g.glitches.burst();
         g.chaos.smoke_setup(&g.world, g.player.pos);
     }
+    if smoke {
+        if let Some(id) = std::env::var("UGLGLITH_SCENE")
+            .ok()
+            .and_then(|v| v.parse::<u8>().ok())
+        {
+            let (_, forward) = g.chaos_camera();
+            g.chaos.absurd.force(id, &g.world, g.player.pos, forward);
+        }
+    }
     let mut last = std::time::Instant::now();
     let mut accumulator = 0.;
     if std::env::var("JBRS_TIME").as_deref() == Ok("night") {
@@ -3219,6 +3284,15 @@ pub fn run() -> Result<(), String> {
     } else {
         g.clock + 3.
     };
+    if smoke {
+        if let Some(delay) = std::env::var("UGLGLITH_CAPTURE_DELAY")
+            .ok()
+            .and_then(|v| v.parse::<f32>().ok())
+            .filter(|v| v.is_finite())
+        {
+            g.capture_at = g.clock + delay.clamp(0., 18.);
+        }
+    }
     let frame_limit = std::env::var("JBRS_FRAMES")
         .ok()
         .and_then(|s| s.parse::<usize>().ok())
@@ -4530,5 +4604,40 @@ mod chaos_event_integration {
             g.cars[0].pos.x < before,
             "C4 must pull the actual game car toward the breach"
         );
+    }
+
+    #[test]
+    fn absurd_e_actions_heal_buy_food_and_enter_the_real_office() {
+        let mut g = Game::from_save(Default::default()).unwrap();
+        g.key_action(1073741887);
+        assert_eq!(g.chaos.absurd.source_id(), 0);
+        g.menu = false;
+        g.key_action(1073741887);
+        let first = g.chaos.absurd.source_id();
+        assert!(first > 0);
+        g.key_action(1073741887);
+        assert_ne!(g.chaos.absurd.source_id(), first);
+        let p = Vec3::new(80., 1., 0.);
+        let forward = Vec3::new(0., 0., 1.);
+        g.chaos.absurd.force(58, &g.world, p, forward);
+        g.player.pos = Vec3::new(p.x, 1., p.z + 26.);
+        g.player.health = 25.;
+        g.interact();
+        assert_eq!(g.player.health, 50.);
+        g.chaos.absurd.force(9, &g.world, p, forward);
+        g.save.balance = 100;
+        g.interact();
+        assert_eq!(g.save.balance, 88);
+        assert_eq!(g.save.food, 1);
+        g.chaos.absurd.force(82, &g.world, p, forward);
+        let office = g
+            .world
+            .buildings
+            .iter()
+            .find(|b| b.name == "Office")
+            .unwrap()
+            .id;
+        g.interact();
+        assert_eq!(g.world.interior(g.player.pos), Some(office));
     }
 }

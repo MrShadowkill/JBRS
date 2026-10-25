@@ -1,0 +1,7 @@
+OpenGL 2.1 Mesa 25.0.7-2+deb13u1 renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+ABSURD scenes=52
+AUDIO SDL stereo 22050 Hz procedural synthesis
+VEHICLE_CACHE parts=32 bytes=4581576
+GEOMETRY scene_triangles=35082 world_triangles=31314 interior_triangles=0 quality=1 vehicles=0 actors_and_effects=3140
+PROFILE scene=prison frames=300 mean_ms=57.70 p95_ms=118.15 max_ms=159.13 rss_mb=150.6 gpu_mb=6.1 active_chunks=38 visible_chunks=19 effective_distance=271
+Rendered 300 frames; observed 13.0 FPS (host only)
