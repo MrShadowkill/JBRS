@@ -1,0 +1,302 @@
+//! One terrain sampler shared by rendered ground and contact physics.
+use super::*;
+pub(crate) fn ground_sample<'a>(
+    x: f32,
+    z: f32,
+    roads: impl Iterator<Item = &'a Road> + Clone,
+    buildings: impl Iterator<Item = &'a Building> + Clone,
+) -> f32 {
+    let raw = terrain::height(x, z);
+    let track = terrain::railway::nearest(Vec3::new(x, 0., z));
+    let p = Vec3::new(x, 0., z);
+    if (-380. ..500.).contains(&x)
+        && (-350. ..350.).contains(&z)
+        && raw == 0.
+        && track.0 > 14.
+        && !roads.clone().any(|r| {
+            let (d, y) = r.distance(p);
+            d < r.width / 2. + 20. && y.abs() > 0.001
+        })
+        && !buildings.clone().any(|b| {
+            b.p.y.abs() > 0.001
+                && (x - b.p.x).abs() < b.size.x / 2. + 7.
+                && (z - b.p.z).abs() < b.size.z / 2. + 7.
+        })
+    {
+        return 0.;
+    }
+    let road_list: Vec<_> = roads.collect();
+    let building_list: Vec<_> = buildings.collect();
+    let mut ground = raw;
+    for b in &building_list {
+        if b.name == "Penthouse" {
+            continue;
+        }
+        let d = ((x - b.p.x).abs() - b.size.x / 2.).max((z - b.p.z).abs() - b.size.z / 2.);
+        if d < 7. {
+            let t = ((d - 3.) / 4.).clamp(0., 1.);
+            ground = b.p.y * (1. - t) + raw * t;
+            break;
+        }
+    }
+    let p = Vec3::new(x, 0., z);
+    if let Some((d, y, width, tunnel, _)) = road_list
+        .iter()
+        .map(|r| {
+            let (d, base) = r.distance(p);
+            let covered = r.covered_height(p);
+            (
+                d,
+                covered.unwrap_or(base),
+                r.width,
+                r.name == "Mountain tunnel",
+                covered.is_some(),
+            )
+        })
+        .min_by(|a, b| {
+            let ac = a.4;
+            let bc = b.4;
+            match (ac, bc) {
+                (true, true) => a.1.total_cmp(&b.1),
+                (true, false) => std::cmp::Ordering::Less,
+                (false, true) => std::cmp::Ordering::Greater,
+                _ => a.0.total_cmp(&b.0),
+            }
+        })
+    {
+        // Keep the river bed below elevated bridges and mountain cover over the tunnel.
+        if !(tunnel && raw > y + 6. || raw < -0.2 && y > 0.5) {
+            let t = ((d - width / 2. - 10.) / 10.).clamp(0., 1.);
+            ground = y * (1. - t) + ground * t;
+        }
+    }
+
+    // Bring an earthwork embankment up to the sleeper bed on land. Keep road
+    // crossings, building footprints, and water spans free of fill.
+    let rail_distance = terrain::railway::nearest(p).0;
+    if rail_distance < 12.0
+        && raw >= -0.35
+        && !road_list
+            .iter()
+            .any(|r| r.distance(p).0 < r.width / 2.0 + 2.0)
+        && !building_list.iter().any(|b| {
+            (x - b.p.x).abs() < b.size.x / 2.0 + 2.0 && (z - b.p.z).abs() < b.size.z / 2.0 + 2.0
+        })
+    {
+        let bed = terrain::railway::nearest(Vec3::new(x, 0.0, z)).1.y - 0.10;
+        if bed > ground {
+            let t = ((rail_distance - 2.7) / (12.0 - 2.7)).clamp(0.0, 1.0);
+            ground = ground * t + bed * (1.0 - t);
+        }
+    }
+    ground
+}
+pub(crate) fn road_tiles(roads: &[Road]) -> HashMap<(i32, i32), Vec<Road>> {
+    let mut tiles = HashMap::new();
+    for x in -9..=8 {
+        for z in -9..=8 {
+            let mut out = Vec::new();
+            let (x0, z0) = (x as f32 * CHUNK, z as f32 * CHUNK);
+            for r in roads {
+                let mut run = Vec::new();
+                let flush = |run: &mut Vec<Vec3>, out: &mut Vec<Road>| {
+                    if run.len() > 1 {
+                        out.push(Road {
+                            name: r.name,
+                            points: std::mem::take(run),
+                            width: r.width,
+                            highway: r.highway,
+                        });
+                    } else {
+                        run.clear();
+                    }
+                };
+                for seg in r.points.windows(2) {
+                    let (a, b) = (seg[0], seg[1]);
+                    if a.x.min(b.x) < x0 + CHUNK + 40.
+                        && a.x.max(b.x) > x0 - 40.
+                        && a.z.min(b.z) < z0 + CHUNK + 40.
+                        && a.z.max(b.z) > z0 - 40.
+                    {
+                        if run.is_empty() {
+                            run.push(a);
+                        }
+                        run.push(b);
+                    } else {
+                        flush(&mut run, &mut out);
+                    }
+                }
+                flush(&mut run, &mut out);
+            }
+            if !out.is_empty() {
+                tiles.insert((x, z), out);
+            }
+        }
+    }
+    tiles
+}
+impl World {
+    pub(crate) fn local_roads(&self, x: f32, z: f32) -> &[Road] {
+        self.surface_roads
+            .get(&((x / CHUNK).floor() as i32, (z / CHUNK).floor() as i32))
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+    }
+    pub fn ground_height(&self, x: f32, z: f32) -> f32 {
+        ground_sample(x, z, self.local_roads(x, z).iter(), self.buildings.iter())
+    }
+    pub fn vehicle_surface(&self, p: Vec3) -> f32 {
+        self.surface(p.x, p.z)
+    }
+    pub fn water_depth(&self, p: Vec3) -> f32 {
+        (-0.2 - self.ground_height(p.x, p.z)).max(0.)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn traffic_lanes_and_train_envelope_are_clear() {
+        let w = World::new();
+        for p in terrain::railway::samples() {
+            let above = Vec3::new(p.x, p.y + 2., p.z);
+            assert!(
+                !w.blocked(above, 2.),
+                "rail obstruction {p:?} collider {:?}",
+                w.colliders
+                    .iter()
+                    .find(|c| c.contains(above, 2.))
+                    .map(|c| (c.p, c.size))
+            );
+            for b in &w.buildings {
+                assert!(
+                    (p.x - b.p.x).abs() > b.size.x / 2. + 3.
+                        || (p.z - b.p.z).abs() > b.size.z / 2. + 3.,
+                    "track through {}",
+                    b.name
+                );
+            }
+        }
+        for r in &w.roads {
+            for (i, p) in r.points.iter().enumerate() {
+                let (nx, nz) = r.normal(i);
+                for side in [-1., 1.] {
+                    let mut q = Vec3::new(p.x + nx * side * 1.6, p.y + 0.65, p.z + nz * side * 1.6);
+                    let deck = r.covered_height(q).unwrap_or(p.y);
+                    q.y = deck + 0.65;
+                    assert!(!w.blocked(q, 1.), "lane blocked {} {q:?}", r.name);
+                    if r.name != "Mountain tunnel" {
+                        assert!(
+                            w.ground_height(q.x, q.z) <= deck + 0.15,
+                            "ground covers road {} {q:?}",
+                            r.name
+                        );
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn forest_is_deterministic_irregular_and_avoids_transport() {
+        let a = World::new();
+        let b = World::new();
+        assert!(a.trees.len() > 200);
+        assert_eq!(a.trees.len(), b.trees.len());
+        for (p, q) in a.trees.iter().zip(b.trees.iter()) {
+            assert_eq!(p.x, q.x);
+            assert_eq!(p.z, q.z);
+            assert!(terrain::railway::nearest(*p).0 >= 9.);
+            assert!(a
+                .roads
+                .iter()
+                .all(|r| r.distance(*p).0 >= r.width / 2. + 8.));
+        }
+        let off_grid = a
+            .trees
+            .iter()
+            .filter(|p| (p.x / 46.).fract().abs() > 0.05 && (p.z / 43.).fract().abs() > 0.05)
+            .count();
+        assert!(off_grid > a.trees.len() / 2);
+    }
+    #[test]
+    fn water_mesh_is_flat_above_a_real_riverbed() {
+        let z = 420.;
+        let x = terrain::river_center(z);
+        let w = World::new();
+        assert!(w.water_depth(Vec3::new(x, 0., z)) > 1.);
+        let key = ((x / 128.).floor() as i32, (z / 128.).floor() as i32);
+        let m = w.chunk(key, 0);
+        let water: Vec<_> = m
+            .vertices
+            .iter()
+            .filter(|v| v.uv[0] < 0.25 && v.uv[1] >= 0.5 && v.uv[1] < 0.75)
+            .collect();
+        assert!(!water.is_empty());
+        // Water material 8 occupies its own atlas tile; it is a surface, not a collider.
+        for v in water {
+            assert!((v.position[1] + 0.2).abs() < 0.001);
+        }
+        assert!(!w.blocked(Vec3::new(x, -0.1, z), 0.5));
+    }
+
+    #[test]
+    fn rail_embankment_supports_sleepers_but_stays_out_of_roads_and_water() {
+        let w = World::new();
+        let mut land = None;
+        let mut water = None;
+        for p in terrain::railway::samples() {
+            if terrain::height(p.x, p.z) >= 0.0 && land.is_none() {
+                land = Some(*p);
+            }
+            if terrain::height(p.x, p.z) < -0.35 && water.is_none() {
+                water = Some(*p);
+            }
+        }
+        let land = land.expect("alignment has a land section");
+        let (distance, _) = terrain::railway::nearest(land);
+        assert!(distance < 0.1);
+        assert!(w.ground_height(land.x, land.z) >= land.y - 0.14);
+
+        let water = water.expect("alignment has a water span");
+        assert!(
+            (w.ground_height(water.x, water.z) - terrain::height(water.x, water.z)).abs() < 0.01
+        );
+    }
+}
+
+#[cfg(test)]
+mod donut_roads_tests {
+    use super::*;
+    #[test]
+    fn imported_shop_and_approach_are_grounded_and_clear() {
+        let w = World::new();
+        assert_eq!(
+            w.buildings
+                .iter()
+                .filter(|b| b.name == "Donut Shop")
+                .count(),
+            1
+        );
+        assert!(!w
+            .buildings
+            .iter()
+            .any(|b| b.name == "Donut Shop" && (b.p.z - 240.).abs() < 1.));
+        for x in 208..230 {
+            let p = Vec3::new(x as f32, 1., -80.);
+            assert!(!w.blocked(p, 0.5), "approach {x}");
+            assert!(w.ground_height(p.x, p.z).abs() < 0.01);
+            assert!(w.vehicle_surface(p).abs() < 0.01);
+        }
+        for road in w.roads.iter().filter(|r| r.name == "City street") {
+            for p in &road.points {
+                assert!(
+                    p.x < 180. || p.x > 220. || p.z > -40. || p.z < -110.,
+                    "street crosses shop at {},{}",
+                    p.x,
+                    p.z
+                );
+            }
+        }
+    }
+}

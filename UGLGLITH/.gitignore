@@ -1,0 +1,5 @@
+/target/
+/save.json*
+/dist/
+/Android/build/
+/Android/dist/

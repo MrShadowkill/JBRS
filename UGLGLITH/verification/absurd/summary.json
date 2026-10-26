@@ -1,0 +1,22 @@
+{
+  "scene_count": 52,
+  "pending_source_ideas": 48,
+  "workspace_tests_passed": 186,
+  "ignored_display_test_run_separately": [
+    "desktop",
+    "gles2"
+  ],
+  "allocation_checks": "zero allocations for 52 scene updates and warmed render/UI",
+  "windows_scenes": {
+    "6": 150,
+    "100": 300
+  },
+  "windows_runtime": "Wine 10 / OpenGL 2.1 / Mesa llvmpipe / dummy audio",
+  "native_hardware_tested": false,
+  "archive": {
+    "path": "UGLGLITH/UGLGLITH-Windows-x64.zip",
+    "bytes": 2728644,
+    "sha256": "f0f2967803c49f9e17413eb80a4340158274f3c35a323ce14c2941822a4f99ca",
+    "git_sha": "3c8b3fb81ff8f7f8fe7c5bcc3372fd9467dee2a4"
+  }
+}
