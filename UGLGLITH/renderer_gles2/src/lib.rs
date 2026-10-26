@@ -162,7 +162,7 @@ impl Renderer {
             SDL_GL_SetAttribute(21, 4);
             SDL_GL_SetAttribute(5, 1);
             SDL_GL_SetAttribute(6, 24);
-            let title = CString::new("JBRS | Original open-world prototype").unwrap();
+            let title = CString::new("UGLGLITH | Glitched 8.0.7GG").unwrap();
             let w = SDL_CreateWindow(title.as_ptr(), 0x2fff0000, 0x2fff0000, 1024, 576, 2 | 32);
             if w.is_null() {
                 return Err(error());

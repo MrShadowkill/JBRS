@@ -1478,7 +1478,8 @@ impl Game {
         }
         if self.glitches.tick(STEP) {
             let (_, forward) = self.chaos_camera();
-            self.chaos.after_glitch(&self.world, self.player.pos, forward);
+            self.chaos
+                .after_glitch(&self.world, self.player.pos, forward);
         }
         self.immunity = (self.immunity - STEP).max(0.);
         if self.cuffs.active {
@@ -2960,6 +2961,9 @@ pub fn run() -> Result<(), String> {
         }
     }
     let mut r = Renderer::new()?;
+    if !crate::startup_warning::run(&mut r)? {
+        return Ok(());
+    }
     if let Err(error) = r.set_resolution_scale(g.save.resolution_scale) {
         eprintln!("JBRS: requested render resolution was not applied: {error}");
     }

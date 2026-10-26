@@ -4,7 +4,7 @@ const INK: [f32; 3] = [0.045, 0.055, 0.075];
 impl Game {
     fn draw_interface(&self, r: &mut Renderer) {
         r.panel([18., 14., 160., 58.], INK, 0.88, 24.);
-        text(r, 34., 27., 2.6, "JBRS", WHITE);
+        text(r, 30., 27., 2.3, "UGLGLITH", WHITE);
         r.panel([192., 14., 170., 58.], INK, 0.88, 22.);
         text(
             r,
@@ -219,7 +219,7 @@ impl Game {
         }
         if self.menu {
             r.panel([174., 125., 676., 363.], INK, 0.92, 28.);
-            text(r, 328., 150., 5.2, "JBRS", WHITE);
+            text(r, 300., 142., 3.6, "UGLGLITH 8.0.7GG", WHITE);
             text(r, 368., 202., 1.5, "CHOOSE YOUR SIDE", [0.65, 0.7, 0.78]);
             gui::button(r, [230., 242., 260., 127.], "PRISONER [1]", ORANGE);
             text(r, 267., 329., 1.6, "PLAN YOUR ESCAPE", WHITE);

@@ -1945,6 +1945,69 @@ mod tests {
     use crate::npcs::Role;
 
     #[test]
+    fn scene_switches_at_fifteen_seconds_and_glitch_end_resets_the_deadline() {
+        let world = World::new();
+        let p = Vec3::new(80., 1., 0.);
+        let forward = Vec3::new(0., 0., 1.);
+        let mut rng = Rng::new(76);
+        let mut physics = PhysicsSaboteur::new(&mut rng);
+        let mut director = AbsurdDirector::new();
+        director.force(3, &world, p, forward);
+        for _ in 0..149 {
+            director.update(
+                &world,
+                &mut [],
+                &mut [],
+                p,
+                p,
+                forward,
+                &mut physics,
+                &mut rng,
+                0.1,
+            );
+        }
+        assert_eq!(director.source_id(), 3);
+        for _ in 0..2 {
+            director.update(
+                &world,
+                &mut [],
+                &mut [],
+                p,
+                p,
+                forward,
+                &mut physics,
+                &mut rng,
+                0.1,
+            );
+        }
+        assert_ne!(director.source_id(), 3);
+        // Both triggers on the same frame must produce only one transition.
+        director.next = 0.01;
+        let old = director.source_id();
+        director.after_glitch(&world, p, forward, &mut rng);
+        let switched = director.source_id();
+        assert_ne!(switched, old);
+        director.update(
+            &world,
+            &mut [],
+            &mut [],
+            p,
+            p,
+            forward,
+            &mut physics,
+            &mut rng,
+            0.1,
+        );
+        assert_eq!(director.source_id(), switched);
+        assert!(director.next > 14.8);
+        director.office_party(p);
+        assert!(
+            director.next < 15.,
+            "interaction must not restart the automatic scene timer"
+        );
+    }
+
+    #[test]
     fn every_scene_has_geometry_and_finite_bounded_state_without_allocations() {
         let world = World::new();
         let p = Vec3::new(80., 1., 0.);
@@ -2130,43 +2193,4 @@ mod tests {
         assert!(!director.force(255, &world, Vec3::default(), Vec3::new(0., 0., 1.)));
         assert_eq!(director.source_id(), 3);
     }
-    #[test]
-    fn scene_switches_at_fifteen_seconds_and_glitch_end_resets_the_deadline() {
-        let world = World::new();
-        let p = Vec3::new(80., 1., 0.);
-        let forward = Vec3::new(0., 0., 1.);
-        let mut rng = Rng::new(76);
-        let mut physics = PhysicsSaboteur::new(&mut rng);
-        let mut director = AbsurdDirector::new();
-        director.force(3, &world, p, forward);
-        for _ in 0..149 {
-            director.update(
-                &world, &mut [], &mut [], p, p, forward, &mut physics, &mut rng, 0.1,
-            );
-        }
-        assert_eq!(director.source_id(), 3);
-        for _ in 0..2 {
-            director.update(
-                &world, &mut [], &mut [], p, p, forward, &mut physics, &mut rng, 0.1,
-            );
-        }
-        assert_ne!(director.source_id(), 3);
-        // Both triggers on the same frame must produce only one transition.
-        director.next = 0.01;
-        let old = director.source_id();
-        director.after_glitch(&world, p, forward, &mut rng);
-        let switched = director.source_id();
-        assert_ne!(switched, old);
-        director.update(
-            &world, &mut [], &mut [], p, p, forward, &mut physics, &mut rng, 0.1,
-        );
-        assert_eq!(director.source_id(), switched);
-        assert!(director.next > 14.8);
-        director.office_party(p);
-        assert!(
-            director.next < 15.,
-            "interaction must not restart the automatic scene timer"
-        );
-    }
-
 }

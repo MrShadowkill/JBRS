@@ -674,7 +674,8 @@ impl ChaosManager {
         self.absurd.advance(world, p, forward, &mut self.random);
     }
     pub fn after_glitch(&mut self, world: &World, p: Vec3, forward: Vec3) {
-        self.absurd.after_glitch(world, p, forward, &mut self.random);
+        self.absurd
+            .after_glitch(world, p, forward, &mut self.random);
     }
     #[allow(clippy::too_many_arguments)]
     pub fn update(
